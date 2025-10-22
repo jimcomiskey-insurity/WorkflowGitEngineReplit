@@ -186,6 +186,15 @@ export class WorkflowListComponent implements OnInit {
     return this.gitStatus.isDirty;
   }
 
+  get hasCommitsToPush(): boolean {
+    if (!this.gitStatus) return false;
+    return this.gitStatus.commitsAhead > 0;
+  }
+
+  get commitsAheadCount(): number {
+    return this.gitStatus?.commitsAhead || 0;
+  }
+
   get allChangedFiles(): string[] {
     if (!this.gitStatus) return [];
     return [

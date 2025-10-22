@@ -9,6 +9,7 @@ export interface GitStatus {
   untracked: string[];
   currentBranch: string;
   isDirty: boolean;
+  commitsAhead: number;
 }
 
 export interface CommitRequest {

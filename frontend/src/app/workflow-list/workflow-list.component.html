@@ -3,7 +3,10 @@
   <div class="actions">
     <button class="primary" (click)="createNewWorkflow()">+ New Workflow</button>
     <button class="secondary" (click)="pullChanges()">Pull from Remote</button>
-    <button class="secondary" (click)="pushChanges()" [disabled]="!hasChanges">Push to Remote</button>
+    <button class="secondary" (click)="pushChanges()" [disabled]="!hasCommitsToPush">
+      Push to Remote
+      <span *ngIf="hasCommitsToPush" class="commit-badge">{{ commitsAheadCount }}</span>
+    </button>
   </div>
 </div>
 
