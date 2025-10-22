@@ -1,0 +1,77 @@
+<div class="header">
+  <h1>Insurance Workflow Configuration</h1>
+  <div class="actions">
+    <button class="primary" (click)="createNewWorkflow()">+ New Workflow</button>
+    <button class="secondary" (click)="pullChanges()">Pull from Remote</button>
+    <button class="secondary" (click)="pushChanges()" [disabled]="!hasChanges">Push to Remote</button>
+  </div>
+</div>
+
+<div class="git-status card" *ngIf="gitStatus">
+  <h2>Git Status</h2>
+  <p><strong>Current Branch:</strong> {{ gitStatus.CurrentBranch }}</p>
+  
+  <div *ngIf="hasChanges" class="changes-section">
+    <h3>Pending Changes ({{ allChangedFiles.length }} files)</h3>
+    <ul class="changes-list">
+      <li *ngFor="let file of gitStatus.Added" class="added">+ {{ file }}</li>
+      <li *ngFor="let file of gitStatus.Modified" class="modified">M {{ file }}</li>
+      <li *ngFor="let file of gitStatus.Removed" class="removed">- {{ file }}</li>
+      <li *ngFor="let file of gitStatus.Untracked" class="untracked">? {{ file }}</li>
+    </ul>
+    <div class="git-actions">
+      <button class="primary" (click)="openCommitDialog()">Commit Changes</button>
+      <button class="danger" (click)="discardChanges()">Discard Changes</button>
+    </div>
+  </div>
+  
+  <div *ngIf="!hasChanges" class="no-changes">
+    <p>No pending changes</p>
+  </div>
+</div>
+
+<div class="workflows-section">
+  <h2>Workflows ({{ workflows.length }})</h2>
+  
+  <div *ngIf="workflows.length === 0" class="no-workflows">
+    <p>No workflows found. Click "New Workflow" to create one.</p>
+  </div>
+  
+  <div class="workflow-card card" *ngFor="let workflow of workflows">
+    <div class="workflow-header">
+      <h3>{{ workflow.WorkflowName }}</h3>
+      <span class="workflow-key">{{ workflow.WorkflowKey }}</span>
+    </div>
+    <p class="workflow-description">{{ workflow.Description }}</p>
+    <div class="workflow-meta">
+      <span>{{ workflow.Phases?.length || 0 }} Phases</span>
+      <span>{{ (workflow.Phases || []).reduce((sum, p) => sum + (p.Tasks?.length || 0), 0) }} Tasks</span>
+    </div>
+    <div class="workflow-actions">
+      <button class="primary" (click)="editWorkflow(workflow.WorkflowKey)">Edit</button>
+      <button class="danger" (click)="deleteWorkflow(workflow.WorkflowKey)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" *ngIf="showCommitDialog" (click)="closeCommitDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>Commit Changes</h2>
+    <div class="form-group">
+      <label>Commit Message:</label>
+      <textarea [(ngModel)]="commitMessage" rows="3" placeholder="Enter commit message"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Author Name:</label>
+      <input type="text" [(ngModel)]="authorName" />
+    </div>
+    <div class="form-group">
+      <label>Author Email:</label>
+      <input type="email" [(ngModel)]="authorEmail" />
+    </div>
+    <div class="modal-actions">
+      <button class="primary" (click)="commitChanges()">Commit</button>
+      <button class="secondary" (click)="closeCommitDialog()">Cancel</button>
+    </div>
+  </div>
+</div>

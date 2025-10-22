@@ -1,0 +1,207 @@
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.editor-header h1 {
+  color: #2c3e50;
+  font-size: 28px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #6c757d;
+  font-size: 12px;
+}
+
+.phases-section {
+  margin-top: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  color: #2c3e50;
+}
+
+.phase-card {
+  margin-bottom: 20px;
+  border-left: 4px solid #007bff;
+}
+
+.phase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.phase-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.phase-order {
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.phase-name-input {
+  font-size: 18px;
+  font-weight: 600;
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.phase-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.icon-btn {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon-btn.danger {
+  background-color: #ffe0e0;
+  color: #dc3545;
+}
+
+.icon-btn.danger:hover:not(:disabled) {
+  background-color: #ffcccc;
+}
+
+.icon-btn.small {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.tasks-section {
+  margin-top: 15px;
+}
+
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.tasks-header h3 {
+  font-size: 16px;
+  color: #555;
+}
+
+button.small {
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+.task-card {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.task-name-input {
+  font-size: 16px;
+  font-weight: 500;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.task-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.task-field label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 3px;
+}
+
+.task-field input,
+.task-field select {
+  padding: 5px;
+  font-size: 14px;
+}
+
+.checkbox-field label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: auto;
+}
+
+.no-tasks,
+.no-phases {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+  font-style: italic;
+}

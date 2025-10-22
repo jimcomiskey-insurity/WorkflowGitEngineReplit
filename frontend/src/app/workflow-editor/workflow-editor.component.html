@@ -1,0 +1,107 @@
+<div class="editor-header">
+  <h1>{{ isNewWorkflow ? 'Create New Workflow' : 'Edit Workflow' }}</h1>
+  <div class="actions">
+    <button class="primary" (click)="saveWorkflow()">Save</button>
+    <button class="secondary" (click)="cancel()">Cancel</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Workflow Details</h2>
+  
+  <div class="form-group">
+    <label>Workflow Name:</label>
+    <input type="text" [(ngModel)]="workflow.WorkflowName" placeholder="Enter workflow name" />
+  </div>
+  
+  <div class="form-group">
+    <label>Workflow Key:</label>
+    <input type="text" [(ngModel)]="workflow.WorkflowKey" placeholder="e.g., NB-001" [disabled]="!isNewWorkflow" />
+    <small *ngIf="!isNewWorkflow">Key cannot be changed after creation</small>
+  </div>
+  
+  <div class="form-group">
+    <label>Description:</label>
+    <textarea [(ngModel)]="workflow.Description" rows="3" placeholder="Enter workflow description"></textarea>
+  </div>
+</div>
+
+<div class="phases-section">
+  <div class="section-header">
+    <h2>Phases ({{ workflow.Phases.length }})</h2>
+    <button class="primary" (click)="addPhase()">+ Add Phase</button>
+  </div>
+
+  <div class="phase-card card" *ngFor="let phase of workflow.Phases; let i = index">
+    <div class="phase-header">
+      <div class="phase-title">
+        <span class="phase-order">Phase {{ phase.PhaseOrder }}</span>
+        <input type="text" [(ngModel)]="phase.PhaseName" class="phase-name-input" />
+      </div>
+      <div class="phase-actions">
+        <button class="icon-btn" (click)="movePhaseUp(i)" [disabled]="i === 0" title="Move Up">▲</button>
+        <button class="icon-btn" (click)="movePhaseDown(i)" [disabled]="i === workflow.Phases.length - 1" title="Move Down">▼</button>
+        <button class="icon-btn danger" (click)="removePhase(i)" title="Remove Phase">✕</button>
+      </div>
+    </div>
+
+    <div class="tasks-section">
+      <div class="tasks-header">
+        <h3>Tasks ({{ phase.Tasks.length }})</h3>
+        <button class="primary small" (click)="addTask(i)">+ Add Task</button>
+      </div>
+
+      <div class="task-card" *ngFor="let task of phase.Tasks; let j = index">
+        <div class="task-header">
+          <input type="text" [(ngModel)]="task.TaskName" placeholder="Task name" class="task-name-input" />
+          <button class="icon-btn danger small" (click)="removeTask(i, j)" title="Remove Task">✕</button>
+        </div>
+
+        <div class="task-details">
+          <div class="task-field">
+            <label>Type:</label>
+            <select [(ngModel)]="task.TaskType">
+              <option>DataEntry</option>
+              <option>Rating</option>
+              <option>Review</option>
+              <option>Approval</option>
+              <option>FollowUp</option>
+              <option>DocumentGeneration</option>
+              <option>Intake</option>
+              <option>Validation</option>
+              <option>Accounting</option>
+              <option>Notification</option>
+              <option>SystemUpdate</option>
+              <option>Manual</option>
+            </select>
+          </div>
+
+          <div class="task-field">
+            <label>Assigned Role:</label>
+            <input type="text" [(ngModel)]="task.AssignedRole" placeholder="e.g., Agent, Underwriter" />
+          </div>
+
+          <div class="task-field">
+            <label>Duration (hours):</label>
+            <input type="number" [(ngModel)]="task.EstimatedDurationHours" min="0" step="0.1" />
+          </div>
+
+          <div class="task-field checkbox-field">
+            <label>
+              <input type="checkbox" [(ngModel)]="task.IsAutomated" />
+              Automated Task
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-tasks" *ngIf="phase.Tasks.length === 0">
+        <p>No tasks in this phase. Click "Add Task" to create one.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-phases" *ngIf="workflow.Phases.length === 0">
+    <p>No phases defined. Click "Add Phase" to create one.</p>
+  </div>
+</div>
