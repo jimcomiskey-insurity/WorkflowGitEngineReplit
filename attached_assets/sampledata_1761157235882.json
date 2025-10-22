@@ -1,0 +1,251 @@
+{
+  "ProgramWorkflows": [
+    {
+      "WorkflowName": "New Business",
+      "WorkflowKey": "NB-001",
+      "Description": "Handles initial policy creation, rating, underwriting, and issuance.",
+      "Phases": [
+        {
+          "PhaseName": "Submission",
+          "PhaseOrder": 1,
+          "Tasks": [
+            {
+              "TaskName": "Capture Applicant Information",
+              "TaskType": "DataEntry",
+              "AssignedRole": "Agent",
+              "EstimatedDurationHours": 2,
+              "Dependencies": [],
+              "IsAutomated": false
+            },
+            {
+              "TaskName": "Generate Quote",
+              "TaskType": "Rating",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.1,
+              "Dependencies": ["Capture Applicant Information"],
+              "IsAutomated": true
+            }
+          ]
+        },
+        {
+          "PhaseName": "Underwriting",
+          "PhaseOrder": 2,
+          "Tasks": [
+            {
+              "TaskName": "Underwriter Review",
+              "TaskType": "Review",
+              "AssignedRole": "Underwriter",
+              "EstimatedDurationHours": 8,
+              "Dependencies": ["Generate Quote"],
+              "IsAutomated": false
+            },
+            {
+              "TaskName": "Request Additional Info",
+              "TaskType": "FollowUp",
+              "AssignedRole": "Underwriter",
+              "EstimatedDurationHours": 1,
+              "Dependencies": ["Underwriter Review"],
+              "IsAutomated": false
+            }
+          ]
+        },
+        {
+          "PhaseName": "Issuance",
+          "PhaseOrder": 3,
+          "Tasks": [
+            {
+              "TaskName": "Issue Policy Documents",
+              "TaskType": "DocumentGeneration",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.2,
+              "Dependencies": ["Underwriter Review"],
+              "IsAutomated": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "WorkflowName": "Endorsement",
+      "WorkflowKey": "END-002",
+      "Description": "Handles mid-term policy changes such as adding vehicles or updating coverages.",
+      "Phases": [
+        {
+          "PhaseName": "Request Processing",
+          "PhaseOrder": 1,
+          "Tasks": [
+            {
+              "TaskName": "Receive Endorsement Request",
+              "TaskType": "Intake",
+              "AssignedRole": "CSR",
+              "EstimatedDurationHours": 1,
+              "Dependencies": [],
+              "IsAutomated": false
+            },
+            {
+              "TaskName": "Validate Policy Status",
+              "TaskType": "Validation",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.1,
+              "Dependencies": ["Receive Endorsement Request"],
+              "IsAutomated": true
+            }
+          ]
+        },
+        {
+          "PhaseName": "Rating & Approval",
+          "PhaseOrder": 2,
+          "Tasks": [
+            {
+              "TaskName": "Recalculate Premium",
+              "TaskType": "Rating",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.2,
+              "Dependencies": ["Validate Policy Status"],
+              "IsAutomated": true
+            },
+            {
+              "TaskName": "Underwriter Approval",
+              "TaskType": "Approval",
+              "AssignedRole": "Underwriter",
+              "EstimatedDurationHours": 4,
+              "Dependencies": ["Recalculate Premium"],
+              "IsAutomated": false
+            }
+          ]
+        },
+        {
+          "PhaseName": "Confirmation",
+          "PhaseOrder": 3,
+          "Tasks": [
+            {
+              "TaskName": "Send Endorsement Confirmation",
+              "TaskType": "Notification",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.1,
+              "Dependencies": ["Underwriter Approval"],
+              "IsAutomated": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "WorkflowName": "Cancel",
+      "WorkflowKey": "CAN-003",
+      "Description": "Handles cancellation of active policies either by insured or company action.",
+      "Phases": [
+        {
+          "PhaseName": "Initiation",
+          "PhaseOrder": 1,
+          "Tasks": [
+            {
+              "TaskName": "Receive Cancellation Request",
+              "TaskType": "Intake",
+              "AssignedRole": "CSR",
+              "EstimatedDurationHours": 0.5,
+              "Dependencies": [],
+              "IsAutomated": false
+            },
+            {
+              "TaskName": "Validate Effective Date",
+              "TaskType": "Validation",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.1,
+              "Dependencies": ["Receive Cancellation Request"],
+              "IsAutomated": true
+            }
+          ]
+        },
+        {
+          "PhaseName": "Processing",
+          "PhaseOrder": 2,
+          "Tasks": [
+            {
+              "TaskName": "Calculate Return Premium",
+              "TaskType": "Accounting",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.2,
+              "Dependencies": ["Validate Effective Date"],
+              "IsAutomated": true
+            },
+            {
+              "TaskName": "Approve Cancellation",
+              "TaskType": "Approval",
+              "AssignedRole": "Underwriter",
+              "EstimatedDurationHours": 2,
+              "Dependencies": ["Calculate Return Premium"],
+              "IsAutomated": false
+            }
+          ]
+        },
+        {
+          "PhaseName": "Post-Cancellation",
+          "PhaseOrder": 3,
+          "Tasks": [
+            {
+              "TaskName": "Send Notice of Cancellation",
+              "TaskType": "Notification",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.1,
+              "Dependencies": ["Approve Cancellation"],
+              "IsAutomated": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "WorkflowName": "Reinstatement",
+      "WorkflowKey": "REIN-004",
+      "Description": "Reinstates a previously canceled policy upon payment or approval.",
+      "Phases": [
+        {
+          "PhaseName": "Eligibility Review",
+          "PhaseOrder": 1,
+          "Tasks": [
+            {
+              "TaskName": "Validate Reinstatement Eligibility",
+              "TaskType": "Validation",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.1,
+              "Dependencies": [],
+              "IsAutomated": true
+            },
+            {
+              "TaskName": "Underwriter Review",
+              "TaskType": "Approval",
+              "AssignedRole": "Underwriter",
+              "EstimatedDurationHours": 3,
+              "Dependencies": ["Validate Reinstatement Eligibility"],
+              "IsAutomated": false
+            }
+          ]
+        },
+        {
+          "PhaseName": "Policy Activation",
+          "PhaseOrder": 2,
+          "Tasks": [
+            {
+              "TaskName": "Restore Coverage and Billing",
+              "TaskType": "SystemUpdate",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.2,
+              "Dependencies": ["Underwriter Review"],
+              "IsAutomated": true
+            },
+            {
+              "TaskName": "Send Confirmation Notice",
+              "TaskType": "Notification",
+              "AssignedRole": "System",
+              "EstimatedDurationHours": 0.1,
+              "Dependencies": ["Restore Coverage and Billing"],
+              "IsAutomated": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+ 

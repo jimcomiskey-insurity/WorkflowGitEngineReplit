@@ -1,0 +1,3 @@
+modules = ["dotnet-8.0", "angular-node-20"]
+[agent]
+expertMode = true
