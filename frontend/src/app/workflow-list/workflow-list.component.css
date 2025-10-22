@@ -128,51 +128,40 @@
   color: #2c3e50;
 }
 
-.branches-list {
+.branch-selector {
+  display: flex;
+  align-items: center;
+  gap: 15px;
   margin-top: 15px;
 }
 
-.branch-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  margin-bottom: 8px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.branch-item:hover {
-  background-color: #e9ecef;
-}
-
-.branch-item.current-branch {
-  background-color: #e7f3ff;
-  border-left: 4px solid #007bff;
-}
-
-.branch-name {
-  font-family: monospace;
+.branch-selector label {
   font-size: 14px;
-  color: #2c3e50;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.current-indicator {
-  color: #007bff;
-  font-size: 18px;
-}
-
-.current-label {
-  color: #007bff;
-  font-size: 13px;
   font-weight: 500;
-  padding: 2px 8px;
-  background-color: rgba(0, 123, 255, 0.1);
-  border-radius: 3px;
+  color: #2c3e50;
+  min-width: 120px;
+}
+
+.branch-dropdown {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: monospace;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.branch-dropdown:hover {
+  border-color: #007bff;
+}
+
+.branch-dropdown:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 .commit-history {

@@ -226,3 +226,11 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Removed individual load methods (loadWorkflows, loadGitStatus, etc.) to eliminate cross-user data bleed
 - Technical pattern: merge() combines user change events and manual refresh triggers → switchMap ensures only latest request completes → takeUntil handles component destruction
 - Prevents stale responses from overwriting new user's data during rapid user switching
+
+### Branch UI Improvements (October 22, 2025)
+- Converted branch management from list with Switch buttons to a single dropdown selector
+- Dropdown automatically displays and syncs with current Git branch
+- Switching branches via dropdown includes uncommitted changes warning
+- Creating a new branch now automatically switches to it after creation
+- Improved error handling for branch operations with user-friendly messages
+- Cleaner, more compact UI that's easier to use

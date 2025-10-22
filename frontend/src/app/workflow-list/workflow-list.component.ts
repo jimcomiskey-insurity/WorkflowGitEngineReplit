@@ -27,6 +27,7 @@ export class WorkflowListComponent implements OnInit, OnDestroy {
   authorName = 'User';
   authorEmail = 'user@workflow.com';
   newBranchName = '';
+  selectedBranch = '';
   currentUser = '';
   availableUsers: string[] = [];
   private destroy$ = new Subject<void>();
@@ -57,6 +58,7 @@ export class WorkflowListComponent implements OnInit, OnDestroy {
         this.gitStatus = data.status;
         this.commits = data.commits;
         this.branches = data.branches;
+        this.selectedBranch = data.status.currentBranch || '';
       },
       error: (error) => {
         console.error('Error loading data:', error);
@@ -98,32 +100,51 @@ export class WorkflowListComponent implements OnInit, OnDestroy {
     }
 
     const branchName = this.newBranchName;
+    this.closeBranchDialog();
+    
     this.gitService.createBranch(branchName).subscribe({
       next: () => {
-        this.closeBranchDialog();
-        this.refreshAllData();
+        this.gitService.switchBranch(branchName).subscribe({
+          next: () => {
+            this.refreshAllData();
+          },
+          error: (error) => {
+            console.error('Error switching to new branch:', error);
+            alert('Branch created but failed to switch to it');
+            this.refreshAllData();
+          }
+        });
       },
       error: (error) => {
         console.error('Error creating branch:', error);
-        alert('Failed to create branch');
+        alert('Failed to create branch: ' + (error.error?.error || error.message));
       }
     });
   }
 
-  switchToBranch(branchName: string) {
+  onBranchChange() {
+    const newBranch = this.selectedBranch;
+    const currentBranch = this.gitStatus?.currentBranch || '';
+
+    if (newBranch === currentBranch) {
+      return;
+    }
+
     if (this.gitStatus?.isDirty) {
       if (!confirm('You have uncommitted changes. Switching branches will discard them. Continue?')) {
+        this.selectedBranch = currentBranch;
         return;
       }
     }
 
-    this.gitService.switchBranch(branchName).subscribe({
+    this.gitService.switchBranch(newBranch).subscribe({
       next: () => {
         this.refreshAllData();
       },
       error: (error) => {
         console.error('Error switching branch:', error);
         alert('Failed to switch branch');
+        this.selectedBranch = currentBranch;
       }
     });
   }

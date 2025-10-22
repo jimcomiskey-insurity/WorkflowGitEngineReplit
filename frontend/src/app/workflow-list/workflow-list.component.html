@@ -47,17 +47,13 @@
     <button class="primary small" (click)="openBranchDialog()">+ New Branch</button>
   </div>
   
-  <div class="branches-list">
-    <div *ngFor="let branch of branches" class="branch-item" [class.current-branch]="branch === gitStatus?.currentBranch">
-      <span class="branch-name">
-        <span *ngIf="branch === gitStatus?.currentBranch" class="current-indicator">●</span>
+  <div class="branch-selector">
+    <label>Current Branch:</label>
+    <select [(ngModel)]="selectedBranch" (change)="onBranchChange()" class="branch-dropdown">
+      <option *ngFor="let branch of branches" [value]="branch">
         {{ branch }}
-      </span>
-      <button *ngIf="branch !== gitStatus?.currentBranch" class="secondary small" (click)="switchToBranch(branch)">
-        Switch
-      </button>
-      <span *ngIf="branch === gitStatus?.currentBranch" class="current-label">Current</span>
-    </div>
+      </option>
+    </select>
   </div>
 </div>
 
