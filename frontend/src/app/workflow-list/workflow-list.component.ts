@@ -137,11 +137,9 @@ export class WorkflowListComponent implements OnInit {
             this.gitStatus = result.status;
             this.commits = result.commits;
             this.workflows = result.workflows.workflows || [];
-            alert(`Switched to branch "${branchName}"`);
           },
           error: (error) => {
             console.error('Error refreshing data:', error);
-            alert(`Switched to branch "${branchName}" (but failed to refresh data)`);
           }
         });
       },
@@ -214,11 +212,9 @@ export class WorkflowListComponent implements OnInit {
           next: (result) => {
             this.gitStatus = result.status;
             this.commits = result.commits;
-            alert('Changes committed successfully');
           },
           error: (error) => {
             console.error('Error refreshing git data:', error);
-            alert('Changes committed successfully (but failed to refresh status)');
           }
         });
       },
