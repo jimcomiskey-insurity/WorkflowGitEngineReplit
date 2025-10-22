@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { WorkflowService, Workflow } from '../services/workflow.service';
 import { GitService, GitStatus, CommitInfo } from '../services/git.service';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-workflow-list',
@@ -126,13 +127,21 @@ export class WorkflowListComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.closeCommitDialog();
-        // Load status and history first, then show success message
-        this.loadGitStatus();
-        this.loadCommitHistory();
-        // Small delay to ensure status is loaded before showing alert
-        setTimeout(() => {
-          alert('Changes committed successfully');
-        }, 100);
+        // Wait for both status and history to load before showing success message
+        forkJoin({
+          status: this.gitService.getStatus(),
+          commits: this.gitService.getCommits(20)
+        }).subscribe({
+          next: (result) => {
+            this.gitStatus = result.status;
+            this.commits = result.commits;
+            alert('Changes committed successfully');
+          },
+          error: (error) => {
+            console.error('Error refreshing git data:', error);
+            alert('Changes committed successfully (but failed to refresh status)');
+          }
+        });
       },
       error: (error) => {
         console.error('Error committing changes:', error);
