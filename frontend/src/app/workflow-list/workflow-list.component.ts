@@ -125,10 +125,14 @@ export class WorkflowListComponent implements OnInit {
       authorEmail: this.authorEmail
     }).subscribe({
       next: () => {
-        alert('Changes committed successfully');
         this.closeCommitDialog();
+        // Load status and history first, then show success message
         this.loadGitStatus();
         this.loadCommitHistory();
+        // Small delay to ensure status is loaded before showing alert
+        setTimeout(() => {
+          alert('Changes committed successfully');
+        }, 100);
       },
       error: (error) => {
         console.error('Error committing changes:', error);
