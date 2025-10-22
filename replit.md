@@ -177,3 +177,11 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Improved error handling in Push method with descriptive error messages
 - Updated frontend to refresh commit history after successful push
 - Verified end-to-end push functionality to central repository
+
+### Commit Count Indicator (October 22, 2025)
+- Added visual indicator showing number of commits ready to push
+- Backend now calculates commits ahead of remote using LibGit2Sharp CommitFilter
+- Push button enables only when there are commits to push (not just uncommitted changes)
+- Red badge displays commit count next to "Push to Remote" button
+- Badge appears/disappears dynamically based on unpushed commit status
+- Fixes issue where button was disabled even with committed but unpushed changes
