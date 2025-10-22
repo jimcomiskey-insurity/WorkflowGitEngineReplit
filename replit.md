@@ -234,3 +234,12 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Creating a new branch now automatically switches to it after creation
 - Improved error handling for branch operations with user-friendly messages
 - Cleaner, more compact UI that's easier to use
+
+### Remote Branch Switching and Sync Status (October 22, 2025)
+- Fixed issue where switching to remote branches (origin/*) resulted in detached HEAD state
+- System now automatically creates local tracking branches when switching to remote branches
+- Updated backend SwitchBranch method to detect remote branches and create local tracking branches
+- Added commitsBehind property to GitStatus to track incoming commits from remote
+- UI now displays incoming/outgoing commit counts when branch is ahead or behind remote
+- Visual indicators: blue for incoming commits (↓), green for outgoing commits (↑)
+- Helps users understand sync state before pushing or pulling changes

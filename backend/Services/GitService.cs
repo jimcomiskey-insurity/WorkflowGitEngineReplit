@@ -90,17 +90,25 @@ public class GitService
         using var repo = new Repository(userRepoPath);
         var status = repo.RetrieveStatus();
 
-        // Calculate commits ahead of remote
+        // Calculate commits ahead and behind remote
         int commitsAhead = 0;
+        int commitsBehind = 0;
         var currentBranch = repo.Head;
         if (currentBranch.TrackedBranch != null)
         {
-            var filter = new CommitFilter
+            var aheadFilter = new CommitFilter
             {
                 IncludeReachableFrom = currentBranch,
                 ExcludeReachableFrom = currentBranch.TrackedBranch
             };
-            commitsAhead = repo.Commits.QueryBy(filter).Count();
+            commitsAhead = repo.Commits.QueryBy(aheadFilter).Count();
+            
+            var behindFilter = new CommitFilter
+            {
+                IncludeReachableFrom = currentBranch.TrackedBranch,
+                ExcludeReachableFrom = currentBranch
+            };
+            commitsBehind = repo.Commits.QueryBy(behindFilter).Count();
         }
 
         return new GitStatus
@@ -111,7 +119,8 @@ public class GitService
             Untracked = status.Untracked.Select(s => s.FilePath).ToList(),
             CurrentBranch = repo.Head.FriendlyName,
             IsDirty = status.IsDirty,
-            CommitsAhead = commitsAhead
+            CommitsAhead = commitsAhead,
+            CommitsBehind = commitsBehind
         };
     }
 
@@ -214,7 +223,41 @@ public class GitService
         
         using var repo = new Repository(userRepoPath);
         
-        Commands.Checkout(repo, branchName);
+        // Check if this is a remote branch (e.g., origin/feature-branch)
+        if (branchName.StartsWith("origin/"))
+        {
+            var localBranchName = branchName.Substring("origin/".Length);
+            var remoteBranch = repo.Branches[branchName];
+            
+            if (remoteBranch == null)
+            {
+                throw new InvalidOperationException($"Remote branch '{branchName}' not found");
+            }
+            
+            var localBranch = repo.Branches[localBranchName];
+            
+            if (localBranch == null)
+            {
+                // Create a local tracking branch for this remote branch
+                localBranch = repo.CreateBranch(localBranchName, remoteBranch.Tip);
+                repo.Branches.Update(localBranch, b => b.TrackedBranch = remoteBranch.CanonicalName);
+            }
+            else
+            {
+                // Local branch exists - ensure tracking is set up
+                if (localBranch.TrackedBranch == null || localBranch.TrackedBranch.CanonicalName != remoteBranch.CanonicalName)
+                {
+                    repo.Branches.Update(localBranch, b => b.TrackedBranch = remoteBranch.CanonicalName);
+                }
+            }
+            
+            Commands.Checkout(repo, localBranch);
+        }
+        else
+        {
+            // Regular local branch switch
+            Commands.Checkout(repo, branchName);
+        }
     }
 
     public List<string> GetBranches(string userId)

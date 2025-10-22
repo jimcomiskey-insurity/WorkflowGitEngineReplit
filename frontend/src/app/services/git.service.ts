@@ -11,6 +11,7 @@ export interface GitStatus {
   currentBranch: string;
   isDirty: boolean;
   commitsAhead: number;
+  commitsBehind: number;
 }
 
 export interface CommitRequest {
