@@ -10,10 +10,18 @@ public class GitService
     private readonly string _centralRepoPath;
     private const string WorkflowFileName = "workflows.json";
 
-    public GitService(IConfiguration configuration)
+    public GitService(IConfiguration configuration, IWebHostEnvironment environment)
     {
-        _repoBasePath = configuration["GitSettings:RepoBasePath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "user-repos");
-        _centralRepoPath = configuration["GitSettings:CentralRepoPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "central-repo");
+        var repoBasePath = configuration["GitSettings:RepoBasePath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "user-repos");
+        var centralRepoPath = configuration["GitSettings:CentralRepoPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "central-repo");
+        
+        // Resolve paths relative to the content root to ensure consistent behavior in all contexts
+        _repoBasePath = Path.IsPathRooted(repoBasePath) 
+            ? repoBasePath 
+            : Path.GetFullPath(Path.Combine(environment.ContentRootPath, repoBasePath));
+        _centralRepoPath = Path.IsPathRooted(centralRepoPath) 
+            ? centralRepoPath 
+            : Path.GetFullPath(Path.Combine(environment.ContentRootPath, centralRepoPath));
         
         Directory.CreateDirectory(_repoBasePath);
         Directory.CreateDirectory(Path.GetDirectoryName(_centralRepoPath)!);
