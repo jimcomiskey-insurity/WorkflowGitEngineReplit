@@ -90,6 +90,19 @@ public class GitService
         using var repo = new Repository(userRepoPath);
         var status = repo.RetrieveStatus();
 
+        // Calculate commits ahead of remote
+        int commitsAhead = 0;
+        var currentBranch = repo.Head;
+        if (currentBranch.TrackedBranch != null)
+        {
+            var filter = new CommitFilter
+            {
+                IncludeReachableFrom = currentBranch,
+                ExcludeReachableFrom = currentBranch.TrackedBranch
+            };
+            commitsAhead = repo.Commits.QueryBy(filter).Count();
+        }
+
         return new GitStatus
         {
             Added = status.Added.Select(s => s.FilePath).ToList(),
@@ -97,7 +110,8 @@ public class GitService
             Removed = status.Removed.Select(s => s.FilePath).ToList(),
             Untracked = status.Untracked.Select(s => s.FilePath).ToList(),
             CurrentBranch = repo.Head.FriendlyName,
-            IsDirty = status.IsDirty
+            IsDirty = status.IsDirty,
+            CommitsAhead = commitsAhead
         };
     }
 

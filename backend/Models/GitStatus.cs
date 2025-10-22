@@ -8,6 +8,7 @@ public class GitStatus
     public List<string> Untracked { get; set; } = new();
     public string CurrentBranch { get; set; } = string.Empty;
     public bool IsDirty { get; set; }
+    public int CommitsAhead { get; set; }
 }
 
 public class CommitInfo
