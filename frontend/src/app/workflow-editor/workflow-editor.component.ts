@@ -13,10 +13,10 @@ import { WorkflowService, Workflow, Phase, TaskItem } from '../services/workflow
 })
 export class WorkflowEditorComponent implements OnInit {
   workflow: Workflow = {
-    WorkflowName: '',
-    WorkflowKey: '',
-    Description: '',
-    Phases: []
+    workflowName: '',
+    workflowKey: '',
+    description: '',
+    phases: []
   };
   
   isNewWorkflow = true;
@@ -52,7 +52,7 @@ export class WorkflowEditorComponent implements OnInit {
   }
 
   saveWorkflow() {
-    if (!this.workflow.WorkflowName || !this.workflow.WorkflowKey) {
+    if (!this.workflow.workflowName || !this.workflow.workflowKey) {
       alert('Please provide both Workflow Name and Workflow Key');
       return;
     }
@@ -88,59 +88,59 @@ export class WorkflowEditorComponent implements OnInit {
 
   addPhase() {
     const newPhase: Phase = {
-      PhaseName: 'New Phase',
-      PhaseOrder: this.workflow.Phases.length + 1,
-      Tasks: []
+      phaseName: 'New Phase',
+      phaseOrder: this.workflow.phases.length + 1,
+      tasks: []
     };
-    this.workflow.Phases.push(newPhase);
+    this.workflow.phases.push(newPhase);
   }
 
   removePhase(index: number) {
     if (confirm('Are you sure you want to remove this phase?')) {
-      this.workflow.Phases.splice(index, 1);
+      this.workflow.phases.splice(index, 1);
       this.reorderPhases();
     }
   }
 
   movePhaseUp(index: number) {
     if (index > 0) {
-      const temp = this.workflow.Phases[index];
-      this.workflow.Phases[index] = this.workflow.Phases[index - 1];
-      this.workflow.Phases[index - 1] = temp;
+      const temp = this.workflow.phases[index];
+      this.workflow.phases[index] = this.workflow.phases[index - 1];
+      this.workflow.phases[index - 1] = temp;
       this.reorderPhases();
     }
   }
 
   movePhaseDown(index: number) {
-    if (index < this.workflow.Phases.length - 1) {
-      const temp = this.workflow.Phases[index];
-      this.workflow.Phases[index] = this.workflow.Phases[index + 1];
-      this.workflow.Phases[index + 1] = temp;
+    if (index < this.workflow.phases.length - 1) {
+      const temp = this.workflow.phases[index];
+      this.workflow.phases[index] = this.workflow.phases[index + 1];
+      this.workflow.phases[index + 1] = temp;
       this.reorderPhases();
     }
   }
 
   reorderPhases() {
-    this.workflow.Phases.forEach((phase, index) => {
-      phase.PhaseOrder = index + 1;
+    this.workflow.phases.forEach((phase, index) => {
+      phase.phaseOrder = index + 1;
     });
   }
 
   addTask(phaseIndex: number) {
     const newTask: TaskItem = {
-      TaskName: 'New Task',
-      TaskType: 'Manual',
-      AssignedRole: 'User',
-      EstimatedDurationHours: 1,
-      Dependencies: [],
-      IsAutomated: false
+      taskName: 'New Task',
+      taskType: 'Manual',
+      assignedRole: 'User',
+      estimatedDurationHours: 1,
+      dependencies: [],
+      isAutomated: false
     };
-    this.workflow.Phases[phaseIndex].Tasks.push(newTask);
+    this.workflow.phases[phaseIndex].tasks.push(newTask);
   }
 
   removeTask(phaseIndex: number, taskIndex: number) {
     if (confirm('Are you sure you want to remove this task?')) {
-      this.workflow.Phases[phaseIndex].Tasks.splice(taskIndex, 1);
+      this.workflow.phases[phaseIndex].tasks.splice(taskIndex, 1);
     }
   }
 }

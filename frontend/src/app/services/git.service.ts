@@ -3,32 +3,32 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface GitStatus {
-  Added: string[];
-  Modified: string[];
-  Removed: string[];
-  Untracked: string[];
-  CurrentBranch: string;
-  IsDirty: boolean;
+  added: string[];
+  modified: string[];
+  removed: string[];
+  untracked: string[];
+  currentBranch: string;
+  isDirty: boolean;
 }
 
 export interface CommitRequest {
-  Message: string;
-  AuthorName: string;
-  AuthorEmail: string;
+  message: string;
+  authorName: string;
+  authorEmail: string;
 }
 
 export interface CommitInfo {
-  Sha: string;
-  Message: string;
-  Author: string;
-  Date: string;
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class GitService {
-  private apiUrl = 'http://localhost:8000/api/git';
+  private apiUrl = '/api/git';
   private userId = 'default';
 
   constructor(private http: HttpClient) { }

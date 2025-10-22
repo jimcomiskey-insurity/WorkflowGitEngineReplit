@@ -34,7 +34,7 @@ export class WorkflowListComponent implements OnInit {
   loadWorkflows() {
     this.workflowService.getWorkflows().subscribe({
       next: (data) => {
-        this.workflows = data.Workflows || [];
+        this.workflows = data.workflows || [];
       },
       error: (error) => {
         console.error('Error loading workflows:', error);
@@ -93,9 +93,9 @@ export class WorkflowListComponent implements OnInit {
     }
 
     this.gitService.commit({
-      Message: this.commitMessage,
-      AuthorName: this.authorName,
-      AuthorEmail: this.authorEmail
+      message: this.commitMessage,
+      authorName: this.authorName,
+      authorEmail: this.authorEmail
     }).subscribe({
       next: () => {
         alert('Changes committed successfully');
@@ -154,16 +154,21 @@ export class WorkflowListComponent implements OnInit {
 
   get hasChanges(): boolean {
     if (!this.gitStatus) return false;
-    return this.gitStatus.IsDirty;
+    return this.gitStatus.isDirty;
   }
 
   get allChangedFiles(): string[] {
     if (!this.gitStatus) return [];
     return [
-      ...this.gitStatus.Added,
-      ...this.gitStatus.Modified,
-      ...this.gitStatus.Removed,
-      ...this.gitStatus.Untracked
+      ...this.gitStatus.added,
+      ...this.gitStatus.modified,
+      ...this.gitStatus.removed,
+      ...this.gitStatus.untracked
     ];
+  }
+
+  getTaskCount(workflow: Workflow): number {
+    if (!workflow.phases) return 0;
+    return workflow.phases.reduce((sum, phase) => sum + (phase.tasks?.length || 0), 0);
   }
 }

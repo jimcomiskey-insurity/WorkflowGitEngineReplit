@@ -145,3 +145,10 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Added Git status tracking and change management UI
 - Initialized central repository with sample workflow data
 - Fixed critical issue: Added EnsureUserRepository to automatically clone user repositories on first access
+
+### Data Serialization Fix
+- Fixed JSON property naming mismatch between backend and frontend
+- Backend uses .NET's default camelCase JSON serialization
+- Updated all Angular interfaces and templates from PascalCase to camelCase
+- Application now successfully loads all 4 sample workflows (New Business, Endorsement, Cancel, Reinstatement)
+- Fixed repository cloning issue by cleaning up partially created directories using Repository.IsValid() check

@@ -3,36 +3,36 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface TaskItem {
-  TaskName: string;
-  TaskType: string;
-  AssignedRole: string;
-  EstimatedDurationHours: number;
-  Dependencies: string[];
-  IsAutomated: boolean;
+  taskName: string;
+  taskType: string;
+  assignedRole: string;
+  estimatedDurationHours: number;
+  dependencies: string[];
+  isAutomated: boolean;
 }
 
 export interface Phase {
-  PhaseName: string;
-  PhaseOrder: number;
-  Tasks: TaskItem[];
+  phaseName: string;
+  phaseOrder: number;
+  tasks: TaskItem[];
 }
 
 export interface Workflow {
-  WorkflowName: string;
-  WorkflowKey: string;
-  Description: string;
-  Phases: Phase[];
+  workflowName: string;
+  workflowKey: string;
+  description: string;
+  phases: Phase[];
 }
 
 export interface ProgramWorkflows {
-  Workflows: Workflow[];
+  workflows: Workflow[];
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class WorkflowService {
-  private apiUrl = 'http://localhost:8000/api/workflows';
+  private apiUrl = '/api/workflows';
   private userId = 'default';
 
   constructor(private http: HttpClient) { }

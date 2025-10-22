@@ -36,9 +36,15 @@ public class GitService
     {
         var userRepoPath = GetUserRepoPath(userId);
         
+        if (Repository.IsValid(userRepoPath))
+        {
+            return; // Already exists and is valid
+        }
+        
+        // Clean up any partially created directory
         if (Directory.Exists(userRepoPath))
         {
-            return; // Already exists
+            Directory.Delete(userRepoPath, true);
         }
 
         Repository.Clone(_centralRepoPath, userRepoPath);
@@ -56,12 +62,8 @@ public class GitService
 
     public GitStatus GetStatus(string userId)
     {
+        EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
-        
-        if (!Repository.IsValid(userRepoPath))
-        {
-            CloneRepositoryForUser(userId);
-        }
 
         using var repo = new Repository(userRepoPath);
         var status = repo.RetrieveStatus();

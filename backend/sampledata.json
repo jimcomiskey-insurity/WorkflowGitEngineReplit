@@ -1,5 +1,5 @@
 {
-  "ProgramWorkflows": [
+  "Workflows": [
     {
       "WorkflowName": "New Business",
       "WorkflowKey": "NB-001",
