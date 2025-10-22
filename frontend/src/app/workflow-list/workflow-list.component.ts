@@ -77,51 +77,6 @@ export class WorkflowListComponent implements OnInit, OnDestroy {
     this.userService.setCurrentUser(this.currentUser);
   }
 
-  loadWorkflows() {
-    this.workflowService.getWorkflows().subscribe({
-      next: (data) => {
-        this.workflows = data.workflows || [];
-      },
-      error: (error) => {
-        console.error('Error loading workflows:', error);
-        this.workflows = [];
-      }
-    });
-  }
-
-  loadGitStatus() {
-    this.gitService.getStatus().subscribe({
-      next: (status) => {
-        this.gitStatus = status;
-      },
-      error: (error) => {
-        console.error('Error loading git status:', error);
-      }
-    });
-  }
-
-  loadCommitHistory() {
-    this.gitService.getCommits(20).subscribe({
-      next: (commits) => {
-        this.commits = commits;
-      },
-      error: (error) => {
-        console.error('Error loading commit history:', error);
-      }
-    });
-  }
-
-  loadBranches() {
-    this.gitService.getBranches().subscribe({
-      next: (branches) => {
-        this.branches = branches;
-      },
-      error: (error) => {
-        console.error('Error loading branches:', error);
-      }
-    });
-  }
-
   toggleCommitHistory() {
     this.showCommitHistory = !this.showCommitHistory;
   }

@@ -213,3 +213,16 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Uses proper refspec format for LibGit2Sharp: `refs/heads/<branch>:refs/heads/<branch>`
 - Tested successfully: new branches are published to central repo with tracking configured
 - Remote branches now appear in branch list after successful push (e.g., origin/feature/test-branch)
+
+### Multi-User Support Implementation (October 22, 2025)
+- Added UserService for session-based user selection with localStorage persistence
+- Implemented user selector dropdown in UI (top-right corner) with preset users (userA, userB, userC)
+- Each user gets their own isolated Git repository clone connected to the same central repository
+- Updated GitService and WorkflowService to dynamically fetch current user from UserService
+- Fixed critical race condition: Centralized all data loading through merge(currentUser$, refresh$) pipeline
+- Uses RxJS switchMap to cancel stale HTTP requests when user switches
+- All data refresh operations (delete, commit, push, pull, discard, branch operations) now route through single refreshAllData() method
+- Implemented proper cleanup with takeUntil and OnDestroy to prevent memory leaks
+- Removed individual load methods (loadWorkflows, loadGitStatus, etc.) to eliminate cross-user data bleed
+- Technical pattern: merge() combines user change events and manual refresh triggers → switchMap ensures only latest request completes → takeUntil handles component destruction
+- Prevents stale responses from overwriting new user's data during rapid user switching
