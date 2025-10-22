@@ -169,3 +169,11 @@ All API calls include a `userId` query parameter for multi-tenant support.
   - Absolute paths are used directly for flexibility
 - appsettings.json uses relative path: "../../workflow-data/" for development
 - This prevents Git from tracking the runtime Git repositories within the codebase repository
+
+### Push Functionality Fix (October 22, 2025)
+- Fixed "Push to Remote" button that was not working due to incorrect remote URL
+- Enhanced GitService to automatically correct remote URLs after data folder relocation
+- Added automatic remote URL healing in EnsureUserRepository method
+- Improved error handling in Push method with descriptive error messages
+- Updated frontend to refresh commit history after successful push
+- Verified end-to-end push functionality to central repository
