@@ -56,6 +56,10 @@ public class GitService
         }
 
         Repository.Clone(_centralRepoPath, userRepoPath);
+        
+        // Ensure the remote URL is correct after cloning
+        using var repo = new Repository(userRepoPath);
+        repo.Network.Remotes.Update("origin", r => r.Url = _centralRepoPath);
     }
 
     private void EnsureUserRepository(string userId)
@@ -65,6 +69,16 @@ public class GitService
         if (!Repository.IsValid(userRepoPath))
         {
             CloneRepositoryForUser(userId);
+        }
+        else
+        {
+            // Fix remote URL if it's incorrect (e.g., after data folder relocation)
+            using var repo = new Repository(userRepoPath);
+            var remote = repo.Network.Remotes["origin"];
+            if (remote != null && remote.Url != _centralRepoPath)
+            {
+                repo.Network.Remotes.Update("origin", r => r.Url = _centralRepoPath);
+            }
         }
     }
 
@@ -138,9 +152,21 @@ public class GitService
         using var repo = new Repository(userRepoPath);
         
         var remote = repo.Network.Remotes["origin"];
+        if (remote == null)
+        {
+            throw new InvalidOperationException("Remote 'origin' not found in repository");
+        }
+        
         var options = new PushOptions();
         
-        repo.Network.Push(remote, @"refs/heads/master", options);
+        try
+        {
+            repo.Network.Push(remote, @"refs/heads/master", options);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to push to remote: {ex.Message}", ex);
+        }
     }
 
     public void CreateBranch(string userId, string branchName)

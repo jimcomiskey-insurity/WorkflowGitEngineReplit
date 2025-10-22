@@ -172,6 +172,7 @@ export class WorkflowListComponent implements OnInit {
       next: () => {
         alert('Changes pushed successfully');
         this.loadGitStatus();
+        this.loadCommitHistory();
       },
       error: (error) => {
         console.error('Error pushing changes:', error);
