@@ -160,3 +160,12 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Automatically refreshes commit history after successful commits
 - Leveraged existing backend endpoint (/api/git/commits) and service method
 - Added proper styling with hover effects and visual distinction for commits
+
+### Data Folder Relocation (October 22, 2025)
+- Moved Git repositories from backend/data/ to /home/runner/workflow-data/ to avoid nested repository issues
+- Updated GitService to use IWebHostEnvironment for stable path resolution
+- Configuration supports both relative and absolute paths:
+  - Relative paths resolve from ContentRootPath for portability
+  - Absolute paths are used directly for flexibility
+- appsettings.json uses relative path: "../../workflow-data/" for development
+- This prevents Git from tracking the runtime Git repositories within the codebase repository
