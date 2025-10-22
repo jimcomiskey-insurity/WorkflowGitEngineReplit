@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { WorkflowService, Workflow } from '../services/workflow.service';
 import { GitService, GitStatus, CommitInfo } from '../services/git.service';
+import { UserService } from '../services/user.service';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, merge } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-workflow-list',
@@ -13,7 +15,7 @@ import { forkJoin } from 'rxjs';
   templateUrl: './workflow-list.component.html',
   styleUrls: ['./workflow-list.component.css']
 })
-export class WorkflowListComponent implements OnInit {
+export class WorkflowListComponent implements OnInit, OnDestroy {
   workflows: Workflow[] = [];
   gitStatus: GitStatus | null = null;
   commits: CommitInfo[] = [];
@@ -25,18 +27,54 @@ export class WorkflowListComponent implements OnInit {
   authorName = 'User';
   authorEmail = 'user@workflow.com';
   newBranchName = '';
+  currentUser = '';
+  availableUsers: string[] = [];
+  private destroy$ = new Subject<void>();
+  private refresh$ = new Subject<void>();
 
   constructor(
     private workflowService: WorkflowService,
     private gitService: GitService,
+    private userService: UserService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.loadWorkflows();
-    this.loadGitStatus();
-    this.loadCommitHistory();
-    this.loadBranches();
+    this.currentUser = this.userService.getCurrentUser();
+    this.availableUsers = this.userService.getAvailableUsers();
+    
+    merge(this.userService.currentUser$, this.refresh$).pipe(
+      switchMap(() => forkJoin({
+        workflows: this.workflowService.getWorkflows(),
+        status: this.gitService.getStatus(),
+        commits: this.gitService.getCommits(20),
+        branches: this.gitService.getBranches()
+      })),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (data) => {
+        this.workflows = data.workflows.workflows || [];
+        this.gitStatus = data.status;
+        this.commits = data.commits;
+        this.branches = data.branches;
+      },
+      error: (error) => {
+        console.error('Error loading data:', error);
+      }
+    });
+  }
+
+  refreshAllData() {
+    this.refresh$.next();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onUserChange() {
+    this.userService.setCurrentUser(this.currentUser);
   }
 
   loadWorkflows() {
@@ -108,9 +146,7 @@ export class WorkflowListComponent implements OnInit {
     this.gitService.createBranch(branchName).subscribe({
       next: () => {
         this.closeBranchDialog();
-        this.loadBranches();
-        this.loadGitStatus();
-        alert(`Branch "${branchName}" created successfully`);
+        this.refreshAllData();
       },
       error: (error) => {
         console.error('Error creating branch:', error);
@@ -128,20 +164,7 @@ export class WorkflowListComponent implements OnInit {
 
     this.gitService.switchBranch(branchName).subscribe({
       next: () => {
-        forkJoin({
-          status: this.gitService.getStatus(),
-          commits: this.gitService.getCommits(20),
-          workflows: this.workflowService.getWorkflows()
-        }).subscribe({
-          next: (result) => {
-            this.gitStatus = result.status;
-            this.commits = result.commits;
-            this.workflows = result.workflows.workflows || [];
-          },
-          error: (error) => {
-            console.error('Error refreshing data:', error);
-          }
-        });
+        this.refreshAllData();
       },
       error: (error) => {
         console.error('Error switching branch:', error);
@@ -171,8 +194,7 @@ export class WorkflowListComponent implements OnInit {
     if (confirm(`Are you sure you want to delete workflow "${key}"?`)) {
       this.workflowService.deleteWorkflow(key).subscribe({
         next: () => {
-          this.loadWorkflows();
-          this.loadGitStatus();
+          this.refreshAllData();
         },
         error: (error) => {
           console.error('Error deleting workflow:', error);
@@ -204,19 +226,7 @@ export class WorkflowListComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.closeCommitDialog();
-        // Wait for both status and history to load before showing success message
-        forkJoin({
-          status: this.gitService.getStatus(),
-          commits: this.gitService.getCommits(20)
-        }).subscribe({
-          next: (result) => {
-            this.gitStatus = result.status;
-            this.commits = result.commits;
-          },
-          error: (error) => {
-            console.error('Error refreshing git data:', error);
-          }
-        });
+        this.refreshAllData();
       },
       error: (error) => {
         console.error('Error committing changes:', error);
@@ -230,8 +240,7 @@ export class WorkflowListComponent implements OnInit {
       this.gitService.discard().subscribe({
         next: () => {
           alert('Changes discarded successfully');
-          this.loadWorkflows();
-          this.loadGitStatus();
+          this.refreshAllData();
         },
         error: (error) => {
           console.error('Error discarding changes:', error);
@@ -245,8 +254,7 @@ export class WorkflowListComponent implements OnInit {
     this.gitService.pull().subscribe({
       next: () => {
         alert('Changes pulled successfully');
-        this.loadWorkflows();
-        this.loadGitStatus();
+        this.refreshAllData();
       },
       error: (error) => {
         console.error('Error pulling changes:', error);
@@ -259,8 +267,7 @@ export class WorkflowListComponent implements OnInit {
     this.gitService.push().subscribe({
       next: () => {
         alert('Changes pushed successfully');
-        this.loadGitStatus();
-        this.loadCommitHistory();
+        this.refreshAllData();
       },
       error: (error) => {
         console.error('Error pushing changes:', error);

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { UserService } from './user.service';
 
 export interface GitStatus {
   added: string[];
@@ -30,43 +31,51 @@ export interface CommitInfo {
 })
 export class GitService {
   private apiUrl = '/api/git';
-  private userId = 'default';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private userService: UserService) { }
 
   getStatus(): Observable<GitStatus> {
-    return this.http.get<GitStatus>(`${this.apiUrl}/status?userId=${this.userId}`);
+    const userId = this.userService.getCurrentUser();
+    return this.http.get<GitStatus>(`${this.apiUrl}/status?userId=${userId}`);
   }
 
   commit(request: CommitRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/commit?userId=${this.userId}`, request);
+    const userId = this.userService.getCurrentUser();
+    return this.http.post(`${this.apiUrl}/commit?userId=${userId}`, request);
   }
 
   discard(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/discard?userId=${this.userId}`, {});
+    const userId = this.userService.getCurrentUser();
+    return this.http.post(`${this.apiUrl}/discard?userId=${userId}`, {});
   }
 
   pull(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/pull?userId=${this.userId}`, {});
+    const userId = this.userService.getCurrentUser();
+    return this.http.post(`${this.apiUrl}/pull?userId=${userId}`, {});
   }
 
   push(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/push?userId=${this.userId}`, {});
+    const userId = this.userService.getCurrentUser();
+    return this.http.post(`${this.apiUrl}/push?userId=${userId}`, {});
   }
 
   getBranches(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/branches?userId=${this.userId}`);
+    const userId = this.userService.getCurrentUser();
+    return this.http.get<string[]>(`${this.apiUrl}/branches?userId=${userId}`);
   }
 
   createBranch(branchName: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/branches?userId=${this.userId}`, { branchName });
+    const userId = this.userService.getCurrentUser();
+    return this.http.post(`${this.apiUrl}/branches?userId=${userId}`, { branchName });
   }
 
   switchBranch(branchName: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/branches/switch?userId=${this.userId}`, { branchName });
+    const userId = this.userService.getCurrentUser();
+    return this.http.post(`${this.apiUrl}/branches/switch?userId=${userId}`, { branchName });
   }
 
   getCommits(count: number = 20): Observable<CommitInfo[]> {
-    return this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${this.userId}&count=${count}`);
+    const userId = this.userService.getCurrentUser();
+    return this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${userId}&count=${count}`);
   }
 }

@@ -1,5 +1,13 @@
 <div class="header">
-  <h1>Insurance Workflow Configuration</h1>
+  <div class="header-top">
+    <h1>Insurance Workflow Configuration</h1>
+    <div class="user-selector">
+      <label for="user-select">User:</label>
+      <select id="user-select" [(ngModel)]="currentUser" (change)="onUserChange()">
+        <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
+      </select>
+    </div>
+  </div>
   <div class="actions">
     <button class="primary" (click)="createNewWorkflow()">+ New Workflow</button>
     <button class="secondary" (click)="pullChanges()">Pull from Remote</button>
