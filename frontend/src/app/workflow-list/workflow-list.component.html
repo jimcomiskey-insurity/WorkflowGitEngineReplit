@@ -30,6 +30,30 @@
   </div>
 </div>
 
+<div class="commit-history card">
+  <div class="history-header">
+    <h2>Commit History</h2>
+    <button class="secondary small" (click)="toggleCommitHistory()">
+      {{ showCommitHistory ? 'Hide' : 'Show' }} History
+    </button>
+  </div>
+  
+  <div *ngIf="showCommitHistory" class="commits-list">
+    <div *ngIf="commits.length === 0" class="no-commits">
+      <p>No commits yet. Make your first commit to see history.</p>
+    </div>
+    
+    <div *ngFor="let commit of commits" class="commit-item">
+      <div class="commit-header">
+        <span class="commit-sha">{{ getShortSha(commit.sha) }}</span>
+        <span class="commit-author">{{ commit.author }}</span>
+        <span class="commit-date">{{ formatDate(commit.date) }}</span>
+      </div>
+      <div class="commit-message">{{ commit.message }}</div>
+    </div>
+  </div>
+</div>
+
 <div class="workflows-section">
   <h2>Workflows ({{ workflows.length }})</h2>
   

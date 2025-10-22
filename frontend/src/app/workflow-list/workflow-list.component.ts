@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { WorkflowService, Workflow } from '../services/workflow.service';
-import { GitService, GitStatus } from '../services/git.service';
+import { GitService, GitStatus, CommitInfo } from '../services/git.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -15,7 +15,9 @@ import { FormsModule } from '@angular/forms';
 export class WorkflowListComponent implements OnInit {
   workflows: Workflow[] = [];
   gitStatus: GitStatus | null = null;
+  commits: CommitInfo[] = [];
   showCommitDialog = false;
+  showCommitHistory = false;
   commitMessage = '';
   authorName = 'User';
   authorEmail = 'user@workflow.com';
@@ -29,6 +31,7 @@ export class WorkflowListComponent implements OnInit {
   ngOnInit() {
     this.loadWorkflows();
     this.loadGitStatus();
+    this.loadCommitHistory();
   }
 
   loadWorkflows() {
@@ -52,6 +55,30 @@ export class WorkflowListComponent implements OnInit {
         console.error('Error loading git status:', error);
       }
     });
+  }
+
+  loadCommitHistory() {
+    this.gitService.getCommits(20).subscribe({
+      next: (commits) => {
+        this.commits = commits;
+      },
+      error: (error) => {
+        console.error('Error loading commit history:', error);
+      }
+    });
+  }
+
+  toggleCommitHistory() {
+    this.showCommitHistory = !this.showCommitHistory;
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  }
+
+  getShortSha(sha: string): string {
+    return sha.substring(0, 7);
   }
 
   editWorkflow(key: string) {
@@ -101,6 +128,7 @@ export class WorkflowListComponent implements OnInit {
         alert('Changes committed successfully');
         this.closeCommitDialog();
         this.loadGitStatus();
+        this.loadCommitHistory();
       },
       error: (error) => {
         console.error('Error committing changes:', error);
