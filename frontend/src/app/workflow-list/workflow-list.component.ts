@@ -17,11 +17,14 @@ export class WorkflowListComponent implements OnInit {
   workflows: Workflow[] = [];
   gitStatus: GitStatus | null = null;
   commits: CommitInfo[] = [];
+  branches: string[] = [];
   showCommitDialog = false;
   showCommitHistory = false;
+  showBranchDialog = false;
   commitMessage = '';
   authorName = 'User';
   authorEmail = 'user@workflow.com';
+  newBranchName = '';
 
   constructor(
     private workflowService: WorkflowService,
@@ -33,6 +36,7 @@ export class WorkflowListComponent implements OnInit {
     this.loadWorkflows();
     this.loadGitStatus();
     this.loadCommitHistory();
+    this.loadBranches();
   }
 
   loadWorkflows() {
@@ -69,8 +73,83 @@ export class WorkflowListComponent implements OnInit {
     });
   }
 
+  loadBranches() {
+    this.gitService.getBranches().subscribe({
+      next: (branches) => {
+        this.branches = branches;
+      },
+      error: (error) => {
+        console.error('Error loading branches:', error);
+      }
+    });
+  }
+
   toggleCommitHistory() {
     this.showCommitHistory = !this.showCommitHistory;
+  }
+
+  openBranchDialog() {
+    this.newBranchName = '';
+    this.showBranchDialog = true;
+  }
+
+  closeBranchDialog() {
+    this.showBranchDialog = false;
+    this.newBranchName = '';
+  }
+
+  createBranch() {
+    if (!this.newBranchName.trim()) {
+      alert('Please enter a branch name');
+      return;
+    }
+
+    const branchName = this.newBranchName;
+    this.gitService.createBranch(branchName).subscribe({
+      next: () => {
+        this.closeBranchDialog();
+        this.loadBranches();
+        this.loadGitStatus();
+        alert(`Branch "${branchName}" created successfully`);
+      },
+      error: (error) => {
+        console.error('Error creating branch:', error);
+        alert('Failed to create branch');
+      }
+    });
+  }
+
+  switchToBranch(branchName: string) {
+    if (this.gitStatus?.isDirty) {
+      if (!confirm('You have uncommitted changes. Switching branches will discard them. Continue?')) {
+        return;
+      }
+    }
+
+    this.gitService.switchBranch(branchName).subscribe({
+      next: () => {
+        forkJoin({
+          status: this.gitService.getStatus(),
+          commits: this.gitService.getCommits(20),
+          workflows: this.workflowService.getWorkflows()
+        }).subscribe({
+          next: (result) => {
+            this.gitStatus = result.status;
+            this.commits = result.commits;
+            this.workflows = result.workflows.workflows || [];
+            alert(`Switched to branch "${branchName}"`);
+          },
+          error: (error) => {
+            console.error('Error refreshing data:', error);
+            alert(`Switched to branch "${branchName}" (but failed to refresh data)`);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error switching branch:', error);
+        alert('Failed to switch branch');
+      }
+    });
   }
 
   formatDate(dateString: string): string {

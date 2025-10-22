@@ -33,6 +33,26 @@
   </div>
 </div>
 
+<div class="branches-section card">
+  <div class="branches-header">
+    <h2>Branches</h2>
+    <button class="primary small" (click)="openBranchDialog()">+ New Branch</button>
+  </div>
+  
+  <div class="branches-list">
+    <div *ngFor="let branch of branches" class="branch-item" [class.current-branch]="branch === gitStatus?.currentBranch">
+      <span class="branch-name">
+        <span *ngIf="branch === gitStatus?.currentBranch" class="current-indicator">●</span>
+        {{ branch }}
+      </span>
+      <button *ngIf="branch !== gitStatus?.currentBranch" class="secondary small" (click)="switchToBranch(branch)">
+        Switch
+      </button>
+      <span *ngIf="branch === gitStatus?.currentBranch" class="current-label">Current</span>
+    </div>
+  </div>
+</div>
+
 <div class="commit-history card">
   <div class="history-header">
     <h2>Commit History</h2>
@@ -99,6 +119,20 @@
     <div class="modal-actions">
       <button class="primary" (click)="commitChanges()">Commit</button>
       <button class="secondary" (click)="closeCommitDialog()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" *ngIf="showBranchDialog" (click)="closeBranchDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>Create New Branch</h2>
+    <div class="form-group">
+      <label>Branch Name:</label>
+      <input type="text" [(ngModel)]="newBranchName" placeholder="e.g., feature/new-workflow" />
+    </div>
+    <div class="modal-actions">
+      <button class="primary" (click)="createBranch()">Create Branch</button>
+      <button class="secondary" (click)="closeBranchDialog()">Cancel</button>
     </div>
   </div>
 </div>

@@ -58,6 +58,14 @@ export class GitService {
     return this.http.get<string[]>(`${this.apiUrl}/branches?userId=${this.userId}`);
   }
 
+  createBranch(branchName: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/branches?userId=${this.userId}`, { branchName });
+  }
+
+  switchBranch(branchName: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/branches/switch?userId=${this.userId}`, { branchName });
+  }
+
   getCommits(count: number = 20): Observable<CommitInfo[]> {
     return this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${this.userId}&count=${count}`);
   }

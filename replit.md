@@ -193,3 +193,14 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Eliminates race conditions between commit completion and status refresh
 - Removed unnecessary ChangeDetectorRef usage (relies on Angular's default change detection)
 - Push button now immediately enables/disables based on commits ahead count without requiring page refresh
+
+### Branch Management Feature (October 22, 2025)
+- Added full branch creation and switching capabilities
+- New "Branches" section displays all local and remote branches
+- Visual indicator (blue dot) highlights the current active branch
+- Create new branches through a dialog with input validation
+- Switch between branches with a single click
+- Automatic warning when switching branches with uncommitted changes
+- After switching branches, automatically refreshes workflows, Git status, and commit history using forkJoin
+- Consistent styling with existing UI components
+- Backend endpoints already existed; frontend implementation completed
