@@ -185,3 +185,11 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Red badge displays commit count next to "Push to Remote" button
 - Badge appears/disappears dynamically based on unpushed commit status
 - Fixes issue where button was disabled even with committed but unpushed changes
+
+### Change Detection Fix (October 22, 2025)
+- Fixed bug where push button state didn't update after committing without page refresh
+- Refactored commit flow to use RxJS forkJoin for proper async coordination
+- Now waits for both Git status and commit history to load before showing success alert
+- Eliminates race conditions between commit completion and status refresh
+- Removed unnecessary ChangeDetectorRef usage (relies on Angular's default change detection)
+- Push button now immediately enables/disables based on commits ahead count without requiring page refresh
