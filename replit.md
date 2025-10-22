@@ -204,3 +204,12 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - After switching branches, automatically refreshes workflows, Git status, and commit history using forkJoin
 - Consistent styling with existing UI components
 - Backend endpoints already existed; frontend implementation completed
+
+### New Branch Push Support (October 22, 2025)
+- Fixed Push functionality to support pushing new branches to remote repository
+- Changed from hardcoded "master" push to dynamically pushing current branch
+- Automatically sets up upstream tracking for new branches on first push
+- Added validation to ensure user is on a valid branch before pushing
+- Uses proper refspec format for LibGit2Sharp: `refs/heads/<branch>:refs/heads/<branch>`
+- Tested successfully: new branches are published to central repo with tracking configured
+- Remote branches now appear in branch list after successful push (e.g., origin/feature/test-branch)
