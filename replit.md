@@ -152,3 +152,11 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Updated all Angular interfaces and templates from PascalCase to camelCase
 - Application now successfully loads all 4 sample workflows (New Business, Endorsement, Cancel, Reinstatement)
 - Fixed repository cloning issue by cleaning up partially created directories using Repository.IsValid() check
+
+### Commit History Feature
+- Added commit history display to show branch commit history
+- UI includes collapsible commit history section with toggle button
+- Displays commit details: SHA (short format), author, message, and formatted date
+- Automatically refreshes commit history after successful commits
+- Leveraged existing backend endpoint (/api/git/commits) and service method
+- Added proper styling with hover effects and visual distinction for commits
