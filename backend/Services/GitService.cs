@@ -171,11 +171,25 @@ public class GitService
             throw new InvalidOperationException("Remote 'origin' not found in repository");
         }
         
+        var currentBranch = repo.Head;
+        if (currentBranch == null || currentBranch.FriendlyName == "(no branch)")
+        {
+            throw new InvalidOperationException("Not currently on a branch");
+        }
+        
         var options = new PushOptions();
         
         try
         {
-            repo.Network.Push(remote, @"refs/heads/master", options);
+            // Push the current branch and set up tracking if it doesn't exist
+            var pushRefSpec = $"refs/heads/{currentBranch.FriendlyName}:refs/heads/{currentBranch.FriendlyName}";
+            repo.Network.Push(remote, pushRefSpec, options);
+            
+            // Set up tracking if this is a new branch
+            if (currentBranch.TrackedBranch == null)
+            {
+                repo.Branches.Update(currentBranch, b => b.TrackedBranch = $"refs/remotes/origin/{currentBranch.FriendlyName}");
+            }
         }
         catch (Exception ex)
         {
