@@ -1,0 +1,27 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+*.log
+data/
+
+# Angular
+node_modules/
+dist/
+.angular/
+*.js.map
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
