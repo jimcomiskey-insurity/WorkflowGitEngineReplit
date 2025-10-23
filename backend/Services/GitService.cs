@@ -154,6 +154,16 @@ public class GitService
         }
     }
 
+    private void Fetch(Repository repo)
+    {
+        var remote = repo.Network.Remotes["origin"];
+        if (remote != null)
+        {
+            var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            Commands.Fetch(repo, remote.Name, refSpecs, null, "");
+        }
+    }
+
     public void Pull(string userId)
     {
         EnsureUserRepository(userId);
@@ -574,6 +584,9 @@ public class GitService
 
         using var repo = new Repository(userRepoPath);
         
+        // Fetch latest from remote to ensure we have all branches
+        Fetch(repo);
+        
         var sourceBranchRef = ResolveBranch(repo, sourceBranch);
         var targetBranchRef = ResolveBranch(repo, targetBranch);
 
@@ -694,6 +707,9 @@ public class GitService
         var userRepoPath = GetUserRepoPath(userId);
 
         using var repo = new Repository(userRepoPath);
+        
+        // Fetch latest from remote to ensure we have all branches
+        Fetch(repo);
         
         var sourceBranchRef = ResolveBranch(repo, sourceBranch);
         var targetBranchRef = ResolveBranch(repo, targetBranch);
