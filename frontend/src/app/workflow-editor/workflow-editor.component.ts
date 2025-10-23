@@ -4,6 +4,10 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { WorkflowService, Workflow, Phase, TaskItem } from '../services/workflow.service';
 
+interface ExtendedPhase extends Phase {
+  collapsed?: boolean;
+}
+
 @Component({
   selector: 'app-workflow-editor',
   standalone: true,
@@ -21,6 +25,13 @@ export class WorkflowEditorComponent implements OnInit {
   
   isNewWorkflow = true;
   originalKey = '';
+  showPropertiesDialog = false;
+  showPhaseDialog = false;
+  showTaskDialog = false;
+  editingPhaseIndex: number | null = null;
+  editingTaskIndex: number | null = null;
+  editingPhase: ExtendedPhase | null = null;
+  editingTask: TaskItem | null = null;
 
   constructor(
     private workflowService: WorkflowService,
@@ -42,11 +53,15 @@ export class WorkflowEditorComponent implements OnInit {
     this.workflowService.getWorkflow(key).subscribe({
       next: (workflow) => {
         this.workflow = workflow;
+        this.workflow.phases = this.workflow.phases.map(phase => ({
+          ...phase,
+          collapsed: false
+        } as ExtendedPhase));
       },
       error: (error) => {
         console.error('Error loading workflow:', error);
         alert('Failed to load workflow');
-        this.router.navigate(['/']);
+        this.router.navigate(['/workflows']);
       }
     });
   }
@@ -57,11 +72,19 @@ export class WorkflowEditorComponent implements OnInit {
       return;
     }
 
+    const workflowToSave = {
+      ...this.workflow,
+      phases: this.workflow.phases.map(phase => {
+        const { collapsed, ...rest } = phase as ExtendedPhase;
+        return rest;
+      })
+    };
+
     if (this.isNewWorkflow) {
-      this.workflowService.createWorkflow(this.workflow).subscribe({
+      this.workflowService.createWorkflow(workflowToSave).subscribe({
         next: () => {
           alert('Workflow created successfully');
-          this.router.navigate(['/']);
+          this.router.navigate(['/workflows']);
         },
         error: (error) => {
           console.error('Error creating workflow:', error);
@@ -69,10 +92,10 @@ export class WorkflowEditorComponent implements OnInit {
         }
       });
     } else {
-      this.workflowService.updateWorkflow(this.originalKey, this.workflow).subscribe({
+      this.workflowService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
         next: () => {
           alert('Workflow updated successfully');
-          this.router.navigate(['/']);
+          this.closePropertiesDialog();
         },
         error: (error) => {
           console.error('Error updating workflow:', error);
@@ -83,14 +106,75 @@ export class WorkflowEditorComponent implements OnInit {
   }
 
   cancel() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/workflows']);
+  }
+
+  togglePhase(index: number) {
+    const phase = this.workflow.phases[index] as ExtendedPhase;
+    phase.collapsed = !phase.collapsed;
+  }
+
+  openPropertiesDialog() {
+    this.showPropertiesDialog = true;
+  }
+
+  closePropertiesDialog() {
+    this.showPropertiesDialog = false;
+  }
+
+  openPhaseDialog(index: number) {
+    this.editingPhaseIndex = index;
+    this.editingPhase = { ...this.workflow.phases[index] };
+    this.showPhaseDialog = true;
+  }
+
+  closePhaseDialog() {
+    this.showPhaseDialog = false;
+    this.editingPhaseIndex = null;
+    this.editingPhase = null;
+  }
+
+  savePhase() {
+    if (this.editingPhaseIndex !== null && this.editingPhase) {
+      const currentPhase = this.workflow.phases[this.editingPhaseIndex] as ExtendedPhase;
+      this.workflow.phases[this.editingPhaseIndex] = {
+        ...this.editingPhase,
+        collapsed: currentPhase.collapsed
+      } as ExtendedPhase;
+      this.reorderPhases();
+      this.closePhaseDialog();
+    }
+  }
+
+  openTaskDialog(phaseIndex: number, taskIndex: number) {
+    this.editingPhaseIndex = phaseIndex;
+    this.editingTaskIndex = taskIndex;
+    this.editingPhase = this.workflow.phases[phaseIndex];
+    this.editingTask = { ...this.workflow.phases[phaseIndex].tasks[taskIndex] };
+    this.showTaskDialog = true;
+  }
+
+  closeTaskDialog() {
+    this.showTaskDialog = false;
+    this.editingPhaseIndex = null;
+    this.editingTaskIndex = null;
+    this.editingPhase = null;
+    this.editingTask = null;
+  }
+
+  saveTask() {
+    if (this.editingPhaseIndex !== null && this.editingTaskIndex !== null && this.editingTask) {
+      this.workflow.phases[this.editingPhaseIndex].tasks[this.editingTaskIndex] = { ...this.editingTask };
+      this.closeTaskDialog();
+    }
   }
 
   addPhase() {
-    const newPhase: Phase = {
+    const newPhase: ExtendedPhase = {
       phaseName: 'New Phase',
       phaseOrder: this.workflow.phases.length + 1,
-      tasks: []
+      tasks: [],
+      collapsed: false
     };
     this.workflow.phases.push(newPhase);
   }
@@ -98,24 +182,6 @@ export class WorkflowEditorComponent implements OnInit {
   removePhase(index: number) {
     if (confirm('Are you sure you want to remove this phase?')) {
       this.workflow.phases.splice(index, 1);
-      this.reorderPhases();
-    }
-  }
-
-  movePhaseUp(index: number) {
-    if (index > 0) {
-      const temp = this.workflow.phases[index];
-      this.workflow.phases[index] = this.workflow.phases[index - 1];
-      this.workflow.phases[index - 1] = temp;
-      this.reorderPhases();
-    }
-  }
-
-  movePhaseDown(index: number) {
-    if (index < this.workflow.phases.length - 1) {
-      const temp = this.workflow.phases[index];
-      this.workflow.phases[index] = this.workflow.phases[index + 1];
-      this.workflow.phases[index + 1] = temp;
       this.reorderPhases();
     }
   }

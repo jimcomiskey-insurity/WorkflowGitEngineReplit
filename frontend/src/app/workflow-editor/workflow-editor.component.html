@@ -1,107 +1,276 @@
-<div class="editor-header">
-  <h1>{{ isNewWorkflow ? 'Create New Workflow' : 'Edit Workflow' }}</h1>
-  <div class="actions">
-    <button class="primary" (click)="saveWorkflow()">Save</button>
-    <button class="secondary" (click)="cancel()">Cancel</button>
-  </div>
-</div>
-
-<div class="card">
-  <h2>Workflow Details</h2>
-  
-  <div class="form-group">
-    <label>Workflow Name:</label>
-    <input type="text" [(ngModel)]="workflow.workflowName" placeholder="Enter workflow name" />
-  </div>
-  
-  <div class="form-group">
-    <label>Workflow Key:</label>
-    <input type="text" [(ngModel)]="workflow.workflowKey" placeholder="e.g., NB-001" [disabled]="!isNewWorkflow" />
-    <small *ngIf="!isNewWorkflow">Key cannot be changed after creation</small>
-  </div>
-  
-  <div class="form-group">
-    <label>Description:</label>
-    <textarea [(ngModel)]="workflow.description" rows="3" placeholder="Enter workflow description"></textarea>
-  </div>
-</div>
-
-<div class="phases-section">
-  <div class="section-header">
-    <h2>Phases ({{ workflow.phases.length }})</h2>
-    <button class="primary" (click)="addPhase()">+ Add Phase</button>
-  </div>
-
-  <div class="phase-card card" *ngFor="let phase of workflow.phases; let i = index">
-    <div class="phase-header">
-      <div class="phase-title">
-        <span class="phase-order">Phase {{ phase.phaseOrder }}</span>
-        <input type="text" [(ngModel)]="phase.phaseName" class="phase-name-input" />
+<div class="page-container">
+  <div class="editor-header">
+    <button class="back-button" (click)="cancel()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    
+    <div class="workflow-header-info">
+      <div class="workflow-title">
+        <h1>{{ workflow.workflowName || 'New Workflow' }}</h1>
+        <span class="workflow-key-badge">{{ workflow.workflowKey || 'KEY' }}</span>
       </div>
-      <div class="phase-actions">
-        <button class="icon-btn" (click)="movePhaseUp(i)" [disabled]="i === 0" title="Move Up">▲</button>
-        <button class="icon-btn" (click)="movePhaseDown(i)" [disabled]="i === workflow.phases.length - 1" title="Move Down">▼</button>
-        <button class="icon-btn danger" (click)="removePhase(i)" title="Remove Phase">✕</button>
-      </div>
+      <p class="workflow-description">{{ workflow.description || 'No description provided' }}</p>
     </div>
-
-    <div class="tasks-section">
-      <div class="tasks-header">
-        <h3>Tasks ({{ phase.tasks.length }})</h3>
-        <button class="primary small" (click)="addTask(i)">+ Add Task</button>
-      </div>
-
-      <div class="task-card" *ngFor="let task of phase.tasks; let j = index">
-        <div class="task-header">
-          <input type="text" [(ngModel)]="task.taskName" placeholder="Task name" class="task-name-input" />
-          <button class="icon-btn danger small" (click)="removeTask(i, j)" title="Remove Task">✕</button>
-        </div>
-
-        <div class="task-details">
-          <div class="task-field">
-            <label>Type:</label>
-            <select [(ngModel)]="task.taskType">
-              <option>DataEntry</option>
-              <option>Rating</option>
-              <option>Review</option>
-              <option>Approval</option>
-              <option>FollowUp</option>
-              <option>DocumentGeneration</option>
-              <option>Intake</option>
-              <option>Validation</option>
-              <option>Accounting</option>
-              <option>Notification</option>
-              <option>SystemUpdate</option>
-              <option>Manual</option>
-            </select>
-          </div>
-
-          <div class="task-field">
-            <label>Assigned Role:</label>
-            <input type="text" [(ngModel)]="task.assignedRole" placeholder="e.g., Agent, Underwriter" />
-          </div>
-
-          <div class="task-field">
-            <label>Duration (hours):</label>
-            <input type="number" [(ngModel)]="task.estimatedDurationHours" min="0" step="0.1" />
-          </div>
-
-          <div class="task-field checkbox-field">
-            <label>
-              <input type="checkbox" [(ngModel)]="task.isAutomated" />
-              Automated Task
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="no-tasks" *ngIf="phase.tasks.length === 0">
-        <p>No tasks in this phase. Click "Add Task" to create one.</p>
-      </div>
+    
+    <div class="header-actions">
+      <button class="secondary" (click)="openPropertiesDialog()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        Edit Properties
+      </button>
+      <button class="primary" (click)="addPhase()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Phase
+      </button>
     </div>
   </div>
 
-  <div class="no-phases" *ngIf="workflow.phases.length === 0">
-    <p>No phases defined. Click "Add Phase" to create one.</p>
+  <div class="phases-container">
+    <h2 class="section-title">Phases ({{ workflow.phases.length }})</h2>
+
+    <div class="phase-item" *ngFor="let phase of workflow.phases; let i = index">
+      <div class="phase-header" (click)="togglePhase(i)">
+        <div class="phase-info">
+          <span class="phase-number">{{ phase.phaseOrder }}</span>
+          <span class="phase-name">{{ phase.phaseName }}</span>
+        </div>
+        <div class="phase-meta">
+          <span class="task-count">{{ phase.tasks.length }} task{{ phase.tasks.length !== 1 ? 's' : '' }}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="!phase.collapsed">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="phase-content" *ngIf="!phase.collapsed">
+        <div class="tasks-header">
+          <span class="tasks-label">Tasks</span>
+          <div class="task-actions">
+            <button class="icon-button-text" (click)="addTask(i)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Task
+            </button>
+            <button class="icon-button" (click)="openPhaseDialog(i)" title="Edit Phase">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="icon-button danger" (click)="removePhase(i)" title="Delete Phase">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="tasks-list">
+          <div class="task-item" *ngFor="let task of phase.tasks; let j = index">
+            <div class="task-main">
+              <span class="task-name">{{ task.taskName }}</span>
+              <div class="task-badges">
+                <span class="badge task-type">{{ task.taskType }}</span>
+                <span class="badge automated" *ngIf="task.isAutomated">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                  </svg>
+                  Automated
+                </span>
+              </div>
+            </div>
+            <div class="task-meta">
+              <div class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>{{ task.assignedRole }}</span>
+              </div>
+              <div class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>{{ task.estimatedDurationHours }}h</span>
+              </div>
+              <div class="meta-item" *ngIf="task.dependencies && task.dependencies.length > 0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 11h3l-3-3m0 6 3-3M8 11H5l3-3m0 6-3-3"></path>
+                </svg>
+                <span>{{ task.dependencies.length }} dependencies</span>
+              </div>
+            </div>
+            <div class="task-actions">
+              <button class="icon-button" (click)="openTaskDialog(i, j)" title="Edit Task">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button class="icon-button danger" (click)="removeTask(i, j)" title="Delete Task">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="phase.tasks.length === 0">
+            <p>No tasks in this phase</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="workflow.phases.length === 0">
+      <p>No phases defined. Click "Add Phase" to create one.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Properties Modal -->
+<div class="modal" *ngIf="showPropertiesDialog" (click)="closePropertiesDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Workflow Properties</h2>
+      <button class="close-button" (click)="closePropertiesDialog()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Workflow Name</label>
+        <input type="text" [(ngModel)]="workflow.workflowName" placeholder="Enter workflow name" />
+      </div>
+      <div class="form-group">
+        <label>Workflow Key</label>
+        <input type="text" [(ngModel)]="workflow.workflowKey" placeholder="e.g., NB-001" [disabled]="!isNewWorkflow" />
+        <small *ngIf="!isNewWorkflow">Key cannot be changed after creation</small>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="workflow.description" rows="3" placeholder="Enter workflow description"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary" (click)="closePropertiesDialog()">Cancel</button>
+      <button class="primary" (click)="saveWorkflow()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Phase Modal -->
+<div class="modal" *ngIf="showPhaseDialog" (click)="closePhaseDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Phase <span *ngIf="editingPhase">to {{ workflow.workflowName }}</span></h2>
+      <button class="close-button" (click)="closePhaseDialog()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <p class="modal-subtitle">Update the phase configuration.</p>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Phase Name</label>
+        <input type="text" [(ngModel)]="editingPhase!.phaseName" placeholder="Enter phase name" />
+      </div>
+      <div class="form-group">
+        <label>Phase Order</label>
+        <input type="number" [(ngModel)]="editingPhase!.phaseOrder" min="1" />
+        <small>Determines the sequence of this phase in the workflow</small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary" (click)="closePhaseDialog()">Cancel</button>
+      <button class="primary" (click)="savePhase()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal" *ngIf="showTaskDialog" (click)="closeTaskDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Task <span *ngIf="editingTask">to {{ editingPhase?.phaseName }}</span></h2>
+      <button class="close-button" (click)="closeTaskDialog()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <p class="modal-subtitle">Update the task configuration.</p>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Task Name</label>
+        <input type="text" [(ngModel)]="editingTask!.taskName" placeholder="Enter task name" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Task Type</label>
+          <select [(ngModel)]="editingTask!.taskType">
+            <option value="Intake">Intake</option>
+            <option value="Validation">Validation</option>
+            <option value="DataEntry">Data Entry</option>
+            <option value="Rating">Rating</option>
+            <option value="Review">Review</option>
+            <option value="Approval">Approval</option>
+            <option value="Accounting">Accounting</option>
+            <option value="DocumentGeneration">Document Generation</option>
+            <option value="Notification">Notification</option>
+            <option value="FollowUp">Follow Up</option>
+            <option value="SystemUpdate">System Update</option>
+            <option value="Manual">Manual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Assigned Role</label>
+          <input type="text" [(ngModel)]="editingTask!.assignedRole" placeholder="e.g., CSR, Underwriter" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Estimated Duration (hours)</label>
+        <input type="number" [(ngModel)]="editingTask!.estimatedDurationHours" min="0" step="0.1" />
+      </div>
+      <div class="form-group automated-toggle">
+        <label class="toggle-label">
+          <span>Automated Task</span>
+          <span class="toggle-description">Task is executed by the system automatically</span>
+        </label>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="editingTask!.isAutomated" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Dependencies</label>
+        <div class="dependencies-input">
+          <input type="text" placeholder="Select a task" disabled />
+          <button class="secondary">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary" (click)="closeTaskDialog()">Cancel</button>
+      <button class="primary" (click)="saveTask()">Save Changes</button>
+    </div>
   </div>
 </div>
