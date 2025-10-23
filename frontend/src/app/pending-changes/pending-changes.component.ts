@@ -179,6 +179,9 @@ export class PendingChangesComponent implements OnInit {
 
   getPhaseChangeSummary(phase: Phase): string {
     const count = this.getPhaseChangeCount(phase);
+    if (count === 0) {
+      return '';
+    }
     return count === 1 ? '1 change' : `${count} changes`;
   }
 }
