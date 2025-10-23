@@ -1,0 +1,106 @@
+<div class="pending-changes-container">
+  <div class="header">
+    <div class="header-left">
+      <div class="icon-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="title">Pending Changes</h1>
+        <p class="subtitle">Review your uncommitted changes before committing</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-tabs">
+    <button 
+      class="filter-tab" 
+      [class.active]="selectedFilter === 'all'"
+      (click)="setFilter('all')">
+      All
+    </button>
+    <button 
+      class="filter-tab added" 
+      [class.active]="selectedFilter === 'added'"
+      (click)="setFilter('added')">
+      Added
+    </button>
+    <button 
+      class="filter-tab modified" 
+      [class.active]="selectedFilter === 'modified'"
+      (click)="setFilter('modified')">
+      Modified
+    </button>
+    <button 
+      class="filter-tab deleted" 
+      [class.active]="selectedFilter === 'deleted'"
+      (click)="setFilter('deleted')">
+      Deleted
+    </button>
+  </div>
+
+  <div class="changes-list" *ngIf="filteredWorkflows.length > 0">
+    <div class="workflow-change-card" *ngFor="let workflow of filteredWorkflows" [attr.data-git-status]="workflow.gitStatus">
+      <div class="workflow-change-header">
+        <div class="workflow-info">
+          <h2 class="workflow-name">{{ workflow.workflowName }}</h2>
+          <span class="workflow-key">{{ workflow.workflowKey }}</span>
+        </div>
+        <span class="status-badge" [ngClass]="workflow.gitStatus">{{ workflow.gitStatus | titlecase }}</span>
+      </div>
+      <p class="workflow-description" *ngIf="workflow.description">{{ workflow.description }}</p>
+
+      <div class="phases-list" *ngIf="workflow.phases.length > 0">
+        <div 
+          class="phase-change-item" 
+          *ngFor="let phase of workflow.phases; let i = index"
+          [attr.data-git-status]="phase.gitStatus">
+          <div class="phase-header" (click)="togglePhase(workflow, i)">
+            <div class="phase-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="!phase.collapsed">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+              <span class="phase-name">{{ phase.phaseName }}</span>
+              <span class="change-count">{{ getPhaseChangeSummary(phase) }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="phase.gitStatus" *ngIf="phase.gitStatus && phase.gitStatus !== 'none'">
+              {{ phase.gitStatus | titlecase }}
+            </span>
+          </div>
+
+          <div class="tasks-list" *ngIf="!phase.collapsed && phase.tasks.length > 0">
+            <div 
+              class="task-change-item" 
+              *ngFor="let task of phase.tasks"
+              [attr.data-git-status]="task.gitStatus">
+              <div class="task-info">
+                <span class="task-name">{{ task.taskName }}</span>
+                <div class="task-meta">
+                  <span class="meta-item">{{ task.taskType }}</span>
+                  <span class="meta-divider">•</span>
+                  <span class="meta-item">{{ task.assignedRole }}</span>
+                  <span class="meta-divider">•</span>
+                  <span class="meta-item">{{ task.estimatedDurationHours }}h</span>
+                </div>
+              </div>
+              <span class="status-badge" [ngClass]="task.gitStatus" *ngIf="task.gitStatus && task.gitStatus !== 'none'">
+                {{ task.gitStatus | titlecase }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredWorkflows.length === 0">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 11l3 3L22 4"></path>
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+    </svg>
+    <h3>No Pending Changes</h3>
+    <p>You don't have any uncommitted changes</p>
+  </div>
+</div>

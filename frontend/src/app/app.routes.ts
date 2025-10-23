@@ -21,5 +21,9 @@ export const routes: Routes = [
   {
     path: 'version-control',
     loadComponent: () => import('./version-control/version-control.component').then(m => m.VersionControlComponent)
+  },
+  {
+    path: 'pending-changes',
+    loadComponent: () => import('./pending-changes/pending-changes.component').then(m => m.PendingChangesComponent)
   }
 ];

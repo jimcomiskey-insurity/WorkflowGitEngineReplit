@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { WorkflowService } from './services/workflow.service';
 
 @Component({
   selector: 'app-root',
@@ -40,6 +41,14 @@ import { CommonModule } from '@angular/common';
               <path d="M12 12v3"></path>
             </svg>
             <span>Version Control</span>
+          </a>
+          <a routerLink="/pending-changes" routerLinkActive="active" class="nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <span>Pending Changes</span>
+            <span class="badge" *ngIf="pendingChangesCount > 0">{{ pendingChangesCount }}</span>
           </a>
         </nav>
       </aside>
@@ -138,8 +147,67 @@ import { CommonModule } from '@angular/common';
       overflow-y: auto;
       background-color: var(--bg-primary);
     }
+
+    .badge {
+      margin-left: auto;
+      background: var(--accent-blue);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Insurance Workflow Configuration';
+  pendingChangesCount = 0;
+
+  constructor(private workflowService: WorkflowService) {}
+
+  ngOnInit() {
+    this.loadPendingChangesCount();
+    
+    // Refresh count every 10 seconds
+    setInterval(() => {
+      this.loadPendingChangesCount();
+    }, 10000);
+  }
+
+  loadPendingChangesCount() {
+    this.workflowService.getWorkflows().subscribe({
+      next: (response) => {
+        this.pendingChangesCount = this.countAllChanges(response.workflows);
+      },
+      error: (error) => {
+        console.error('Error loading pending changes count:', error);
+      }
+    });
+  }
+
+  countAllChanges(workflows: any[]): number {
+    let total = 0;
+    
+    workflows.forEach(workflow => {
+      if (workflow.gitStatus && workflow.gitStatus !== 'none') {
+        total++;
+      }
+      
+      workflow.phases?.forEach((phase: any) => {
+        if (phase.gitStatus && phase.gitStatus !== 'none') {
+          total++;
+        }
+        
+        phase.tasks?.forEach((task: any) => {
+          if (task.gitStatus && task.gitStatus !== 'none') {
+            total++;
+          }
+        });
+      });
+    });
+    
+    return total;
+  }
 }

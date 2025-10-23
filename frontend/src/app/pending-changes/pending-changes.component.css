@@ -1,0 +1,331 @@
+.pending-changes-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.header-left {
+  display: flex;
+  gap: 16px;
+}
+
+.icon-badge {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.filter-tab {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.filter-tab.active {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-blue);
+}
+
+.filter-tab.added.active {
+  border-color: #22C55E;
+  color: #22C55E;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.filter-tab.modified.active {
+  border-color: #3B82F6;
+  color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.filter-tab.deleted.active {
+  border-color: #EF4444;
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.workflow-change-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s;
+}
+
+.workflow-change-card[data-git-status="added"] {
+  border-left: 4px solid #22C55E;
+}
+
+.workflow-change-card[data-git-status="modified"] {
+  border-left: 4px solid #3B82F6;
+}
+
+.workflow-change-card[data-git-status="deleted"] {
+  border-left: 4px solid #EF4444;
+}
+
+.workflow-change-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.workflow-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workflow-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.workflow-key {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.workflow-description {
+  color: var(--text-secondary);
+  margin: 0 0 16px 0;
+  font-size: 15px;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-transform: capitalize;
+}
+
+.status-badge.added {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-badge.modified {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3B82F6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-badge.deleted {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.phases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phase-change-item {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.phase-change-item[data-git-status="added"] {
+  border-left: 3px solid #22C55E;
+}
+
+.phase-change-item[data-git-status="modified"] {
+  border-left: 3px solid #3B82F6;
+}
+
+.phase-change-item[data-git-status="deleted"] {
+  border-left: 3px solid #EF4444;
+}
+
+.phase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.phase-header:hover {
+  background: var(--bg-hover);
+}
+
+.phase-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.phase-info svg {
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+
+.phase-info svg.rotated {
+  transform: rotate(-90deg);
+}
+
+.phase-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.change-count {
+  font-size: 13px;
+  color: var(--accent-blue);
+  font-weight: 500;
+}
+
+.tasks-list {
+  border-top: 1px solid var(--border-color);
+}
+
+.task-change-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px 12px 44px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s;
+}
+
+.task-change-item:last-child {
+  border-bottom: none;
+}
+
+.task-change-item:hover {
+  background: var(--bg-hover);
+}
+
+.task-change-item[data-git-status="added"] {
+  border-left: 3px solid #22C55E;
+  margin-left: -3px;
+}
+
+.task-change-item[data-git-status="modified"] {
+  border-left: 3px solid #3B82F6;
+  margin-left: -3px;
+}
+
+.task-change-item[data-git-status="deleted"] {
+  border-left: 3px solid #EF4444;
+  margin-left: -3px;
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-divider {
+  color: var(--text-muted);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state svg {
+  margin-bottom: 24px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  font-size: 15px;
+  margin: 0;
+}
