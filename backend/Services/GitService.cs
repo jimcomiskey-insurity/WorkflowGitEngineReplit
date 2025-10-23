@@ -309,7 +309,38 @@ public class GitService
         }
 
         var json = File.ReadAllText(filePath);
-        return JsonSerializer.Deserialize<ProgramWorkflows>(json) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
+        var workflows = JsonSerializer.Deserialize<ProgramWorkflows>(json) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
+        
+        EnsureTaskIds(workflows);
+        
+        return workflows;
+    }
+
+    private void EnsureTaskIds(ProgramWorkflows programWorkflows)
+    {
+        foreach (var workflow in programWorkflows.Workflows)
+        {
+            foreach (var phase in workflow.Phases)
+            {
+                for (int i = 0; i < phase.Tasks.Count; i++)
+                {
+                    var task = phase.Tasks[i];
+                    if (string.IsNullOrEmpty(task.TaskId))
+                    {
+                        task.TaskId = GenerateDeterministicId(workflow.WorkflowKey, phase.PhaseName, phase.PhaseOrder, task.TaskName, i);
+                    }
+                }
+            }
+        }
+    }
+
+    private string GenerateDeterministicId(string workflowKey, string phaseName, int phaseOrder, string taskName, int taskIndex)
+    {
+        var input = $"{workflowKey}|{phaseName}|{phaseOrder}|{taskName}|{taskIndex}";
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+        var guid = new Guid(hashBytes.Take(16).ToArray());
+        return guid.ToString();
     }
 
     public void WriteWorkflows(string userId, ProgramWorkflows workflows)
@@ -350,6 +381,8 @@ public class GitService
             var previousVersion = string.IsNullOrEmpty(previousVersionJson)
                 ? new ProgramWorkflows { Workflows = new List<Workflow>() }
                 : JsonSerializer.Deserialize<ProgramWorkflows>(previousVersionJson) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
+
+            EnsureTaskIds(previousVersion);
 
             foreach (var workflow in programWorkflows.Workflows)
             {
@@ -443,7 +476,8 @@ public class GitService
 
         foreach (var task in current.Tasks)
         {
-            var previousTask = previous.Tasks.FirstOrDefault(t => t.TaskName == task.TaskName);
+            var previousTask = previous.Tasks.FirstOrDefault(t => 
+                !string.IsNullOrEmpty(task.TaskId) && !string.IsNullOrEmpty(t.TaskId) && t.TaskId == task.TaskId);
             
             if (previousTask == null)
             {
@@ -457,7 +491,10 @@ public class GitService
 
         foreach (var previousTask in previous.Tasks)
         {
-            if (!current.Tasks.Any(t => t.TaskName == previousTask.TaskName))
+            var currentTask = current.Tasks.FirstOrDefault(t => 
+                !string.IsNullOrEmpty(previousTask.TaskId) && !string.IsNullOrEmpty(t.TaskId) && t.TaskId == previousTask.TaskId);
+            
+            if (currentTask == null)
             {
                 previousTask.GitStatus = "deleted";
                 current.Tasks.Add(previousTask);
@@ -467,7 +504,8 @@ public class GitService
 
     private void CompareTask(TaskItem current, TaskItem previous)
     {
-        if (current.TaskType != previous.TaskType ||
+        if (current.TaskName != previous.TaskName ||
+            current.TaskType != previous.TaskType ||
             current.AssignedRole != previous.AssignedRole ||
             current.EstimatedDurationHours != previous.EstimatedDurationHours ||
             current.IsAutomated != previous.IsAutomated ||

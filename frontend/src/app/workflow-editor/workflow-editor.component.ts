@@ -198,6 +198,7 @@ export class WorkflowEditorComponent implements OnInit {
 
   addTask(phaseIndex: number) {
     const newTask: TaskItem = {
+      taskId: this.generateId(),
       taskName: 'New Task',
       taskType: 'Manual',
       assignedRole: 'User',
@@ -207,6 +208,10 @@ export class WorkflowEditorComponent implements OnInit {
     };
     this.workflow.phases[phaseIndex].tasks.push(newTask);
     this.persistWorkflow();
+  }
+
+  generateId(): string {
+    return crypto.randomUUID();
   }
 
   removeTask(phaseIndex: number, taskIndex: number) {

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { UserService } from './user.service';
 
 export interface TaskItem {
+  taskId?: string;
   taskName: string;
   taskType: string;
   assignedRole: string;
