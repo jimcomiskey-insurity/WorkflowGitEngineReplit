@@ -25,5 +25,13 @@ export const routes: Routes = [
   {
     path: 'pending-changes',
     loadComponent: () => import('./pending-changes/pending-changes.component').then(m => m.PendingChangesComponent)
+  },
+  {
+    path: 'pull-requests',
+    loadComponent: () => import('./pull-requests/pull-requests.component').then(m => m.PullRequestsComponent)
+  },
+  {
+    path: 'pull-requests/:number',
+    loadComponent: () => import('./pull-request-detail/pull-request-detail.component').then(m => m.PullRequestDetailComponent)
   }
 ];

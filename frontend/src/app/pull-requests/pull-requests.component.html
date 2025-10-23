@@ -1,0 +1,101 @@
+<div class="pull-requests-container">
+  <div class="header">
+    <div class="header-left">
+      <div class="icon-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="18" r="3"></circle>
+          <circle cx="6" cy="6" r="3"></circle>
+          <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+          <line x1="6" y1="9" x2="6" y2="21"></line>
+        </svg>
+      </div>
+      <div>
+        <h1 class="title">Pull Requests</h1>
+        <p class="subtitle">Review and merge workflow changes</p>
+      </div>
+    </div>
+    <button class="btn-new-pr" (click)="openCreatePRDialog()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="18" cy="18" r="3"></circle>
+        <circle cx="6" cy="6" r="3"></circle>
+        <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+        <line x1="6" y1="9" x2="6" y2="21"></line>
+      </svg>
+      New Pull Request
+    </button>
+  </div>
+
+  <div class="filter-tabs">
+    <button 
+      class="filter-tab" 
+      [class.active]="selectedFilter === 'open'"
+      (click)="setFilter('open')">
+      Open
+    </button>
+    <button 
+      class="filter-tab" 
+      [class.active]="selectedFilter === 'merged'"
+      (click)="setFilter('merged')">
+      Merged
+    </button>
+    <button 
+      class="filter-tab" 
+      [class.active]="selectedFilter === 'closed'"
+      (click)="setFilter('closed')">
+      Closed
+    </button>
+    <button 
+      class="filter-tab" 
+      [class.active]="selectedFilter === 'all'"
+      (click)="setFilter('all')">
+      All
+    </button>
+  </div>
+
+  <div class="pr-list" *ngIf="filteredPullRequests.length > 0">
+    <div 
+      class="pr-card" 
+      *ngFor="let pr of filteredPullRequests"
+      (click)="viewPRDetail(pr)">
+      <div class="pr-header">
+        <div class="pr-title-section">
+          <h3 class="pr-title">{{ pr.title }}</h3>
+          <span class="pr-number">#{{ pr.number }}</span>
+          <span class="pr-meta">opened {{ formatDate(pr.createdDate) }}</span>
+        </div>
+        <span class="status-badge" [ngClass]="pr.status">{{ pr.status | titlecase }}</span>
+      </div>
+
+      <div class="pr-branches">
+        <span class="branch-name">{{ pr.sourceBranch }}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+        <span class="branch-name">{{ pr.targetBranch }}</span>
+      </div>
+
+      <div class="pr-footer" *ngIf="pr.mergedDate">
+        <span class="merged-info">Merged {{ formatDate(pr.mergedDate) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredPullRequests.length === 0">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="18" cy="18" r="3"></circle>
+      <circle cx="6" cy="6" r="3"></circle>
+      <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+      <line x1="6" y1="9" x2="6" y2="21"></line>
+    </svg>
+    <h3>No Pull Requests</h3>
+    <p>There are no {{ selectedFilter === 'all' ? '' : selectedFilter }} pull requests</p>
+  </div>
+</div>
+
+<app-create-pull-request 
+  *ngIf="isCreatingPR"
+  [userId]="userId"
+  (close)="closeCreatePRDialog()"
+  (created)="onPRCreated()">
+</app-create-pull-request>

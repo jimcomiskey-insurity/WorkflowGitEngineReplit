@@ -1,0 +1,76 @@
+<div class="pr-detail-container" *ngIf="!isLoading && pullRequest">
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Pull Requests
+    </button>
+  </div>
+
+  <div class="pr-header">
+    <div class="pr-title-section">
+      <h1>{{ pullRequest.title }}</h1>
+      <span class="pr-number">#{{ pullRequest.number }}</span>
+      <span class="status-badge" [ngClass]="pullRequest.status">{{ pullRequest.status | titlecase }}</span>
+    </div>
+    <div class="pr-actions" *ngIf="pullRequest.status === 'open'">
+      <button class="btn-merge" (click)="mergePullRequest()" [disabled]="isMerging">
+        {{ isMerging ? 'Merging...' : 'Merge Pull Request' }}
+      </button>
+      <button class="btn-close-pr" (click)="closePullRequest()">Close</button>
+    </div>
+  </div>
+
+  <div class="pr-meta">
+    <div class="meta-item">
+      <strong>{{ pullRequest.author }}</strong> wants to merge into 
+      <span class="branch-badge">{{ pullRequest.targetBranch }}</span> from 
+      <span class="branch-badge">{{ pullRequest.sourceBranch }}</span>
+    </div>
+    <div class="meta-item">
+      Opened {{ formatDate(pullRequest.createdDate) }}
+    </div>
+    <div class="meta-item" *ngIf="pullRequest.mergedDate">
+      Merged {{ formatDate(pullRequest.mergedDate) }}
+    </div>
+  </div>
+
+  <div class="pr-description" *ngIf="pullRequest.description">
+    <h3>Description</h3>
+    <p>{{ pullRequest.description }}</p>
+  </div>
+
+  <div class="comparison-section" *ngIf="comparison">
+    <h3>Changes ({{ comparison.commitsAhead }} {{ comparison.commitsAhead === 1 ? 'commit' : 'commits' }})</h3>
+    
+    <div class="changes-list" *ngIf="comparison.changes.length > 0">
+      <div class="change-item" *ngFor="let change of comparison.changes" [attr.data-change-type]="change.changeType">
+        <div class="change-header">
+          <div class="change-info">
+            <span class="change-badge" [ngClass]="change.changeType">{{ change.changeType | titlecase }}</span>
+            <h4>{{ change.workflowName }}</h4>
+            <span class="workflow-key">{{ change.workflowKey }}</span>
+          </div>
+        </div>
+        <div class="change-details" *ngIf="change.changeType !== 'deleted' && change.sourceWorkflow">
+          <div class="workflow-summary">
+            <span>{{ change.sourceWorkflow.phases?.length || 0 }} phases</span>
+            <span class="divider">•</span>
+            <span>{{ getTotalTasks(change.sourceWorkflow) }} tasks</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-changes" *ngIf="comparison.changes.length === 0">
+      <p>No workflow changes in this pull request</p>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <p>Loading pull request...</p>
+</div>

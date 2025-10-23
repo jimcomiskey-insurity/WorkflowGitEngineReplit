@@ -538,4 +538,154 @@ public class GitService
             }
         }
     }
+
+    public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        using var repo = new Repository(userRepoPath);
+        
+        var sourceCommit = repo.Branches[sourceBranch]?.Tip;
+        var targetCommit = repo.Branches[targetBranch]?.Tip;
+
+        if (sourceCommit == null || targetCommit == null)
+        {
+            throw new ArgumentException("Invalid source or target branch");
+        }
+
+        // Count commits ahead
+        var aheadFilter = new CommitFilter
+        {
+            IncludeReachableFrom = sourceCommit,
+            ExcludeReachableFrom = targetCommit
+        };
+        var commitsAhead = repo.Commits.QueryBy(aheadFilter).Count();
+
+        // Get workflows from both branches
+        var sourceWorkflows = GetWorkflowsFromCommit(repo, sourceCommit);
+        var targetWorkflows = GetWorkflowsFromCommit(repo, targetCommit);
+
+        var changes = new List<WorkflowChange>();
+
+        // Find added and modified workflows
+        foreach (var sourceWorkflow in sourceWorkflows)
+        {
+            var targetWorkflow = targetWorkflows.FirstOrDefault(w => w.WorkflowKey == sourceWorkflow.WorkflowKey);
+            
+            if (targetWorkflow == null)
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = sourceWorkflow.WorkflowKey,
+                    WorkflowName = sourceWorkflow.WorkflowName,
+                    ChangeType = "added",
+                    SourceWorkflow = sourceWorkflow,
+                    TargetWorkflow = null
+                });
+            }
+            else if (!WorkflowsAreEqual(sourceWorkflow, targetWorkflow))
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = sourceWorkflow.WorkflowKey,
+                    WorkflowName = sourceWorkflow.WorkflowName,
+                    ChangeType = "modified",
+                    SourceWorkflow = sourceWorkflow,
+                    TargetWorkflow = targetWorkflow
+                });
+            }
+        }
+
+        // Find deleted workflows
+        foreach (var targetWorkflow in targetWorkflows)
+        {
+            var sourceWorkflow = sourceWorkflows.FirstOrDefault(w => w.WorkflowKey == targetWorkflow.WorkflowKey);
+            
+            if (sourceWorkflow == null)
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = targetWorkflow.WorkflowKey,
+                    WorkflowName = targetWorkflow.WorkflowName,
+                    ChangeType = "deleted",
+                    SourceWorkflow = null,
+                    TargetWorkflow = targetWorkflow
+                });
+            }
+        }
+
+        return new BranchComparison
+        {
+            SourceBranch = sourceBranch,
+            TargetBranch = targetBranch,
+            CommitsAhead = commitsAhead,
+            Changes = changes
+        };
+    }
+
+    private List<Workflow> GetWorkflowsFromCommit(Repository repo, Commit commit)
+    {
+        var workflowsEntry = commit[WorkflowFileName];
+        
+        if (workflowsEntry == null)
+        {
+            return new List<Workflow>();
+        }
+
+        var blob = (Blob)workflowsEntry.Target;
+        var json = blob.GetContentText();
+        
+        var workflows = JsonSerializer.Deserialize<List<Workflow>>(json) ?? new List<Workflow>();
+        
+        // Ensure all tasks have TaskIds
+        var programWorkflows = new ProgramWorkflows { Workflows = workflows };
+        EnsureTaskIds(programWorkflows);
+        
+        return workflows;
+    }
+
+    private bool WorkflowsAreEqual(Workflow w1, Workflow w2)
+    {
+        var json1 = JsonSerializer.Serialize(w1, new JsonSerializerOptions { WriteIndented = false });
+        var json2 = JsonSerializer.Serialize(w2, new JsonSerializerOptions { WriteIndented = false });
+        return json1 == json2;
+    }
+
+    public void MergeBranch(string userId, string sourceBranch, string targetBranch, string message)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        using var repo = new Repository(userRepoPath);
+        
+        var sourceCommit = repo.Branches[sourceBranch]?.Tip;
+        var targetBranchRef = repo.Branches[targetBranch];
+
+        if (sourceCommit == null || targetBranchRef == null)
+        {
+            throw new ArgumentException("Invalid source or target branch");
+        }
+
+        // Checkout target branch
+        Commands.Checkout(repo, targetBranchRef);
+
+        // Merge source into target
+        var signature = new Signature("System", "system@workflow.local", DateTimeOffset.Now);
+        var mergeResult = repo.Merge(sourceCommit, signature, new MergeOptions
+        {
+            FileConflictStrategy = CheckoutFileConflictStrategy.Theirs,
+            MergeFileFavor = MergeFileFavor.Theirs
+        });
+
+        if (mergeResult.Status == MergeStatus.Conflicts)
+        {
+            throw new InvalidOperationException("Merge conflicts detected");
+        }
+
+        // Push to remote
+        var remote = repo.Network.Remotes["origin"];
+        var options = new PushOptions();
+        repo.Network.Push(remote, $"refs/heads/{targetBranch}", options);
+    }
 }

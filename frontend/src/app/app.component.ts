@@ -50,6 +50,15 @@ import { WorkflowService } from './services/workflow.service';
             <span>Pending Changes</span>
             <span class="badge" *ngIf="pendingChangesCount > 0">{{ pendingChangesCount }}</span>
           </a>
+          <a routerLink="/pull-requests" routerLinkActive="active" class="nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="18" r="3"></circle>
+              <circle cx="6" cy="6" r="3"></circle>
+              <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+              <line x1="6" y1="9" x2="6" y2="21"></line>
+            </svg>
+            <span>Pull Requests</span>
+          </a>
         </nav>
       </aside>
       

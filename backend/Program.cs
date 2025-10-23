@@ -8,6 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<GitService>();
+builder.Services.AddSingleton<PullRequestService>();
 
 builder.Services.AddCors(options =>
 {

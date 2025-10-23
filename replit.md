@@ -38,6 +38,14 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 ### Feature Specifications
 
 - **Workflow Management**: CRUD operations for workflows, including nested phases and tasks with dependencies, role assignments, duration estimates, and automation flags.
+- **Pull Requests**: Full pull request workflow for proposing and reviewing changes:
+    - Create PRs from any branch to target branch
+    - View all PRs with status filtering (Open/Merged/Closed/All)
+    - Branch comparison showing workflow-level changes (added/modified/deleted workflows)
+    - Merge PRs directly from the UI (performs Git merge + updates PR status)
+    - Close PRs without merging
+    - Detailed PR view with metadata, branch info, and change summary
+    - Visual status indicators and change type badges
 - **Git Version Control**:
     - Tracking of changes, committing modifications, and synchronization (pull/push) with a central repository.
     - Display of Git status, commit history (SHA, author, message, date).
