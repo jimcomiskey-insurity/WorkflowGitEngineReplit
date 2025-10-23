@@ -30,48 +30,129 @@ public class PullRequestService
     
     private void MigrateLegacyPullRequests(string contentRootPath)
     {
+        // Migrate from old location (inside Git repo) to new persistent location
         var oldPrPath = Path.GetFullPath(Path.Combine(contentRootPath, "data", "pull-requests"));
         
-        if (!Directory.Exists(oldPrPath))
+        if (Directory.Exists(oldPrPath))
         {
-            return; // No legacy data to migrate
-        }
-        
-        var prFiles = Directory.GetFiles(oldPrPath, "*_pull_requests.json");
-        
-        if (prFiles.Length == 0)
-        {
-            _logger.LogDebug("No legacy pull request files found at {OldPath}", oldPrPath);
-            return;
-        }
-        
-        _logger.LogInformation("Migrating {Count} pull request files from {OldPath} to {NewPath}", 
-            prFiles.Length, oldPrPath, _baseStoragePath);
-        
-        foreach (var oldFile in prFiles)
-        {
-            var fileName = Path.GetFileName(oldFile);
-            var newFile = Path.Combine(_baseStoragePath, fileName);
+            var prFiles = Directory.GetFiles(oldPrPath, "*_pull_requests.json");
             
-            // Only migrate if the file doesn't already exist in the new location
-            if (!File.Exists(newFile))
+            if (prFiles.Length > 0)
             {
-                File.Copy(oldFile, newFile);
-                _logger.LogInformation("Migrated pull requests file: {FileName}", fileName);
+                _logger.LogInformation("Migrating {Count} pull request files from {OldPath} to {NewPath}", 
+                    prFiles.Length, oldPrPath, _baseStoragePath);
+                
+                foreach (var oldFile in prFiles)
+                {
+                    var fileName = Path.GetFileName(oldFile);
+                    var newFile = Path.Combine(_baseStoragePath, fileName);
+                    
+                    if (!File.Exists(newFile))
+                    {
+                        File.Copy(oldFile, newFile);
+                        _logger.LogInformation("Migrated pull requests file: {FileName}", fileName);
+                    }
+                }
             }
         }
         
-        _logger.LogInformation("Pull request migration complete. Legacy files remain at {OldPath} for safety.", oldPrPath);
+        // Consolidate per-user PR files into single global file
+        ConsolidateUserPullRequests();
+    }
+    
+    private void ConsolidateUserPullRequests()
+    {
+        var globalFile = GetPullRequestsFilePath();
+        var globalFileName = Path.GetFileName(globalFile);
+        var userPrFiles = Directory.GetFiles(_baseStoragePath, "*_pull_requests.json")
+            .Where(f => Path.GetFileName(f) != globalFileName) // Exclude the global file itself
+            .ToList();
+        
+        if (userPrFiles.Count == 0)
+        {
+            return; // No per-user files to consolidate
+        }
+        
+        _logger.LogInformation("Consolidating {Count} user-specific PR files into global storage", userPrFiles.Count);
+        
+        // Load existing global PRs (if any)
+        var allPrs = new List<PullRequest>();
+        if (File.Exists(globalFile))
+        {
+            var json = File.ReadAllText(globalFile);
+            allPrs = JsonSerializer.Deserialize<List<PullRequest>>(json) ?? new List<PullRequest>();
+        }
+        
+        // Track which PR numbers are already in use
+        var usedNumbers = new HashSet<int>(allPrs.Select(pr => pr.Number));
+        int maxNumber = usedNumbers.Any() ? usedNumbers.Max() : 0;
+        
+        // Consolidate all user PRs
+        foreach (var userFile in userPrFiles)
+        {
+            try
+            {
+                var json = File.ReadAllText(userFile);
+                var userPrs = JsonSerializer.Deserialize<List<PullRequest>>(json) ?? new List<PullRequest>();
+                
+                foreach (var pr in userPrs)
+                {
+                    // Check if this PR number is already in use
+                    if (usedNumbers.Contains(pr.Number))
+                    {
+                        // Number conflict - assign a new unique number
+                        maxNumber++;
+                        while (usedNumbers.Contains(maxNumber))
+                        {
+                            maxNumber++;
+                        }
+                        
+                        _logger.LogInformation("Renumbering PR #{OldNumber} to #{NewNumber} to avoid conflict", 
+                            pr.Number, maxNumber);
+                        pr.Number = maxNumber;
+                    }
+                    
+                    // Mark this number as used
+                    usedNumbers.Add(pr.Number);
+                    allPrs.Add(pr);
+                }
+                
+                _logger.LogInformation("Consolidated {Count} PRs from {File}", userPrs.Count, Path.GetFileName(userFile));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error consolidating PRs from {File}", userFile);
+            }
+        }
+        
+        // Save consolidated PRs
+        SavePullRequests(allPrs);
+        
+        // Archive old user-specific files (don't delete in case of issues)
+        foreach (var userFile in userPrFiles)
+        {
+            try
+            {
+                var archiveFile = userFile + ".archived";
+                File.Move(userFile, archiveFile, overwrite: true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not archive {File}", userFile);
+            }
+        }
+        
+        _logger.LogInformation("PR consolidation complete. {Count} total PRs in global storage", allPrs.Count);
     }
 
-    private string GetPullRequestsFilePath(string userId)
+    private string GetPullRequestsFilePath()
     {
-        return Path.Combine(_baseStoragePath, $"{userId}_pull_requests.json");
+        return Path.Combine(_baseStoragePath, "pull_requests.json");
     }
 
     public List<PullRequest> GetAllPullRequests(string userId, string? status = null)
     {
-        var filePath = GetPullRequestsFilePath(userId);
+        var filePath = GetPullRequestsFilePath();
         
         if (!File.Exists(filePath))
         {
@@ -113,7 +194,7 @@ public class PullRequestService
         };
 
         prs.Add(newPr);
-        SavePullRequests(userId, prs);
+        SavePullRequests(prs);
 
         _logger.LogInformation("Created PR #{Number}: {Title} from {Source} to {Target}", 
             newPr.Number, newPr.Title, newPr.SourceBranch, newPr.TargetBranch);
@@ -134,7 +215,7 @@ public class PullRequestService
         pr.Status = "merged";
         pr.MergedDate = DateTime.UtcNow;
 
-        SavePullRequests(userId, prs);
+        SavePullRequests(prs);
 
         _logger.LogInformation("Merged PR #{Number}: {Title}", pr.Number, pr.Title);
 
@@ -153,16 +234,16 @@ public class PullRequestService
 
         pr.Status = "closed";
 
-        SavePullRequests(userId, prs);
+        SavePullRequests(prs);
 
         _logger.LogInformation("Closed PR #{Number}: {Title}", pr.Number, pr.Title);
 
         return pr;
     }
 
-    private void SavePullRequests(string userId, List<PullRequest> prs)
+    private void SavePullRequests(List<PullRequest> prs)
     {
-        var filePath = GetPullRequestsFilePath(userId);
+        var filePath = GetPullRequestsFilePath();
         var json = JsonSerializer.Serialize(prs, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(filePath, json);
     }
