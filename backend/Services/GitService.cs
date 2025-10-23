@@ -539,6 +539,34 @@ public class GitService
         }
     }
 
+    private Branch? ResolveBranch(Repository repo, string branchName)
+    {
+        // Try local branch first
+        var branch = repo.Branches[branchName];
+        if (branch != null)
+        {
+            return branch;
+        }
+
+        // Try with refs/heads/ prefix
+        branch = repo.Branches[$"refs/heads/{branchName}"];
+        if (branch != null)
+        {
+            return branch;
+        }
+
+        // Try remote branch
+        branch = repo.Branches[$"origin/{branchName}"];
+        if (branch != null)
+        {
+            return branch;
+        }
+
+        // Try with refs/remotes/ prefix
+        branch = repo.Branches[$"refs/remotes/origin/{branchName}"];
+        return branch;
+    }
+
     public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch)
     {
         EnsureUserRepository(userId);
@@ -546,8 +574,16 @@ public class GitService
 
         using var repo = new Repository(userRepoPath);
         
-        var sourceCommit = repo.Branches[sourceBranch]?.Tip;
-        var targetCommit = repo.Branches[targetBranch]?.Tip;
+        var sourceBranchRef = ResolveBranch(repo, sourceBranch);
+        var targetBranchRef = ResolveBranch(repo, targetBranch);
+
+        if (sourceBranchRef == null || targetBranchRef == null)
+        {
+            throw new ArgumentException($"Invalid source or target branch. Source: {sourceBranch}, Target: {targetBranch}");
+        }
+
+        var sourceCommit = sourceBranchRef.Tip;
+        var targetCommit = targetBranchRef.Tip;
 
         if (sourceCommit == null || targetCommit == null)
         {
@@ -659,12 +695,19 @@ public class GitService
 
         using var repo = new Repository(userRepoPath);
         
-        var sourceCommit = repo.Branches[sourceBranch]?.Tip;
-        var targetBranchRef = repo.Branches[targetBranch];
+        var sourceBranchRef = ResolveBranch(repo, sourceBranch);
+        var targetBranchRef = ResolveBranch(repo, targetBranch);
 
-        if (sourceCommit == null || targetBranchRef == null)
+        if (sourceBranchRef == null || targetBranchRef == null)
         {
-            throw new ArgumentException("Invalid source or target branch");
+            throw new ArgumentException($"Invalid source or target branch. Source: {sourceBranch}, Target: {targetBranch}");
+        }
+
+        var sourceCommit = sourceBranchRef.Tip;
+
+        if (sourceCommit == null)
+        {
+            throw new ArgumentException("Invalid source branch commit");
         }
 
         // Checkout target branch
