@@ -32,6 +32,7 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 - Supports multi-user access through isolated, user-specific Git repositories connected to a central repository.
 - Employs RxJS `switchMap` and `merge` patterns for robust data refreshing and multi-user data isolation.
 - Git status enrichment: Compares current workflows with last commit to identify added/modified/deleted items at workflow, phase, and task levels.
+- Task identification: Each task has a unique TaskId for stable tracking across edits, renames, and reordering. Legacy tasks without IDs receive deterministic IDs based on SHA256 hash of stable properties.
 
 ### Feature Specifications
 
