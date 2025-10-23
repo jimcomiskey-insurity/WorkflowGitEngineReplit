@@ -12,11 +12,12 @@ Preferred communication style: Simple, everyday language.
 
 ### UI/UX Decisions
 
-The frontend features a modern dark theme with a redesigned layout. It includes a sidebar navigation, a card-grid layout for workflows, and a dedicated Version Control view. Key UI elements include:
+The frontend features a modern dark theme with a redesigned layout. It includes a sidebar navigation, a card-grid layout for workflows, and dedicated views for Version Control and Pending Changes. Key UI elements include:
 - Workflow cards displaying name, key, description, phase/task counts, and action buttons.
 - Collapsible commit history display.
 - Branch management via a dropdown selector with visual indicators for the active branch.
 - Visual indicators for incoming (↓) and outgoing (↑) commits to show synchronization status.
+- **Pending Changes view**: A dedicated interface showing all uncommitted changes grouped by workflow with filter tabs (All/Added/Modified/Deleted), collapsible phases, and change counts. The sidebar displays a real-time badge showing the total number of pending changes.
 
 ### Technical Implementations
 
@@ -49,6 +50,14 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
         - **Deleted items**: Red left border with "Deleted" badge, strikethrough text, and disabled edit controls
         - Indicators shown at all levels: workflows, phases, and tasks
         - Backend compares current state with last committed version to detect changes
+    - **Pending Changes View**: Dedicated interface for reviewing uncommitted changes before committing:
+        - Groups changes by workflow with collapsible phase sections
+        - Filter tabs for viewing all changes or filtering by type (Added/Modified/Deleted)
+        - Displays change counts at workflow and phase levels
+        - Shows detailed task information including type, role, duration, and dependencies
+        - Real-time badge in sidebar navigation showing total pending changes count
+        - Auto-refreshes count every 10 seconds to stay synchronized with workflow edits
+        - Empty state when no uncommitted changes exist
 - **User Management**: Session-based user selection with isolated Git repository clones for each user.
 
 ### System Design Choices
