@@ -115,6 +115,23 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 - **Microsoft.AspNetCore.OpenApi (v8.0.18)**: For OpenAPI specification generation.
 - **Swashbuckle.AspNetCore (v6.6.2)**: For Swagger UI integration.
 
+### Testing Infrastructure
+
+- **Test Framework**: xUnit with .NET 8.0
+- **Test Location**: `backend.tests/WorkflowConfig.Api.Tests/`
+- **Test Dependencies**:
+    - xUnit (v2.5.3): Test framework
+    - Moq (v4.20.72): Mocking library for dependencies
+    - FluentAssertions (v6.12.0): Fluent assertion library for readable tests
+    - Microsoft.AspNetCore.Hosting.Abstractions (v2.3.0): For IWebHostEnvironment mocking
+- **Test Coverage**:
+    - `PullRequestServiceTests`: Comprehensive tests for PR lifecycle including commit SHA tracking, status transitions, multi-user visibility
+    - `GitServiceComparisonTests`: Documentation of expected behavior for branch comparisons (merged vs open PRs)
+- **Key Regression Tests**:
+    - `MergePullRequest_ShouldPreserveCommitShas`: Ensures merged PRs maintain their original commit SHAs to prevent "0 commits" bug
+    - Tests validate that both source and target commit SHAs are stored at PR creation and preserved through merge
+- **Running Tests**: Execute `cd backend.tests/WorkflowConfig.Api.Tests && dotnet test` from project root
+
 ### Frontend Dependencies
 
 - **Angular (v20.3.6)**: Core frontend framework.
