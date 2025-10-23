@@ -31,6 +31,7 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 - Integrates LibGit2Sharp for all Git operations.
 - Supports multi-user access through isolated, user-specific Git repositories connected to a central repository.
 - Employs RxJS `switchMap` and `merge` patterns for robust data refreshing and multi-user data isolation.
+- Git status enrichment: Compares current workflows with last commit to identify added/modified/deleted items at workflow, phase, and task levels.
 
 ### Feature Specifications
 
@@ -41,6 +42,12 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
     - Branch management: creation, switching between branches, and pushing new branches to the remote.
     - Automatic local tracking branch creation when switching to remote branches.
     - Displays counts of commits ahead/behind the remote repository.
+    - **Visual Change Indicators**: Real-time Git status indicators showing added, modified, and deleted items:
+        - **Added items**: Green left border with "+ Added" badge
+        - **Modified items**: Blue left border with "Modified" badge  
+        - **Deleted items**: Red left border with "Deleted" badge, strikethrough text, and disabled edit controls
+        - Indicators shown at all levels: workflows, phases, and tasks
+        - Backend compares current state with last committed version to detect changes
 - **User Management**: Session-based user selection with isolated Git repository clones for each user.
 
 ### System Design Choices
