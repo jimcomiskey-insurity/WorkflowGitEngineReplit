@@ -223,6 +223,14 @@ public class GitService
         
         using var repo = new Repository(userRepoPath);
         
+        // Fetch from remote to get latest changes
+        var remote = repo.Network.Remotes["origin"];
+        if (remote != null)
+        {
+            var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            Commands.Fetch(repo, remote.Name, refSpecs, null, null);
+        }
+        
         // Check if this is a remote branch (e.g., origin/feature-branch)
         if (branchName.StartsWith("origin/"))
         {

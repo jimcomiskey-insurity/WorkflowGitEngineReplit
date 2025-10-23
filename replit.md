@@ -235,7 +235,7 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - Improved error handling for branch operations with user-friendly messages
 - Cleaner, more compact UI that's easier to use
 
-### Remote Branch Switching and Sync Status (October 22, 2025)
+### Remote Branch Switching and Sync Status (October 23, 2025)
 - Fixed issue where switching to remote branches (origin/*) resulted in detached HEAD state
 - System now automatically creates local tracking branches when switching to remote branches
 - Updated backend SwitchBranch method to detect remote branches and create local tracking branches
@@ -243,3 +243,6 @@ All API calls include a `userId` query parameter for multi-tenant support.
 - UI now displays incoming/outgoing commit counts when branch is ahead or behind remote
 - Visual indicators: blue for incoming commits (↓), green for outgoing commits (↑)
 - Helps users understand sync state before pushing or pulling changes
+- **Critical fix**: SwitchBranch now fetches from remote before switching, ensuring commitsBehind/commitsAhead calculations reflect latest remote state
+- When User A pushes commits and User B switches to that branch, User B now sees incoming commits indicator immediately
+- Ensures tracking relationship is established for existing local branches when switching via remote branch name
