@@ -591,7 +591,7 @@ public class GitService
         return branch;
     }
 
-    public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch)
+    public string GetBranchCommitSha(string userId, string branchName)
     {
         EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
@@ -601,21 +601,54 @@ public class GitService
         // Fetch latest from remote to ensure we have all branches
         Fetch(repo);
         
-        var sourceBranchRef = ResolveBranch(repo, sourceBranch);
+        var branch = ResolveBranch(repo, branchName);
+        if (branch == null || branch.Tip == null)
+        {
+            throw new ArgumentException($"Invalid branch: {branchName}");
+        }
+
+        return branch.Tip.Sha;
+    }
+
+    public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch, string? sourceCommitSha = null)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        using var repo = new Repository(userRepoPath);
+        
+        // Fetch latest from remote to ensure we have all branches
+        Fetch(repo);
+        
+        // Get source commit - either from SHA or from branch tip
+        Commit sourceCommit;
+        if (!string.IsNullOrEmpty(sourceCommitSha))
+        {
+            // Use the stored commit SHA (for merged PRs)
+            sourceCommit = repo.Lookup<Commit>(sourceCommitSha);
+            if (sourceCommit == null)
+            {
+                throw new ArgumentException($"Invalid source commit SHA: {sourceCommitSha}");
+            }
+        }
+        else
+        {
+            // Use the current branch tip (for open PRs or ad-hoc comparisons)
+            var sourceBranchRef = ResolveBranch(repo, sourceBranch);
+            if (sourceBranchRef == null || sourceBranchRef.Tip == null)
+            {
+                throw new ArgumentException($"Invalid source branch: {sourceBranch}");
+            }
+            sourceCommit = sourceBranchRef.Tip;
+        }
+        
+        // Get target commit from branch tip
         var targetBranchRef = ResolveBranch(repo, targetBranch);
-
-        if (sourceBranchRef == null || targetBranchRef == null)
+        if (targetBranchRef == null || targetBranchRef.Tip == null)
         {
-            throw new ArgumentException($"Invalid source or target branch. Source: {sourceBranch}, Target: {targetBranch}");
+            throw new ArgumentException($"Invalid target branch: {targetBranch}");
         }
-
-        var sourceCommit = sourceBranchRef.Tip;
         var targetCommit = targetBranchRef.Tip;
-
-        if (sourceCommit == null || targetCommit == null)
-        {
-            throw new ArgumentException("Invalid source or target branch");
-        }
 
         // Count commits ahead
         var aheadFilter = new CommitFilter

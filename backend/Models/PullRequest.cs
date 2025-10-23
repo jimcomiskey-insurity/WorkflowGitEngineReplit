@@ -11,6 +11,7 @@ public class PullRequest
     public string Author { get; set; } = string.Empty;
     public DateTime CreatedDate { get; set; }
     public DateTime? MergedDate { get; set; }
+    public string? SourceCommitSha { get; set; }
 }
 
 public class CreatePullRequestRequest
