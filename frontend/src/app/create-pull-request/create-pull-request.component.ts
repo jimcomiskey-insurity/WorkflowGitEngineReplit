@@ -41,13 +41,18 @@ export class CreatePullRequestComponent implements OnInit {
         // Get all branches
         this.gitService.getBranches().subscribe({
           next: (branches) => {
-            this.availableBranches = branches.filter(b => b !== this.sourceBranch);
+            // Filter out remote tracking branches and current branch
+            this.availableBranches = branches
+              .filter(b => !b.startsWith('origin/'))
+              .filter(b => b !== this.sourceBranch);
             
-            // Set default target branch to main if current branch is not main
-            if (this.sourceBranch === 'main') {
-              this.targetBranch = this.availableBranches[0] || 'main';
-            } else {
+            // Set default target branch: prefer main/master, otherwise first available
+            if (this.availableBranches.includes('main')) {
               this.targetBranch = 'main';
+            } else if (this.availableBranches.includes('master')) {
+              this.targetBranch = 'master';
+            } else {
+              this.targetBranch = this.availableBranches[0] || this.sourceBranch;
             }
           },
           error: (error) => {
