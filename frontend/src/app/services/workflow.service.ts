@@ -10,12 +10,14 @@ export interface TaskItem {
   estimatedDurationHours: number;
   dependencies: string[];
   isAutomated: boolean;
+  gitStatus?: string;
 }
 
 export interface Phase {
   phaseName: string;
   phaseOrder: number;
   tasks: TaskItem[];
+  gitStatus?: string;
 }
 
 export interface Workflow {
@@ -23,6 +25,7 @@ export interface Workflow {
   workflowKey: string;
   description: string;
   phases: Phase[];
+  gitStatus?: string;
 }
 
 export interface ProgramWorkflows {
