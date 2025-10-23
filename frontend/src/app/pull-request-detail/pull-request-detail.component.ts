@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { PullRequestService, PullRequest, BranchComparison } from '../services/pull-request.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-pull-request-detail',
@@ -10,22 +12,34 @@ import { PullRequestService, PullRequest, BranchComparison } from '../services/p
   templateUrl: './pull-request-detail.component.html',
   styleUrls: ['./pull-request-detail.component.css']
 })
-export class PullRequestDetailComponent implements OnInit {
+export class PullRequestDetailComponent implements OnInit, OnDestroy {
   pullRequest?: PullRequest;
   comparison?: BranchComparison;
-  userId = 'userA';
+  userId: string = '';
   isLoading = true;
   isMerging = false;
+  private prNumber: number = 0;
+  private userSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private pullRequestService: PullRequestService
+    private pullRequestService: PullRequestService,
+    private userService: UserService
   ) {}
 
   ngOnInit() {
-    const prNumber = Number(this.route.snapshot.paramMap.get('number'));
-    this.loadPullRequest(prNumber);
+    this.prNumber = Number(this.route.snapshot.paramMap.get('number'));
+    
+    // Subscribe to user changes and reload data
+    this.userSubscription = this.userService.currentUser$.subscribe(user => {
+      this.userId = user;
+      this.loadPullRequest(this.prNumber);
+    });
+  }
+
+  ngOnDestroy() {
+    this.userSubscription?.unsubscribe();
   }
 
   loadPullRequest(number: number) {

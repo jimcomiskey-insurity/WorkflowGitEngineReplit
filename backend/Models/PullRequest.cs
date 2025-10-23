@@ -12,6 +12,7 @@ public class PullRequest
     public DateTime CreatedDate { get; set; }
     public DateTime? MergedDate { get; set; }
     public string? SourceCommitSha { get; set; }
+    public string? TargetCommitSha { get; set; }
 }
 
 public class CreatePullRequestRequest

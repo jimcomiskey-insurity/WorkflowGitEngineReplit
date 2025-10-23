@@ -76,15 +76,17 @@ public class PullRequestController : ControllerBase
                 return NotFound(new { message = $"Pull request #{number} not found" });
             }
 
-            // Use the stored commit SHA only for merged PRs to show historical changes
+            // Use the stored commit SHAs only for merged PRs to show historical changes
             // For open PRs, use null to compare current branch tips (allows updates after PR creation)
             var sourceCommitSha = pullRequest.Status == "merged" ? pullRequest.SourceCommitSha : null;
+            var targetCommitSha = pullRequest.Status == "merged" ? pullRequest.TargetCommitSha : null;
             
             var comparison = _gitService.CompareBranches(
                 userId, 
                 pullRequest.SourceBranch, 
                 pullRequest.TargetBranch, 
-                sourceCommitSha);
+                sourceCommitSha,
+                targetCommitSha);
             return Ok(comparison);
         }
         catch (Exception ex)
@@ -101,10 +103,11 @@ public class PullRequestController : ControllerBase
     {
         try
         {
-            // Capture the current commit SHA of the source branch at PR creation time
+            // Capture the current commit SHAs of both branches at PR creation time
             var sourceCommitSha = _gitService.GetBranchCommitSha(userId, request.SourceBranch);
+            var targetCommitSha = _gitService.GetBranchCommitSha(userId, request.TargetBranch);
             
-            var pullRequest = _pullRequestService.CreatePullRequest(userId, request, sourceCommitSha);
+            var pullRequest = _pullRequestService.CreatePullRequest(userId, request, sourceCommitSha, targetCommitSha);
             return CreatedAtAction(nameof(GetPullRequest), new { userId, number = pullRequest.Number }, pullRequest);
         }
         catch (Exception ex)

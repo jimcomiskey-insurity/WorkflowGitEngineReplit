@@ -176,7 +176,7 @@ public class PullRequestService
         return prs.FirstOrDefault(pr => pr.Number == number);
     }
 
-    public PullRequest CreatePullRequest(string userId, CreatePullRequestRequest request, string sourceCommitSha)
+    public PullRequest CreatePullRequest(string userId, CreatePullRequestRequest request, string sourceCommitSha, string targetCommitSha)
     {
         var prs = GetAllPullRequests(userId);
         var nextNumber = prs.Any() ? prs.Max(pr => pr.Number) + 1 : 1;
@@ -191,14 +191,15 @@ public class PullRequestService
             Status = "open",
             Author = userId,
             CreatedDate = DateTime.UtcNow,
-            SourceCommitSha = sourceCommitSha
+            SourceCommitSha = sourceCommitSha,
+            TargetCommitSha = targetCommitSha
         };
 
         prs.Add(newPr);
         SavePullRequests(prs);
 
-        _logger.LogInformation("Created PR #{Number}: {Title} from {Source} ({Sha}) to {Target}", 
-            newPr.Number, newPr.Title, newPr.SourceBranch, sourceCommitSha?.Substring(0, 7), newPr.TargetBranch);
+        _logger.LogInformation("Created PR #{Number}: {Title} from {Source} ({SourceSha}) to {Target} ({TargetSha})", 
+            newPr.Number, newPr.Title, newPr.SourceBranch, sourceCommitSha?.Substring(0, 7), newPr.TargetBranch, targetCommitSha?.Substring(0, 7));
 
         return newPr;
     }

@@ -610,7 +610,7 @@ public class GitService
         return branch.Tip.Sha;
     }
 
-    public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch, string? sourceCommitSha = null)
+    public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
     {
         EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
@@ -642,13 +642,27 @@ public class GitService
             sourceCommit = sourceBranchRef.Tip;
         }
         
-        // Get target commit from branch tip
-        var targetBranchRef = ResolveBranch(repo, targetBranch);
-        if (targetBranchRef == null || targetBranchRef.Tip == null)
+        // Get target commit - either from SHA or from branch tip
+        Commit targetCommit;
+        if (!string.IsNullOrEmpty(targetCommitSha))
         {
-            throw new ArgumentException($"Invalid target branch: {targetBranch}");
+            // Use the stored commit SHA (for merged PRs)
+            targetCommit = repo.Lookup<Commit>(targetCommitSha);
+            if (targetCommit == null)
+            {
+                throw new ArgumentException($"Invalid target commit SHA: {targetCommitSha}");
+            }
         }
-        var targetCommit = targetBranchRef.Tip;
+        else
+        {
+            // Use the current branch tip (for open PRs or ad-hoc comparisons)
+            var targetBranchRef = ResolveBranch(repo, targetBranch);
+            if (targetBranchRef == null || targetBranchRef.Tip == null)
+            {
+                throw new ArgumentException($"Invalid target branch: {targetBranch}");
+            }
+            targetCommit = targetBranchRef.Tip;
+        }
 
         // Count commits ahead
         var aheadFilter = new CommitFilter
