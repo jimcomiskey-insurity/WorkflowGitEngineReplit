@@ -71,6 +71,14 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
         - Real-time badge in sidebar navigation showing total pending changes count
         - Auto-refreshes count every 10 seconds to stay synchronized with workflow edits
         - Empty state when no uncommitted changes exist
+    - **Repository Reset**: Testing utility to reset the entire system to initial state:
+        - Deletes all user repositories and the central repository
+        - Recreates central repository as a bare repository
+        - Reinitializes with original sample data (4 workflows: New Business, Endorsement, Cancel, Reinstatement)
+        - Users automatically receive fresh clones on next access
+        - Accessible via red "Reset All Repositories" button on Version Control page
+        - Includes confirmation dialog to prevent accidental resets
+        - Automatically reloads the page after successful reset
 - **User Management**: 
     - Global user selector in top header (always visible across all pages)
     - Session-based user selection with localStorage persistence
