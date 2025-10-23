@@ -47,19 +47,217 @@
     
     <div class="changes-list" *ngIf="comparison.changes.length > 0">
       <div class="change-item" *ngFor="let change of comparison.changes" [attr.data-change-type]="change.changeType">
-        <div class="change-header">
+        <div class="change-header" (click)="toggleChangeDetails(change.workflowKey)">
           <div class="change-info">
+            <span class="expand-icon">{{ isExpanded(change.workflowKey) ? '▼' : '▶' }}</span>
             <span class="change-badge" [ngClass]="change.changeType">{{ change.changeType | titlecase }}</span>
             <h4>{{ change.workflowName }}</h4>
             <span class="workflow-key">{{ change.workflowKey }}</span>
           </div>
-        </div>
-        <div class="change-details" *ngIf="change.changeType !== 'deleted' && change.sourceWorkflow">
-          <div class="workflow-summary">
+          <div class="workflow-summary" *ngIf="change.sourceWorkflow">
             <span>{{ change.sourceWorkflow.phases?.length || 0 }} phases</span>
             <span class="divider">•</span>
             <span>{{ getTotalTasks(change.sourceWorkflow) }} tasks</span>
           </div>
+        </div>
+
+        <!-- Detailed comparison view -->
+        <div class="change-details-expanded" *ngIf="isExpanded(change.workflowKey)">
+          
+          <!-- ADDED WORKFLOW -->
+          <div *ngIf="change.changeType === 'added' && change.sourceWorkflow" class="added-workflow-details">
+            <div class="detail-section">
+              <h5>New Workflow Details</h5>
+              <div class="workflow-info">
+                <div class="info-row">
+                  <strong>Description:</strong> {{ change.sourceWorkflow.description || '(none)' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-section" *ngFor="let phase of change.sourceWorkflow.phases">
+              <h5 class="phase-title">
+                <span class="phase-badge added">+ Phase</span> {{ phase.phaseName }}
+              </h5>
+              <div class="tasks-list">
+                <div class="task-item added" *ngFor="let task of phase.tasks">
+                  <div class="task-header">
+                    <strong>{{ task.taskName }}</strong>
+                    <span class="task-type">{{ task.taskType }}</span>
+                  </div>
+                  <div class="task-meta">
+                    <span *ngIf="task.assignedRole">Role: {{ task.assignedRole }}</span>
+                    <span *ngIf="task.estimatedDuration">Duration: {{ task.estimatedDuration }}</span>
+                    <span *ngIf="task.isAutomated" class="automated-badge">Automated</span>
+                    <span *ngIf="task.dependencies && task.dependencies.length > 0">Depends on: {{ task.dependencies.join(', ') }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DELETED WORKFLOW -->
+          <div *ngIf="change.changeType === 'deleted' && change.targetWorkflow" class="deleted-workflow-details">
+            <div class="detail-section">
+              <h5>Removed Workflow Details</h5>
+              <div class="workflow-info">
+                <div class="info-row">
+                  <strong>Description:</strong> {{ change.targetWorkflow.description || '(none)' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-section" *ngFor="let phase of change.targetWorkflow.phases">
+              <h5 class="phase-title">
+                <span class="phase-badge deleted">- Phase</span> {{ phase.phaseName }}
+              </h5>
+              <div class="tasks-list">
+                <div class="task-item deleted" *ngFor="let task of phase.tasks">
+                  <div class="task-header">
+                    <strong>{{ task.taskName }}</strong>
+                    <span class="task-type">{{ task.taskType }}</span>
+                  </div>
+                  <div class="task-meta">
+                    <span *ngIf="task.assignedRole">Role: {{ task.assignedRole }}</span>
+                    <span *ngIf="task.estimatedDuration">Duration: {{ task.estimatedDuration }}</span>
+                    <span *ngIf="task.isAutomated" class="automated-badge">Automated</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODIFIED WORKFLOW -->
+          <div *ngIf="change.changeType === 'modified'" class="modified-workflow-details">
+            
+            <!-- Workflow-level changes -->
+            <div class="detail-section" *ngIf="getWorkflowLevelChanges(change).length > 0">
+              <h5>Workflow Changes</h5>
+              <div class="field-comparison" *ngFor="let fieldChange of getWorkflowLevelChanges(change)">
+                <div class="comparison-row">
+                  <div class="field-name">{{ fieldChange.field }}</div>
+                  <div class="value-comparison">
+                    <div class="old-value">
+                      <span class="label">Before:</span>
+                      <span class="value">{{ fieldChange.oldValue }}</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="new-value">
+                      <span class="label">After:</span>
+                      <span class="value">{{ fieldChange.newValue }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phase changes -->
+            <ng-container *ngIf="getPhaseChanges(change) as phaseChanges">
+              
+              <!-- Added phases -->
+              <div class="detail-section" *ngIf="phaseChanges.added.length > 0">
+                <h5>Added Phases ({{ phaseChanges.added.length }})</h5>
+                <div class="phase-section added" *ngFor="let phase of phaseChanges.added">
+                  <div class="phase-title">
+                    <span class="phase-badge added">+ Phase</span> {{ phase.phaseName }}
+                  </div>
+                  <div class="tasks-list">
+                    <div class="task-item added" *ngFor="let task of phase.tasks">
+                      <div class="task-header">
+                        <strong>{{ task.taskName }}</strong>
+                        <span class="task-type">{{ task.taskType }}</span>
+                      </div>
+                      <div class="task-meta">
+                        <span *ngIf="task.assignedRole">Role: {{ task.assignedRole }}</span>
+                        <span *ngIf="task.estimatedDuration">Duration: {{ task.estimatedDuration }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Removed phases -->
+              <div class="detail-section" *ngIf="phaseChanges.removed.length > 0">
+                <h5>Removed Phases ({{ phaseChanges.removed.length }})</h5>
+                <div class="phase-section deleted" *ngFor="let phase of phaseChanges.removed">
+                  <div class="phase-title">
+                    <span class="phase-badge deleted">- Phase</span> {{ phase.phaseName }}
+                  </div>
+                  <div class="tasks-list">
+                    <div class="task-item deleted" *ngFor="let task of phase.tasks">
+                      <div class="task-header">
+                        <strong>{{ task.taskName }}</strong>
+                        <span class="task-type">{{ task.taskType }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modified phases -->
+              <div class="detail-section" *ngFor="let modPhase of phaseChanges.modified">
+                <h5>
+                  <span class="phase-badge modified">Modified Phase</span> {{ modPhase.phase.phaseName }}
+                </h5>
+                
+                <ng-container *ngIf="getTaskChanges(modPhase.phase, modPhase.oldPhase) as taskChanges">
+                  
+                  <!-- Added tasks -->
+                  <div *ngIf="taskChanges.added.length > 0" class="tasks-subsection">
+                    <h6>Added Tasks ({{ taskChanges.added.length }})</h6>
+                    <div class="task-item added" *ngFor="let task of taskChanges.added">
+                      <div class="task-header">
+                        <strong>{{ task.taskName }}</strong>
+                        <span class="task-type">{{ task.taskType }}</span>
+                      </div>
+                      <div class="task-meta">
+                        <span *ngIf="task.assignedRole">Role: {{ task.assignedRole }}</span>
+                        <span *ngIf="task.estimatedDuration">Duration: {{ task.estimatedDuration }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Removed tasks -->
+                  <div *ngIf="taskChanges.removed.length > 0" class="tasks-subsection">
+                    <h6>Removed Tasks ({{ taskChanges.removed.length }})</h6>
+                    <div class="task-item deleted" *ngFor="let task of taskChanges.removed">
+                      <div class="task-header">
+                        <strong>{{ task.taskName }}</strong>
+                        <span class="task-type">{{ task.taskType }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Modified tasks -->
+                  <div *ngIf="taskChanges.modified.length > 0" class="tasks-subsection">
+                    <h6>Modified Tasks ({{ taskChanges.modified.length }})</h6>
+                    <div class="task-modification" *ngFor="let modTask of taskChanges.modified">
+                      <div class="task-name-header">{{ modTask.task.taskName }}</div>
+                      <div class="field-comparison" *ngFor="let fieldChange of getTaskFieldChanges(modTask.task, modTask.oldTask)">
+                        <div class="comparison-row">
+                          <div class="field-name">{{ fieldChange.field }}</div>
+                          <div class="value-comparison">
+                            <div class="old-value">
+                              <span class="label">Before:</span>
+                              <span class="value">{{ fieldChange.oldValue }}</span>
+                            </div>
+                            <div class="arrow">→</div>
+                            <div class="new-value">
+                              <span class="label">After:</span>
+                              <span class="value">{{ fieldChange.newValue }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </ng-container>
+              </div>
+
+            </ng-container>
+          </div>
+
         </div>
       </div>
     </div>

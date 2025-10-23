@@ -699,11 +699,22 @@ public class GitService
         var blob = (Blob)workflowsEntry.Target;
         var json = blob.GetContentText();
         
-        var workflows = JsonSerializer.Deserialize<List<Workflow>>(json) ?? new List<Workflow>();
+        // Deserialize as ProgramWorkflows (with root Workflows property) or fallback to direct list
+        List<Workflow> workflows;
+        try
+        {
+            var programWorkflows = JsonSerializer.Deserialize<ProgramWorkflows>(json);
+            workflows = programWorkflows?.Workflows ?? new List<Workflow>();
+        }
+        catch
+        {
+            // Fallback: try deserializing as direct list
+            workflows = JsonSerializer.Deserialize<List<Workflow>>(json) ?? new List<Workflow>();
+        }
         
         // Ensure all tasks have TaskIds
-        var programWorkflows = new ProgramWorkflows { Workflows = workflows };
-        EnsureTaskIds(programWorkflows);
+        var programWorkflowsWrapper = new ProgramWorkflows { Workflows = workflows };
+        EnsureTaskIds(programWorkflowsWrapper);
         
         return workflows;
     }
