@@ -47,8 +47,11 @@
         <div class="workflow-info">
           <h2 class="workflow-name">{{ workflow.workflowName }}</h2>
           <span class="workflow-key">{{ workflow.workflowKey }}</span>
+          <span class="change-count-badge">{{ workflow.changeCount }} {{ workflow.changeCount === 1 ? 'change' : 'changes' }}</span>
         </div>
-        <span class="status-badge" [ngClass]="workflow.gitStatus">{{ workflow.gitStatus | titlecase }}</span>
+        <span class="status-badge" [ngClass]="workflow.gitStatus" *ngIf="workflow.gitStatus && workflow.gitStatus !== 'none'">
+          {{ workflow.gitStatus | titlecase }}
+        </span>
       </div>
       <p class="workflow-description" *ngIf="workflow.description">{{ workflow.description }}</p>
 

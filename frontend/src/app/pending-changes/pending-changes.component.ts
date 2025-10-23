@@ -116,7 +116,7 @@ export class PendingChangesComponent implements OnInit {
     const filteredPhases = workflow.phases
       .map(phase => ({
         ...phase,
-        tasks: phase.tasks.filter(task => task.gitStatus === status || phase.gitStatus === status)
+        tasks: phase.tasks.filter(task => task.gitStatus === status)
       }))
       .filter(phase => 
         phase.gitStatus === status || 
@@ -124,10 +124,7 @@ export class PendingChangesComponent implements OnInit {
       );
 
     const hasChanges = workflow.gitStatus === status || filteredPhases.length > 0;
-    const changeCount = this.countChanges({
-      ...workflow,
-      phases: filteredPhases
-    });
+    const changeCount = this.countFilteredChanges(workflow, filteredPhases, status);
 
     return {
       ...workflow,
@@ -135,6 +132,27 @@ export class PendingChangesComponent implements OnInit {
       hasChanges,
       changeCount
     };
+  }
+
+  countFilteredChanges(workflow: Workflow, phases: Phase[], status: string): number {
+    let count = 0;
+    
+    if (workflow.gitStatus === status) {
+      count++;
+    }
+
+    phases.forEach(phase => {
+      if (phase.gitStatus === status) {
+        count++;
+      }
+      phase.tasks.forEach(task => {
+        if (task.gitStatus === status) {
+          count++;
+        }
+      });
+    });
+
+    return count;
   }
 
   setFilter(filter: 'all' | 'added' | 'modified' | 'deleted') {
