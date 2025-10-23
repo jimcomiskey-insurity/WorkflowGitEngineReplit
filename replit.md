@@ -12,7 +12,8 @@ Preferred communication style: Simple, everyday language.
 
 ### UI/UX Decisions
 
-The frontend features a modern dark theme with a redesigned layout. It includes a sidebar navigation, a card-grid layout for workflows, and dedicated views for Version Control and Pending Changes. Key UI elements include:
+The frontend features a modern dark theme with a redesigned layout. It includes a persistent top header, sidebar navigation, a card-grid layout for workflows, and dedicated views for Version Control and Pending Changes. Key UI elements include:
+- **Top Header**: Persistent header bar across all pages containing the application title and user dropdown selector. Changing the user immediately refreshes all data across the application to reflect the selected user's repository state.
 - Workflow cards displaying name, key, description, phase/task counts, and action buttons.
 - Collapsible commit history display.
 - Branch management via a dropdown selector with visual indicators for the active branch.
@@ -25,6 +26,8 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 - Built with Angular 20.3.6 (Standalone Components) using client-side routing with lazy-loaded components.
 - Utilizes RxJS observables for state management and asynchronous operations.
 - Employs a service-based architecture to separate business logic from presentation.
+- All components subscribe to UserService.currentUser$ observable to automatically refresh data when the user changes via the top header dropdown.
+- Components include AppComponent, WorkflowListComponent, VersionControlComponent, PendingChangesComponent, and PullRequestsComponent, all implementing reactive user context switching.
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API, providing RESTful endpoints.
@@ -68,7 +71,12 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
         - Real-time badge in sidebar navigation showing total pending changes count
         - Auto-refreshes count every 10 seconds to stay synchronized with workflow edits
         - Empty state when no uncommitted changes exist
-- **User Management**: Session-based user selection with isolated Git repository clones for each user.
+- **User Management**: 
+    - Global user selector in top header (always visible across all pages)
+    - Session-based user selection with localStorage persistence
+    - Isolated Git repository clones for each user
+    - Real-time data refresh across all components when user changes
+    - UserService manages current user state via BehaviorSubject/Observable pattern
 
 ### System Design Choices
 

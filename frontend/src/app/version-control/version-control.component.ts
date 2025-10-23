@@ -25,8 +25,6 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   authorEmail = 'user@workflow.com';
   newBranchName = '';
   selectedBranch = '';
-  currentUser = '';
-  availableUsers: string[] = [];
   private destroy$ = new Subject<void>();
   private refresh$ = new Subject<void>();
 
@@ -36,9 +34,6 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.currentUser = this.userService.getCurrentUser();
-    this.availableUsers = this.userService.getAvailableUsers();
-    
     merge(this.userService.currentUser$, this.refresh$).pipe(
       switchMap(() => forkJoin({
         status: this.gitService.getStatus(),
@@ -98,10 +93,6 @@ export class VersionControlComponent implements OnInit, OnDestroy {
     // 2. OR there are commits but no tracking data (new branch case)
     return this.gitStatus.commitsAhead > 0 || 
            (this.commits.length > 0 && this.gitStatus.commitsAhead === 0 && this.gitStatus.commitsBehind === 0);
-  }
-
-  onUserChange() {
-    this.userService.setCurrentUser(this.currentUser);
   }
 
   toggleCommitHistory() {

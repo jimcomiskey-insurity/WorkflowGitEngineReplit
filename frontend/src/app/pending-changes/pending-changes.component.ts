@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subject, merge } from 'rxjs';
+import { takeUntil, switchMap } from 'rxjs/operators';
 import { WorkflowService, Workflow, Phase, TaskItem } from '../services/workflow.service';
+import { UserService } from '../services/user.service';
 
 interface ExtendedPhase extends Phase {
   collapsed: boolean;
@@ -19,16 +22,43 @@ interface ExtendedWorkflow extends Workflow {
   templateUrl: './pending-changes.component.html',
   styleUrls: ['./pending-changes.component.css']
 })
-export class PendingChangesComponent implements OnInit {
+export class PendingChangesComponent implements OnInit, OnDestroy {
   workflows: ExtendedWorkflow[] = [];
   filteredWorkflows: ExtendedWorkflow[] = [];
   selectedFilter: 'all' | 'added' | 'modified' | 'deleted' = 'all';
   totalChanges = 0;
+  private destroy$ = new Subject<void>();
 
-  constructor(private workflowService: WorkflowService) {}
+  constructor(
+    private workflowService: WorkflowService,
+    private userService: UserService
+  ) {}
 
   ngOnInit() {
-    this.loadWorkflows();
+    // Subscribe to user changes and reload workflows
+    merge(this.userService.currentUser$)
+      .pipe(
+        switchMap(() => this.workflowService.getWorkflows()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response) => {
+          this.workflows = response.workflows
+            .map(w => this.extendWorkflow(w))
+            .filter(w => w.hasChanges);
+          
+          this.calculateTotalChanges();
+          this.applyFilter();
+        },
+        error: (error) => {
+          console.error('Error loading workflows:', error);
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadWorkflows() {

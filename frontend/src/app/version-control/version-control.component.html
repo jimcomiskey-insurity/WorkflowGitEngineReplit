@@ -4,12 +4,6 @@
       <h1>Version Control</h1>
       <p class="page-subtitle">Manage branches, commits, and synchronize with remote</p>
     </div>
-    <div class="user-selector">
-      <label for="user-select">User:</label>
-      <select id="user-select" [(ngModel)]="currentUser" (change)="onUserChange()">
-        <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
-      </select>
-    </div>
   </div>
 
   <div class="git-actions-row">
