@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PullRequestService, PullRequest } from '../services/pull-request.service';
+import { CreatePullRequestComponent } from '../create-pull-request/create-pull-request.component';
 
 @Component({
   selector: 'app-pull-requests',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CreatePullRequestComponent],
   templateUrl: './pull-requests.component.html',
   styleUrls: ['./pull-requests.component.css']
 })
