@@ -19,6 +19,7 @@ export class PullRequestsComponent implements OnInit, OnDestroy {
   filteredPullRequests: PullRequest[] = [];
   selectedFilter: 'open' | 'merged' | 'closed' | 'all' = 'all';
   isCreatingPR = false;
+  userId: string = 'userA';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -31,7 +32,10 @@ export class PullRequestsComponent implements OnInit, OnDestroy {
     // Subscribe to user changes and reload pull requests
     merge(this.userService.currentUser$)
       .pipe(
-        switchMap((userId) => this.pullRequestService.getPullRequests(userId)),
+        switchMap((userId) => {
+          this.userId = userId;
+          return this.pullRequestService.getPullRequests(userId);
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
