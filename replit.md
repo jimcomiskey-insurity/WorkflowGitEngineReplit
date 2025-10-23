@@ -117,6 +117,7 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 
 ### Testing Infrastructure
 
+#### Unit Tests
 - **Test Framework**: xUnit with .NET 8.0
 - **Test Location**: `backend.tests/WorkflowConfig.Api.Tests/`
 - **Test Dependencies**:
@@ -130,7 +131,37 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 - **Key Regression Tests**:
     - `MergePullRequest_ShouldPreserveCommitShas`: Ensures merged PRs maintain their original commit SHAs to prevent "0 commits" bug
     - Tests validate that both source and target commit SHAs are stored at PR creation and preserved through merge
-- **Running Tests**: Execute `cd backend.tests/WorkflowConfig.Api.Tests && dotnet test` from project root
+- **Running Unit Tests**: Execute `cd backend.tests/WorkflowConfig.Api.Tests && dotnet test` from project root
+
+#### End-to-End Tests
+- **Test Framework**: Reqnroll (BDD/Gherkin) + xUnit + Selenium WebDriver
+- **Test Location**: `backend.tests/WorkflowConfig.E2E.Tests/`
+- **Test Dependencies**:
+    - Reqnroll (v3.2.0): BDD framework with Gherkin support
+    - Reqnroll.xUnit (v3.2.0): xUnit integration for Reqnroll
+    - xUnit (v2.8.1): Test runner
+    - Selenium.WebDriver (v4.37.0): Browser automation
+    - Selenium.WebDriver.ChromeDriver (v141.0.7390.12200): Chrome driver
+    - Selenium.Support (v4.37.0): Selenium support utilities
+    - FluentAssertions (v8.8.0): Fluent assertion library
+- **Test Architecture**:
+    - **Page Object Model**: Structured page objects for all major pages (WorkflowsPage, VersionControlPage, PullRequestsPage, HeaderComponent)
+    - **BDD with Gherkin**: Human-readable feature files describing test scenarios
+    - **Headless Chrome**: Tests run in headless mode for CI/CD compatibility
+    - **Screenshot capture**: Automatic screenshots on test failures for debugging
+- **Test Coverage**:
+    - Pull request creation, viewing, filtering, and merging
+    - Version control operations (commit, branch switching, push/pull)
+    - Workflow management (create, edit, delete workflows)
+    - Multi-user collaboration scenarios
+- **Feature Files**:
+    - `Features/PullRequests.feature`: PR lifecycle scenarios
+    - `Features/VersionControl.feature`: Git operations scenarios
+    - `Features/WorkflowManagement.feature`: Workflow CRUD scenarios
+- **Running E2E Tests**: 
+    - Start both frontend and backend servers
+    - Execute `cd backend.tests/WorkflowConfig.E2E.Tests && dotnet test`
+    - Tests run against http://localhost:4200 (frontend) and http://localhost:5000 (backend)
 
 ### Frontend Dependencies
 
