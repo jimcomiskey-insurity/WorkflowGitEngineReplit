@@ -79,4 +79,8 @@ export class GitService {
     const userId = this.userService.getCurrentUser();
     return this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${userId}&count=${count}`);
   }
+
+  resetAllRepositories(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset`, {});
+  }
 }

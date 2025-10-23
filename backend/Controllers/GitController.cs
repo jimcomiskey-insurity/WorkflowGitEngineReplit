@@ -8,10 +8,12 @@ namespace WorkflowConfig.Api.Controllers;
 public class GitController : ControllerBase
 {
     private readonly GitService _gitService;
+    private readonly IConfiguration _configuration;
 
-    public GitController(GitService gitService)
+    public GitController(GitService gitService, IConfiguration configuration)
     {
         _gitService = gitService;
+        _configuration = configuration;
     }
 
     [HttpGet("status")]
@@ -89,6 +91,21 @@ public class GitController : ControllerBase
     {
         var commits = _gitService.GetCommitHistory(userId, count);
         return Ok(commits);
+    }
+
+    [HttpPost("reset")]
+    public IActionResult ResetRepositories()
+    {
+        try
+        {
+            var sampleDataPath = Path.Combine(Directory.GetCurrentDirectory(), "sampledata.json");
+            _gitService.ResetAllRepositories(sampleDataPath);
+            return Ok(new { message = "All repositories have been reset successfully. Users will get fresh clones on next access." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }
 

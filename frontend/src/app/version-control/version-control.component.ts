@@ -269,4 +269,21 @@ export class VersionControlComponent implements OnInit, OnDestroy {
     const d = new Date(date);
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
   }
+
+  resetRepositories() {
+    if (!confirm('This will delete all Git repositories and reset them to the initial state with sample data. All users will get fresh clones. This cannot be undone. Are you sure?')) {
+      return;
+    }
+
+    this.gitService.resetAllRepositories().subscribe({
+      next: (response) => {
+        alert('All repositories have been reset successfully! The page will reload to reflect the changes.');
+        window.location.reload();
+      },
+      error: (error) => {
+        console.error('Error resetting repositories:', error);
+        alert('Failed to reset repositories: ' + (error.error?.error || error.message));
+      }
+    });
+  }
 }

@@ -772,4 +772,42 @@ public class GitService
         var options = new PushOptions();
         repo.Network.Push(remote, $"refs/heads/{targetBranch}", options);
     }
+
+    public void ResetAllRepositories(string sampleDataPath)
+    {
+        _logger.LogInformation("Starting repository reset...");
+        
+        try
+        {
+            // Delete all user repositories
+            if (Directory.Exists(_repoBasePath))
+            {
+                _logger.LogInformation("Deleting all user repositories at {Path}", _repoBasePath);
+                Directory.Delete(_repoBasePath, true);
+                Directory.CreateDirectory(_repoBasePath);
+            }
+
+            // Delete central repository
+            if (Directory.Exists(_centralRepoPath))
+            {
+                _logger.LogInformation("Deleting central repository at {Path}", _centralRepoPath);
+                Directory.Delete(_centralRepoPath, true);
+            }
+
+            // Recreate central repository
+            _logger.LogInformation("Recreating central repository");
+            Repository.Init(_centralRepoPath, isBare: true);
+
+            // Initialize with sample data
+            _logger.LogInformation("Initializing sample data");
+            DataInitializer.InitializeSampleData(_centralRepoPath, sampleDataPath);
+
+            _logger.LogInformation("Repository reset completed successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during repository reset");
+            throw;
+        }
+    }
 }
