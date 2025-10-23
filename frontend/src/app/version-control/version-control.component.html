@@ -1,0 +1,166 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Version Control</h1>
+      <p class="page-subtitle">Manage branches, commits, and synchronize with remote</p>
+    </div>
+    <div class="user-selector">
+      <label for="user-select">User:</label>
+      <select id="user-select" [(ngModel)]="currentUser" (change)="onUserChange()">
+        <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="git-actions-row">
+    <button class="secondary" (click)="pullChanges()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M19 12l-7 7-7-7"/>
+      </svg>
+      Pull from Remote
+    </button>
+    <button class="secondary" (click)="pushChanges()" [disabled]="!hasCommitsToPush">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 19V5M5 12l7-7 7 7"/>
+      </svg>
+      Push to Remote
+      <span *ngIf="hasCommitsToPush" class="badge">{{ commitsAheadCount }}</span>
+    </button>
+  </div>
+
+  <div class="content-grid">
+    <div class="card">
+      <div class="card-header">
+        <h2>Current Branch</h2>
+        <button class="small-button" (click)="openBranchDialog()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          New Branch
+        </button>
+      </div>
+
+      <div class="branch-selector">
+        <select [(ngModel)]="selectedBranch" (change)="onBranchChange()">
+          <option *ngFor="let branch of branches" [value]="branch">{{ branch }}</option>
+        </select>
+      </div>
+
+      <div *ngIf="gitStatus && (gitStatus.commitsAhead > 0 || gitStatus.commitsBehind > 0)" class="sync-status">
+        <div *ngIf="gitStatus.commitsBehind > 0" class="sync-item behind">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
+          {{ gitStatus.commitsBehind }} incoming commit{{ gitStatus.commitsBehind > 1 ? 's' : '' }}
+        </div>
+        <div *ngIf="gitStatus.commitsAhead > 0" class="sync-item ahead">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19V5M5 12l7-7 7 7"/>
+          </svg>
+          {{ gitStatus.commitsAhead }} outgoing commit{{ gitStatus.commitsAhead > 1 ? 's' : '' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Pending Changes</h2>
+        <span *ngIf="hasChanges" class="badge">{{ allChangedFiles.length }}</span>
+      </div>
+
+      <div *ngIf="!hasChanges" class="empty-message">
+        <p>No pending changes</p>
+      </div>
+
+      <div *ngIf="hasChanges" class="changes-section">
+        <ul class="changes-list">
+          <li *ngFor="let file of gitStatus!.added" class="added">
+            <span class="status-icon">+</span>
+            {{ file }}
+          </li>
+          <li *ngFor="let file of gitStatus!.modified" class="modified">
+            <span class="status-icon">M</span>
+            {{ file }}
+          </li>
+          <li *ngFor="let file of gitStatus!.removed" class="removed">
+            <span class="status-icon">-</span>
+            {{ file }}
+          </li>
+          <li *ngFor="let file of gitStatus!.untracked" class="untracked">
+            <span class="status-icon">?</span>
+            {{ file }}
+          </li>
+        </ul>
+        <div class="card-actions">
+          <button class="primary" (click)="openCommitDialog()">Commit Changes</button>
+          <button class="danger" (click)="discardChanges()">Discard Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Commit History</h2>
+      <button class="small-button" (click)="toggleCommitHistory()">
+        {{ showCommitHistory ? 'Hide' : 'Show' }} History
+      </button>
+    </div>
+
+    <div *ngIf="showCommitHistory">
+      <div *ngIf="commits.length === 0" class="empty-message">
+        <p>No commits yet. Make your first commit to see history.</p>
+      </div>
+
+      <div *ngIf="commits.length > 0" class="commits-list">
+        <div *ngFor="let commit of commits" class="commit-item">
+          <div class="commit-sha">{{ getShortSha(commit.sha) }}</div>
+          <div class="commit-details">
+            <div class="commit-message">{{ commit.message }}</div>
+            <div class="commit-meta">
+              <span>{{ commit.author }}</span>
+              <span>{{ formatDate(commit.date) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" *ngIf="showCommitDialog" (click)="closeCommitDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>Commit Changes</h2>
+    <div class="form-group">
+      <label>Commit Message:</label>
+      <textarea [(ngModel)]="commitMessage" rows="3" placeholder="Enter commit message"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Author Name:</label>
+      <input type="text" [(ngModel)]="authorName" />
+    </div>
+    <div class="form-group">
+      <label>Author Email:</label>
+      <input type="email" [(ngModel)]="authorEmail" />
+    </div>
+    <div class="modal-actions">
+      <button class="primary" (click)="commitChanges()">Commit</button>
+      <button class="secondary" (click)="closeCommitDialog()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" *ngIf="showBranchDialog" (click)="closeBranchDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>Create New Branch</h2>
+    <div class="form-group">
+      <label>Branch Name:</label>
+      <input type="text" [(ngModel)]="newBranchName" placeholder="e.g., feature/new-workflow" />
+    </div>
+    <div class="modal-actions">
+      <button class="primary" (click)="createBranch()">Create Branch</button>
+      <button class="secondary" (click)="closeBranchDialog()">Cancel</button>
+    </div>
+  </div>
+</div>

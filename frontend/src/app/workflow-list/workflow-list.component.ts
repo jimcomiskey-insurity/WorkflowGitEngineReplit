@@ -2,66 +2,38 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { WorkflowService, Workflow } from '../services/workflow.service';
-import { GitService, GitStatus, CommitInfo } from '../services/git.service';
 import { UserService } from '../services/user.service';
-import { FormsModule } from '@angular/forms';
-import { forkJoin, Subject, merge } from 'rxjs';
+import { Subject, merge } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-workflow-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './workflow-list.component.html',
   styleUrls: ['./workflow-list.component.css']
 })
 export class WorkflowListComponent implements OnInit, OnDestroy {
   workflows: Workflow[] = [];
-  gitStatus: GitStatus | null = null;
-  commits: CommitInfo[] = [];
-  branches: string[] = [];
-  showCommitDialog = false;
-  showCommitHistory = false;
-  showBranchDialog = false;
-  commitMessage = '';
-  authorName = 'User';
-  authorEmail = 'user@workflow.com';
-  newBranchName = '';
-  selectedBranch = '';
-  currentUser = '';
-  availableUsers: string[] = [];
   private destroy$ = new Subject<void>();
   private refresh$ = new Subject<void>();
 
   constructor(
     private workflowService: WorkflowService,
-    private gitService: GitService,
     private userService: UserService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.currentUser = this.userService.getCurrentUser();
-    this.availableUsers = this.userService.getAvailableUsers();
-    
     merge(this.userService.currentUser$, this.refresh$).pipe(
-      switchMap(() => forkJoin({
-        workflows: this.workflowService.getWorkflows(),
-        status: this.gitService.getStatus(),
-        commits: this.gitService.getCommits(20),
-        branches: this.gitService.getBranches()
-      })),
+      switchMap(() => this.workflowService.getWorkflows()),
       takeUntil(this.destroy$)
     ).subscribe({
       next: (data) => {
-        this.workflows = data.workflows.workflows || [];
-        this.gitStatus = data.status;
-        this.commits = data.commits;
-        this.branches = data.branches;
-        this.selectedBranch = data.status.currentBranch || '';
+        this.workflows = data.workflows || [];
       },
       error: (error) => {
-        console.error('Error loading data:', error);
+        console.error('Error loading workflows:', error);
       }
     });
   }
@@ -75,209 +47,32 @@ export class WorkflowListComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onUserChange() {
-    this.userService.setCurrentUser(this.currentUser);
-  }
-
-  toggleCommitHistory() {
-    this.showCommitHistory = !this.showCommitHistory;
-  }
-
-  openBranchDialog() {
-    this.newBranchName = '';
-    this.showBranchDialog = true;
-  }
-
-  closeBranchDialog() {
-    this.showBranchDialog = false;
-    this.newBranchName = '';
-  }
-
-  createBranch() {
-    if (!this.newBranchName.trim()) {
-      alert('Please enter a branch name');
-      return;
-    }
-
-    const branchName = this.newBranchName;
-    this.closeBranchDialog();
-    
-    this.gitService.createBranch(branchName).subscribe({
-      next: () => {
-        this.gitService.switchBranch(branchName).subscribe({
-          next: () => {
-            this.refreshAllData();
-          },
-          error: (error) => {
-            console.error('Error switching to new branch:', error);
-            alert('Branch created but failed to switch to it');
-            this.refreshAllData();
-          }
-        });
-      },
-      error: (error) => {
-        console.error('Error creating branch:', error);
-        alert('Failed to create branch: ' + (error.error?.error || error.message));
-      }
-    });
-  }
-
-  onBranchChange() {
-    const newBranch = this.selectedBranch;
-    const currentBranch = this.gitStatus?.currentBranch || '';
-
-    if (newBranch === currentBranch) {
-      return;
-    }
-
-    if (this.gitStatus?.isDirty) {
-      if (!confirm('You have uncommitted changes. Switching branches will discard them. Continue?')) {
-        this.selectedBranch = currentBranch;
-        return;
-      }
-    }
-
-    this.gitService.switchBranch(newBranch).subscribe({
-      next: () => {
-        this.refreshAllData();
-      },
-      error: (error) => {
-        console.error('Error switching branch:', error);
-        alert('Failed to switch branch');
-        this.selectedBranch = currentBranch;
-      }
-    });
-  }
-
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  }
-
-  getShortSha(sha: string): string {
-    return sha.substring(0, 7);
+  createNewWorkflow() {
+    this.router.navigate(['/workflows/new']);
   }
 
   editWorkflow(key: string) {
-    this.router.navigate(['/workflow', key]);
-  }
-
-  createNewWorkflow() {
-    this.router.navigate(['/workflow']);
+    this.router.navigate(['/workflows/edit', key]);
   }
 
   deleteWorkflow(key: string) {
-    if (confirm(`Are you sure you want to delete workflow "${key}"?`)) {
-      this.workflowService.deleteWorkflow(key).subscribe({
-        next: () => {
-          this.refreshAllData();
-        },
-        error: (error) => {
-          console.error('Error deleting workflow:', error);
-          alert('Failed to delete workflow');
-        }
-      });
-    }
-  }
-
-  openCommitDialog() {
-    this.showCommitDialog = true;
-  }
-
-  closeCommitDialog() {
-    this.showCommitDialog = false;
-    this.commitMessage = '';
-  }
-
-  commitChanges() {
-    if (!this.commitMessage.trim()) {
-      alert('Please enter a commit message');
+    if (!confirm(`Are you sure you want to delete workflow ${key}?`)) {
       return;
     }
 
-    this.gitService.commit({
-      message: this.commitMessage,
-      authorName: this.authorName,
-      authorEmail: this.authorEmail
-    }).subscribe({
+    this.workflowService.deleteWorkflow(key).subscribe({
       next: () => {
-        this.closeCommitDialog();
         this.refreshAllData();
       },
       error: (error) => {
-        console.error('Error committing changes:', error);
-        alert('Failed to commit changes');
+        console.error('Error deleting workflow:', error);
+        alert('Failed to delete workflow');
       }
     });
-  }
-
-  discardChanges() {
-    if (confirm('Are you sure you want to discard all changes? This cannot be undone.')) {
-      this.gitService.discard().subscribe({
-        next: () => {
-          alert('Changes discarded successfully');
-          this.refreshAllData();
-        },
-        error: (error) => {
-          console.error('Error discarding changes:', error);
-          alert('Failed to discard changes');
-        }
-      });
-    }
-  }
-
-  pullChanges() {
-    this.gitService.pull().subscribe({
-      next: () => {
-        alert('Changes pulled successfully');
-        this.refreshAllData();
-      },
-      error: (error) => {
-        console.error('Error pulling changes:', error);
-        alert('Failed to pull changes: ' + (error.error?.error || error.message));
-      }
-    });
-  }
-
-  pushChanges() {
-    this.gitService.push().subscribe({
-      next: () => {
-        alert('Changes pushed successfully');
-        this.refreshAllData();
-      },
-      error: (error) => {
-        console.error('Error pushing changes:', error);
-        alert('Failed to push changes: ' + (error.error?.error || error.message));
-      }
-    });
-  }
-
-  get hasChanges(): boolean {
-    if (!this.gitStatus) return false;
-    return this.gitStatus.isDirty;
-  }
-
-  get hasCommitsToPush(): boolean {
-    if (!this.gitStatus) return false;
-    return this.gitStatus.commitsAhead > 0;
-  }
-
-  get commitsAheadCount(): number {
-    return this.gitStatus?.commitsAhead || 0;
-  }
-
-  get allChangedFiles(): string[] {
-    if (!this.gitStatus) return [];
-    return [
-      ...this.gitStatus.added,
-      ...this.gitStatus.modified,
-      ...this.gitStatus.removed,
-      ...this.gitStatus.untracked
-    ];
   }
 
   getTaskCount(workflow: Workflow): number {
     if (!workflow.phases) return 0;
-    return workflow.phases.reduce((sum, phase) => sum + (phase.tasks?.length || 0), 0);
+    return workflow.phases.reduce((total, phase) => total + (phase.tasks?.length || 0), 0);
   }
 }
