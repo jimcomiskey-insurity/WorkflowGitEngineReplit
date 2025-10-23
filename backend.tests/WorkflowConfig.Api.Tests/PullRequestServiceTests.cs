@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using WorkflowConfig.Api.Models;
@@ -7,24 +9,40 @@ using FluentAssertions;
 
 namespace WorkflowConfig.Api.Tests;
 
-public class PullRequestServiceTests
+public class PullRequestServiceTests : IDisposable
 {
+    private readonly Mock<IConfiguration> _configMock;
+    private readonly Mock<IWebHostEnvironment> _envMock;
     private readonly Mock<ILogger<PullRequestService>> _loggerMock;
     private readonly string _testStoragePath;
     private readonly PullRequestService _service;
 
     public PullRequestServiceTests()
     {
-        _loggerMock = new Mock<ILogger<PullRequestService>>();
         _testStoragePath = Path.Combine(Path.GetTempPath(), $"pr-tests-{Guid.NewGuid()}");
         Directory.CreateDirectory(_testStoragePath);
-        _service = new PullRequestService(_testStoragePath, _loggerMock.Object);
+        
+        _configMock = new Mock<IConfiguration>();
+        _envMock = new Mock<IWebHostEnvironment>();
+        _loggerMock = new Mock<ILogger<PullRequestService>>();
+        
+        _configMock.Setup(c => c["GitSettings:PullRequestsPath"]).Returns(_testStoragePath);
+        _envMock.Setup(e => e.ContentRootPath).Returns(_testStoragePath);
+        
+        _service = new PullRequestService(_configMock.Object, _envMock.Object, _loggerMock.Object);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_testStoragePath))
+        {
+            Directory.Delete(_testStoragePath, true);
+        }
     }
 
     [Fact]
     public void CreatePullRequest_ShouldStoreSourceAndTargetCommitShas()
     {
-        // Arrange
         var request = new CreatePullRequestRequest
         {
             Title = "Test PR",
@@ -35,10 +53,8 @@ public class PullRequestServiceTests
         var sourceCommitSha = "abc123def456";
         var targetCommitSha = "789xyz321uvw";
 
-        // Act
         var result = _service.CreatePullRequest("testUser", request, sourceCommitSha, targetCommitSha);
 
-        // Assert
         result.Should().NotBeNull();
         result.SourceCommitSha.Should().Be(sourceCommitSha);
         result.TargetCommitSha.Should().Be(targetCommitSha);
@@ -49,7 +65,6 @@ public class PullRequestServiceTests
     [Fact]
     public void CreatePullRequest_ShouldIncrementPullRequestNumber()
     {
-        // Arrange
         var request1 = new CreatePullRequestRequest
         {
             Title = "First PR",
@@ -63,11 +78,9 @@ public class PullRequestServiceTests
             TargetBranch = "main"
         };
 
-        // Act
-        var pr1 = _service.CreatePullRequest("user1", request1, "sha1", "sha2");
-        var pr2 = _service.CreatePullRequest("user2", request2, "sha3", "sha4");
+        var pr1 = _service.CreatePullRequest("user1", request1, "abc123def456789", "xyz789uvw012345");
+        var pr2 = _service.CreatePullRequest("user2", request2, "def456ghi789012", "uvw012abc345678");
 
-        // Assert
         pr1.Number.Should().Be(1);
         pr2.Number.Should().Be(2);
     }
@@ -75,20 +88,17 @@ public class PullRequestServiceTests
     [Fact]
     public void MergePullRequest_ShouldUpdateStatusAndMergedDate()
     {
-        // Arrange
         var request = new CreatePullRequestRequest
         {
             Title = "Test PR",
             SourceBranch = "feature",
             TargetBranch = "main"
         };
-        var pr = _service.CreatePullRequest("user", request, "sha1", "sha2");
+        var pr = _service.CreatePullRequest("user", request, "abc123def456789", "xyz789uvw012345");
         var beforeMerge = DateTime.UtcNow;
 
-        // Act
         var merged = _service.MergePullRequest("user", pr.Number);
 
-        // Assert
         merged.Should().NotBeNull();
         merged!.Status.Should().Be("merged");
         merged.MergedDate.Should().NotBeNull();
@@ -98,7 +108,6 @@ public class PullRequestServiceTests
     [Fact]
     public void MergePullRequest_ShouldPreserveCommitShas()
     {
-        // Arrange
         var request = new CreatePullRequestRequest
         {
             Title = "Test PR",
@@ -109,10 +118,8 @@ public class PullRequestServiceTests
         var targetCommitSha = "original-target-sha";
         var pr = _service.CreatePullRequest("user", request, sourceCommitSha, targetCommitSha);
 
-        // Act
         var merged = _service.MergePullRequest("user", pr.Number);
 
-        // Assert - Commit SHAs should remain unchanged after merge
         merged.Should().NotBeNull();
         merged!.SourceCommitSha.Should().Be(sourceCommitSha);
         merged.TargetCommitSha.Should().Be(targetCommitSha);
@@ -121,16 +128,13 @@ public class PullRequestServiceTests
     [Fact]
     public void GetAllPullRequests_ShouldReturnInDescendingOrderByNumber()
     {
-        // Arrange
         var request = new CreatePullRequestRequest { Title = "PR", SourceBranch = "b", TargetBranch = "m" };
-        _service.CreatePullRequest("user", request, "sha1", "sha2");
-        _service.CreatePullRequest("user", request, "sha3", "sha4");
-        _service.CreatePullRequest("user", request, "sha5", "sha6");
+        _service.CreatePullRequest("user", request, "abc123def456789", "xyz789uvw012345");
+        _service.CreatePullRequest("user", request, "def456ghi789012", "uvw012abc345678");
+        _service.CreatePullRequest("user", request, "ghi789jkl012345", "abc345def678901");
 
-        // Act
         var prs = _service.GetAllPullRequests("user");
 
-        // Assert
         prs.Should().HaveCount(3);
         prs[0].Number.Should().Be(3);
         prs[1].Number.Should().Be(2);
@@ -140,21 +144,18 @@ public class PullRequestServiceTests
     [Fact]
     public void GetAllPullRequests_WithStatusFilter_ShouldReturnOnlyMatchingStatus()
     {
-        // Arrange
         var request = new CreatePullRequestRequest { Title = "PR", SourceBranch = "b", TargetBranch = "m" };
-        var pr1 = _service.CreatePullRequest("user", request, "sha1", "sha2");
-        var pr2 = _service.CreatePullRequest("user", request, "sha3", "sha4");
-        var pr3 = _service.CreatePullRequest("user", request, "sha5", "sha6");
+        var pr1 = _service.CreatePullRequest("user", request, "abc123def456789", "xyz789uvw012345");
+        var pr2 = _service.CreatePullRequest("user", request, "def456ghi789012", "uvw012abc345678");
+        var pr3 = _service.CreatePullRequest("user", request, "ghi789jkl012345", "abc345def678901");
         
         _service.MergePullRequest("user", pr1.Number);
         _service.ClosePullRequest("user", pr2.Number);
 
-        // Act
         var openPrs = _service.GetAllPullRequests("user", "open");
         var mergedPrs = _service.GetAllPullRequests("user", "merged");
         var closedPrs = _service.GetAllPullRequests("user", "closed");
 
-        // Assert
         openPrs.Should().HaveCount(1);
         openPrs[0].Number.Should().Be(pr3.Number);
         
@@ -168,17 +169,14 @@ public class PullRequestServiceTests
     [Fact]
     public void GetAllPullRequests_ShouldBeVisibleToAllUsers()
     {
-        // Arrange - Create PRs with different users
         var request = new CreatePullRequestRequest { Title = "PR", SourceBranch = "b", TargetBranch = "m" };
-        _service.CreatePullRequest("userA", request, "sha1", "sha2");
-        _service.CreatePullRequest("userB", request, "sha3", "sha4");
+        _service.CreatePullRequest("userA", request, "abc123def456789", "xyz789uvw012345");
+        _service.CreatePullRequest("userB", request, "def456ghi789012", "uvw012abc345678");
 
-        // Act - Retrieve with different users
         var userAPrs = _service.GetAllPullRequests("userA");
         var userBPrs = _service.GetAllPullRequests("userB");
         var userCPrs = _service.GetAllPullRequests("userC");
 
-        // Assert - All users see the same PRs (global storage)
         userAPrs.Should().HaveCount(2);
         userBPrs.Should().HaveCount(2);
         userCPrs.Should().HaveCount(2);
