@@ -91,6 +91,15 @@ export class VersionControlComponent implements OnInit, OnDestroy {
     return this.gitStatus?.commitsAhead || 0;
   }
 
+  get canPush(): boolean {
+    if (!this.gitStatus) return false;
+    // Allow push if:
+    // 1. There are commits ahead (normal case)
+    // 2. OR there are commits but no tracking data (new branch case)
+    return this.gitStatus.commitsAhead > 0 || 
+           (this.commits.length > 0 && this.gitStatus.commitsAhead === 0 && this.gitStatus.commitsBehind === 0);
+  }
+
   onUserChange() {
     this.userService.setCurrentUser(this.currentUser);
   }
