@@ -8,10 +8,12 @@ public class GitService
 {
     private readonly string _repoBasePath;
     private readonly string _centralRepoPath;
+    private readonly ILogger<GitService> _logger;
     private const string WorkflowFileName = "workflows.json";
 
-    public GitService(IConfiguration configuration, IWebHostEnvironment environment)
+    public GitService(IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
     {
+        _logger = logger;
         var repoBasePath = configuration["GitSettings:RepoBasePath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "user-repos");
         var centralRepoPath = configuration["GitSettings:CentralRepoPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "central-repo");
         
@@ -46,20 +48,27 @@ public class GitService
         
         if (Repository.IsValid(userRepoPath))
         {
+            _logger.LogDebug("Repository for user {UserId} already exists and is valid at {Path}", userId, userRepoPath);
             return; // Already exists and is valid
         }
+        
+        _logger.LogWarning("Repository for user {UserId} is invalid or missing at {Path}. Recreating...", userId, userRepoPath);
         
         // Clean up any partially created directory
         if (Directory.Exists(userRepoPath))
         {
+            _logger.LogWarning("Deleting existing invalid repository directory for user {UserId}", userId);
             Directory.Delete(userRepoPath, true);
         }
 
+        _logger.LogInformation("Cloning central repository for user {UserId}", userId);
         Repository.Clone(_centralRepoPath, userRepoPath);
         
         // Ensure the remote URL is correct after cloning
         using var repo = new Repository(userRepoPath);
         repo.Network.Remotes.Update("origin", r => r.Url = _centralRepoPath);
+        
+        _logger.LogInformation("Successfully created repository for user {UserId}", userId);
     }
 
     private void EnsureUserRepository(string userId)
@@ -68,15 +77,20 @@ public class GitService
         
         if (!Repository.IsValid(userRepoPath))
         {
+            _logger.LogDebug("Repository validation failed for user {UserId} at {Path}", userId, userRepoPath);
             CloneRepositoryForUser(userId);
         }
         else
         {
+            _logger.LogDebug("Repository is valid for user {UserId} at {Path}", userId, userRepoPath);
+            
             // Fix remote URL if it's incorrect (e.g., after data folder relocation)
             using var repo = new Repository(userRepoPath);
             var remote = repo.Network.Remotes["origin"];
             if (remote != null && remote.Url != _centralRepoPath)
             {
+                _logger.LogInformation("Updating remote URL for user {UserId} from {OldUrl} to {NewUrl}", 
+                    userId, remote.Url, _centralRepoPath);
                 repo.Network.Remotes.Update("origin", r => r.Url = _centralRepoPath);
             }
         }

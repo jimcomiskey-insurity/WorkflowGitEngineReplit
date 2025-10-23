@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using WorkflowConfig.Api.Models;
 
 namespace WorkflowConfig.Api.Services;
@@ -8,11 +10,58 @@ public class PullRequestService
     private readonly string _baseStoragePath;
     private readonly ILogger<PullRequestService> _logger;
 
-    public PullRequestService(ILogger<PullRequestService> logger)
+    public PullRequestService(IConfiguration configuration, IWebHostEnvironment environment, ILogger<PullRequestService> logger)
     {
         _logger = logger;
-        _baseStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "data", "pull-requests");
+        
+        // Store PRs outside Git repository in persistent storage
+        var prBasePath = configuration["GitSettings:PullRequestsPath"] ?? "../../workflow-data/pull-requests";
+        
+        _baseStoragePath = Path.IsPathRooted(prBasePath) 
+            ? prBasePath 
+            : Path.GetFullPath(Path.Combine(environment.ContentRootPath, prBasePath));
+            
         Directory.CreateDirectory(_baseStoragePath);
+        _logger.LogInformation("Pull requests storage path: {Path}", _baseStoragePath);
+        
+        // One-time migration: move PR files from old location (inside Git repo) to new persistent location
+        MigrateLegacyPullRequests(environment.ContentRootPath);
+    }
+    
+    private void MigrateLegacyPullRequests(string contentRootPath)
+    {
+        var oldPrPath = Path.GetFullPath(Path.Combine(contentRootPath, "data", "pull-requests"));
+        
+        if (!Directory.Exists(oldPrPath))
+        {
+            return; // No legacy data to migrate
+        }
+        
+        var prFiles = Directory.GetFiles(oldPrPath, "*_pull_requests.json");
+        
+        if (prFiles.Length == 0)
+        {
+            _logger.LogDebug("No legacy pull request files found at {OldPath}", oldPrPath);
+            return;
+        }
+        
+        _logger.LogInformation("Migrating {Count} pull request files from {OldPath} to {NewPath}", 
+            prFiles.Length, oldPrPath, _baseStoragePath);
+        
+        foreach (var oldFile in prFiles)
+        {
+            var fileName = Path.GetFileName(oldFile);
+            var newFile = Path.Combine(_baseStoragePath, fileName);
+            
+            // Only migrate if the file doesn't already exist in the new location
+            if (!File.Exists(newFile))
+            {
+                File.Copy(oldFile, newFile);
+                _logger.LogInformation("Migrated pull requests file: {FileName}", fileName);
+            }
+        }
+        
+        _logger.LogInformation("Pull request migration complete. Legacy files remain at {OldPath} for safety.", oldPrPath);
     }
 
     private string GetPullRequestsFilePath(string userId)

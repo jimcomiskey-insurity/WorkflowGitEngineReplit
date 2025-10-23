@@ -46,6 +46,8 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
     - Close PRs without merging
     - Detailed PR view with metadata, branch info, and change summary
     - Visual status indicators and change type badges
+    - Automatic fetch before comparison and merge to ensure remote branches are visible
+    - Pull requests stored as JSON files in persistent storage (per user), not in Git repository
 - **Git Version Control**:
     - Tracking of changes, committing modifications, and synchronization (pull/push) with a central repository.
     - Display of Git status, commit history (SHA, author, message, date).
@@ -71,7 +73,15 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 ### System Design Choices
 
 - **File-based Storage**: Workflows are stored as JSON files in the file system for simplified Git integration, human readability, and portability, accepting trade-offs in query capabilities and concurrent access limitations suitable for configuration management.
-- **Multi-user Support**: Each user operates within their own isolated Git repository cloned from a central one, ensuring data separation and individual version control.
+- **Persistent Storage**: All runtime data (user repositories, pull requests) is stored in `/home/runner/workflow-data/` outside the Git repository to ensure:
+    - Data persists across server restarts
+    - No nested Git repositories (repositories stored outside application Git repo)
+    - Clean separation between application code and runtime data
+    - Storage paths:
+        - User repositories: `/home/runner/workflow-data/user-repos/`
+        - Central repository: `/home/runner/workflow-data/central-repo/`
+        - Pull requests: `/home/runner/workflow-data/pull-requests/`
+- **Multi-user Support**: Each user operates within their own isolated Git repository cloned from a central one, ensuring data separation and individual version control. Repositories persist across restarts with validation logging to track recreation events.
 - **API Integration**: Frontend communicates with backend via Workflow Service (`/api/workflows`) for workflow CRUD and Git Service (`/api/git`) for version control operations.
 
 ## External Dependencies
