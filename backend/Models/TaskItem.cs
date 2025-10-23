@@ -8,4 +8,5 @@ public class TaskItem
     public double EstimatedDurationHours { get; set; }
     public List<string> Dependencies { get; set; } = new();
     public bool IsAutomated { get; set; }
+    public string? GitStatus { get; set; }
 }

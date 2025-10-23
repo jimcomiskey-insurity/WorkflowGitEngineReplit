@@ -323,4 +323,181 @@ public class GitService
         
         File.WriteAllText(filePath, json);
     }
+
+    public ProgramWorkflows ReadWorkflowsWithGitStatus(string userId)
+    {
+        var workflows = ReadWorkflows(userId);
+        EnrichWithGitStatus(userId, workflows);
+        return workflows;
+    }
+
+    private void EnrichWithGitStatus(string userId, ProgramWorkflows programWorkflows)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        using var repo = new Repository(userRepoPath);
+        
+        var headCommit = repo.Head.Tip;
+        if (headCommit == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var previousVersionJson = GetFileContentFromCommit(repo, headCommit, WorkflowFileName);
+            var previousVersion = string.IsNullOrEmpty(previousVersionJson)
+                ? new ProgramWorkflows { Workflows = new List<Workflow>() }
+                : JsonSerializer.Deserialize<ProgramWorkflows>(previousVersionJson) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
+
+            foreach (var workflow in programWorkflows.Workflows)
+            {
+                var previousWorkflow = previousVersion.Workflows.FirstOrDefault(w => w.WorkflowKey == workflow.WorkflowKey);
+                
+                if (previousWorkflow == null)
+                {
+                    workflow.GitStatus = "added";
+                    MarkAllAsAdded(workflow);
+                }
+                else
+                {
+                    CompareWorkflow(workflow, previousWorkflow);
+                }
+            }
+
+            foreach (var previousWorkflow in previousVersion.Workflows)
+            {
+                if (!programWorkflows.Workflows.Any(w => w.WorkflowKey == previousWorkflow.WorkflowKey))
+                {
+                    previousWorkflow.GitStatus = "deleted";
+                    MarkAllAsDeleted(previousWorkflow);
+                    programWorkflows.Workflows.Add(previousWorkflow);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            return;
+        }
+    }
+
+    private string GetFileContentFromCommit(Repository repo, Commit commit, string fileName)
+    {
+        var treeEntry = commit[fileName];
+        if (treeEntry == null || treeEntry.TargetType != TreeEntryTargetType.Blob)
+        {
+            return string.Empty;
+        }
+
+        var blob = (Blob)treeEntry.Target;
+        return blob.GetContentText();
+    }
+
+    private void CompareWorkflow(Workflow current, Workflow previous)
+    {
+        if (current.WorkflowName != previous.WorkflowName || 
+            current.Description != previous.Description)
+        {
+            current.GitStatus = "modified";
+        }
+
+        foreach (var phase in current.Phases)
+        {
+            var previousPhase = previous.Phases.FirstOrDefault(p => p.PhaseName == phase.PhaseName && p.PhaseOrder == phase.PhaseOrder);
+            
+            if (previousPhase == null)
+            {
+                phase.GitStatus = "added";
+                foreach (var task in phase.Tasks)
+                {
+                    task.GitStatus = "added";
+                }
+            }
+            else
+            {
+                ComparePhase(phase, previousPhase);
+            }
+        }
+
+        foreach (var previousPhase in previous.Phases)
+        {
+            if (!current.Phases.Any(p => p.PhaseName == previousPhase.PhaseName && p.PhaseOrder == previousPhase.PhaseOrder))
+            {
+                previousPhase.GitStatus = "deleted";
+                foreach (var task in previousPhase.Tasks)
+                {
+                    task.GitStatus = "deleted";
+                }
+                current.Phases.Add(previousPhase);
+            }
+        }
+    }
+
+    private void ComparePhase(Phase current, Phase previous)
+    {
+        if (current.PhaseName != previous.PhaseName || current.PhaseOrder != previous.PhaseOrder)
+        {
+            current.GitStatus = "modified";
+        }
+
+        foreach (var task in current.Tasks)
+        {
+            var previousTask = previous.Tasks.FirstOrDefault(t => t.TaskName == task.TaskName);
+            
+            if (previousTask == null)
+            {
+                task.GitStatus = "added";
+            }
+            else
+            {
+                CompareTask(task, previousTask);
+            }
+        }
+
+        foreach (var previousTask in previous.Tasks)
+        {
+            if (!current.Tasks.Any(t => t.TaskName == previousTask.TaskName))
+            {
+                previousTask.GitStatus = "deleted";
+                current.Tasks.Add(previousTask);
+            }
+        }
+    }
+
+    private void CompareTask(TaskItem current, TaskItem previous)
+    {
+        if (current.TaskType != previous.TaskType ||
+            current.AssignedRole != previous.AssignedRole ||
+            current.EstimatedDurationHours != previous.EstimatedDurationHours ||
+            current.IsAutomated != previous.IsAutomated ||
+            !current.Dependencies.SequenceEqual(previous.Dependencies))
+        {
+            current.GitStatus = "modified";
+        }
+    }
+
+    private void MarkAllAsAdded(Workflow workflow)
+    {
+        foreach (var phase in workflow.Phases)
+        {
+            phase.GitStatus = "added";
+            foreach (var task in phase.Tasks)
+            {
+                task.GitStatus = "added";
+            }
+        }
+    }
+
+    private void MarkAllAsDeleted(Workflow workflow)
+    {
+        foreach (var phase in workflow.Phases)
+        {
+            phase.GitStatus = "deleted";
+            foreach (var task in phase.Tasks)
+            {
+                task.GitStatus = "deleted";
+            }
+        }
+    }
 }

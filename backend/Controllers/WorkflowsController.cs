@@ -18,14 +18,14 @@ public class WorkflowsController : ControllerBase
     [HttpGet]
     public IActionResult GetWorkflows([FromQuery] string userId = "default")
     {
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
         return Ok(workflows);
     }
 
     [HttpGet("{workflowKey}")]
     public IActionResult GetWorkflow(string workflowKey, [FromQuery] string userId = "default")
     {
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
         var workflow = workflows.Workflows.FirstOrDefault(w => w.WorkflowKey == workflowKey);
         
         if (workflow == null)

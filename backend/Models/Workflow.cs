@@ -6,4 +6,5 @@ public class Workflow
     public string WorkflowKey { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public List<Phase> Phases { get; set; } = new();
+    public string? GitStatus { get; set; }
 }
