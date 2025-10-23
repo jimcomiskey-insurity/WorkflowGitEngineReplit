@@ -45,3 +45,4 @@
 /home/runner/workspace/backend/obj/Debug/net8.0/WorkflowConfig.Api.pdb
 /home/runner/workspace/backend/obj/Debug/net8.0/WorkflowConfig.Api.genruntimeconfig.cache
 /home/runner/workspace/backend/obj/Debug/net8.0/ref/WorkflowConfig.Api.dll
+/home/runner/workspace/backend/obj/Debug/net8.0/WorkflowConfig.Api.sourcelink.json

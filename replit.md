@@ -107,6 +107,30 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
 - **Multi-user Support**: Each user operates within their own isolated Git repository cloned from a central one, ensuring data separation and individual version control. Repositories persist across restarts with validation logging to track recreation events.
 - **API Integration**: Frontend communicates with backend via Workflow Service (`/api/workflows`) for workflow CRUD and Git Service (`/api/git`) for version control operations.
 
+## Local Development
+
+### Visual Studio Solution
+
+The project includes a complete Visual Studio solution file (`WorkflowConfig.sln`) at the root level that references:
+- **Backend API** (`backend/WorkflowConfig.Api.csproj`)
+- **Unit Tests** (`backend.tests/WorkflowConfig.Api.Tests/WorkflowConfig.Api.Tests.csproj`)
+- **E2E Tests** (`backend.tests/WorkflowConfig.E2E.Tests/WorkflowConfig.E2E.Tests.csproj`)
+
+To work locally:
+1. Clone the repository to a short path (e.g., `C:\wf`) to avoid Windows path length issues
+2. Open `WorkflowConfig.sln` in Visual Studio
+3. Build the solution (`Ctrl+Shift+B`)
+4. Run the backend from Visual Studio or via `dotnet run` in the `backend` folder
+5. Run the frontend separately: `cd frontend && npm install && npm start`
+
+### Git Configuration for Windows
+
+When cloning to Windows, configure Git to handle long paths and line endings:
+```bash
+git config --global core.longpaths true
+git config --global core.autocrlf true
+```
+
 ## External Dependencies
 
 ### Backend Dependencies
