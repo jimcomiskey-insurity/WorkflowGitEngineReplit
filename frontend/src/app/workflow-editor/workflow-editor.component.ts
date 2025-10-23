@@ -143,6 +143,7 @@ export class WorkflowEditorComponent implements OnInit {
       } as ExtendedPhase;
       this.reorderPhases();
       this.closePhaseDialog();
+      this.persistWorkflow();
     }
   }
 
@@ -166,6 +167,7 @@ export class WorkflowEditorComponent implements OnInit {
     if (this.editingPhaseIndex !== null && this.editingTaskIndex !== null && this.editingTask) {
       this.workflow.phases[this.editingPhaseIndex].tasks[this.editingTaskIndex] = { ...this.editingTask };
       this.closeTaskDialog();
+      this.persistWorkflow();
     }
   }
 
@@ -177,12 +179,14 @@ export class WorkflowEditorComponent implements OnInit {
       collapsed: false
     };
     this.workflow.phases.push(newPhase);
+    this.persistWorkflow();
   }
 
   removePhase(index: number) {
     if (confirm('Are you sure you want to remove this phase?')) {
       this.workflow.phases.splice(index, 1);
       this.reorderPhases();
+      this.persistWorkflow();
     }
   }
 
@@ -202,11 +206,37 @@ export class WorkflowEditorComponent implements OnInit {
       isAutomated: false
     };
     this.workflow.phases[phaseIndex].tasks.push(newTask);
+    this.persistWorkflow();
   }
 
   removeTask(phaseIndex: number, taskIndex: number) {
     if (confirm('Are you sure you want to remove this task?')) {
       this.workflow.phases[phaseIndex].tasks.splice(taskIndex, 1);
+      this.persistWorkflow();
     }
+  }
+
+  persistWorkflow() {
+    if (this.isNewWorkflow || !this.originalKey) {
+      return;
+    }
+
+    const workflowToSave = {
+      ...this.workflow,
+      phases: this.workflow.phases.map(phase => {
+        const { collapsed, ...rest } = phase as ExtendedPhase;
+        return rest;
+      })
+    };
+
+    this.workflowService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
+      next: () => {
+        this.loadWorkflow(this.originalKey);
+      },
+      error: (error) => {
+        console.error('Error persisting workflow:', error);
+        alert('Failed to save changes');
+      }
+    });
   }
 }
