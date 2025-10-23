@@ -107,7 +107,15 @@ public class PullRequestSteps
     public void ThenIShouldSeeThePRDetailsPage()
     {
         var detailsLocator = By.CssSelector(".pr-details, .pr-detail-container");
-        PrPage.IsElementPresent(detailsLocator, timeoutSeconds: 5).Should().BeTrue("PR details page should be visible");
+        var basePage = new BasePage(PrPage.Driver);
+        basePage.IsElementPresent(detailsLocator, timeoutSeconds: 5).Should().BeTrue("PR details page should be visible");
+    }
+
+    private class BasePage : PageObjects.BasePage
+    {
+        public IWebDriver Driver { get; }
+        public BasePage(IWebDriver driver) : base(driver) { Driver = driver; }
+        public new bool IsElementPresent(By locator, int timeoutSeconds = 2) => base.IsElementPresent(locator, timeoutSeconds);
     }
 
     [Then(@"I should see the PR title ""(.*)""")]
@@ -135,7 +143,7 @@ public class PullRequestSteps
     public void ThenIShouldSeeTheCommitCount()
     {
         var commitCount = PrPage.GetCommitCount();
-        commitCount.Should().BeGreaterOrEqualTo(0, "Commit count should be displayed");
+        commitCount.Should().BeGreaterThanOrEqualTo(0, "Commit count should be displayed");
     }
 
     [Then(@"the PR status should be ""(.*)""")]
@@ -149,6 +157,6 @@ public class PullRequestSteps
     public void ThenIShouldOnlySeeFilteredPullRequests(string status)
     {
         var prCount = PrPage.GetPullRequestCount();
-        prCount.Should().BeGreaterOrEqualTo(0, $"Should see {status} pull requests");
+        prCount.Should().BeGreaterThanOrEqualTo(0, $"Should see {status} pull requests");
     }
 }

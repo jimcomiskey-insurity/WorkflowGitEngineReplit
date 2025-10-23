@@ -1,9 +1,11 @@
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 
 namespace WorkflowConfig.E2E.Tests.PageObjects;
 
 public class PullRequestsPage : BasePage
 {
+    public IWebDriver Driver => base.Driver;
     public PullRequestsPage(IWebDriver driver) : base(driver) { }
 
     private By PullRequestList => By.CssSelector(".pr-list");
@@ -48,7 +50,7 @@ public class PullRequestsPage : BasePage
         TypeText(PrDescriptionInput, description);
         
         var targetSelect = WaitForElement(TargetBranchSelect);
-        var selectElement = new OpenQA.Selenium.Support.UI.SelectElement(targetSelect);
+        var selectElement = new SelectElement(targetSelect);
         selectElement.SelectByText(targetBranch);
     }
 
