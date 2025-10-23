@@ -53,6 +53,10 @@ The frontend features a modern dark theme with a redesigned layout. It includes 
     - Pull requests stored in a shared global JSON file in persistent storage, visible to all users
     - PRs are collaborative: any user can view, review, and merge PRs created by others
     - Author field tracks who created each PR
+    - **Commit tracking**: Source branch commit SHA is captured at PR creation time
+        - Open PRs show current branch state (updates dynamically as new commits are pushed)
+        - Merged PRs show historical snapshot of what was actually merged (frozen at merge time)
+        - Ensures merged PRs display accurate commit counts and changes even after branches diverge
 - **Git Version Control**:
     - Tracking of changes, committing modifications, and synchronization (pull/push) with a central repository.
     - Display of Git status, commit history (SHA, author, message, date).
