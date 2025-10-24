@@ -103,12 +103,14 @@ cd ..\..
 #### Start Backend (Terminal 1)
 ```powershell
 cd backend
-dotnet run
+dotnet run --launch-profile local
 ```
 
 The backend API will start at:
-- **API**: http://localhost:5000
-- **Swagger UI**: http://localhost:5000/swagger
+- **API**: http://localhost:8000
+- **Swagger UI**: http://localhost:8000/swagger
+
+**Note:** The `local` profile uses `localhost:8000` for local development. The default `http` profile uses `0.0.0.0:8000` for Replit compatibility.
 
 #### Start Frontend (Terminal 2)
 ```powershell
@@ -118,6 +120,8 @@ npm start
 
 The frontend will start at:
 - **Application**: http://localhost:4200
+
+The frontend is configured to proxy API requests (`/api/*`) to the backend at `http://localhost:8000`.
 
 ### Option 3: Using Batch Scripts (Easiest)
 
@@ -188,26 +192,37 @@ You should see:
 ## Environment Configuration
 
 The application uses these default ports:
-- Backend API: `5000`
+- Backend API: `8000`
 - Frontend: `4200`
 
-To customize, set these environment variables before starting:
+### Launch Profiles
+
+The backend has two launch profiles configured in `launchSettings.json`:
+
+1. **`http` (default for Replit)**: Binds to `0.0.0.0:8000` - accessible from external hosts
+2. **`local` (recommended for Windows)**: Binds to `localhost:8000` - local development only
+
+To use the local profile:
+```powershell
+cd backend
+dotnet run --launch-profile local
+```
+
+To customize ports, set environment variables:
 
 ```powershell
 # PowerShell
-$env:ASPNETCORE_URLS = "http://localhost:8000"
-$env:FRONTEND_PORT = "3000"
+$env:ASPNETCORE_URLS = "http://localhost:9000"
 
 # Command Prompt
-set ASPNETCORE_URLS=http://localhost:8000
-set FRONTEND_PORT=3000
+set ASPNETCORE_URLS=http://localhost:9000
 ```
 
 For E2E tests, you can override the URLs:
 
 ```powershell
 $env:TEST_FRONTEND_URL = "http://localhost:4200"
-$env:TEST_BACKEND_URL = "http://localhost:5000"
+$env:TEST_BACKEND_URL = "http://localhost:8000"
 ```
 
 ## Troubleshooting
@@ -249,20 +264,22 @@ git clone <url> wf
 
 ### Backend Won't Start - Port Already in Use
 
-**Problem:** "Failed to bind to address http://localhost:5000"
+**Problem:** "Failed to bind to address http://localhost:8000"
 
 **Solution:**
 ```powershell
-# Find process using port 5000
-netstat -ano | findstr :5000
+# Find process using port 8000
+netstat -ano | findstr :8000
 
 # Kill the process (use PID from previous command)
 taskkill /PID <pid> /F
 
 # Or change the port
 cd backend
-dotnet run --urls "http://localhost:5001"
+dotnet run --urls "http://localhost:9000"
 ```
+
+**Note:** If you change the backend port, you must also update `frontend/proxy.conf.json` to match.
 
 ### Frontend Won't Start - Port 4200 in Use
 
@@ -442,7 +459,7 @@ Now that you're set up locally:
 ## Getting Help
 
 - **Architecture docs**: See `replit.md` for detailed system design
-- **API docs**: Run backend and visit http://localhost:5000/swagger
+- **API docs**: Run backend and visit http://localhost:8000/swagger
 - **Test examples**: Look at existing tests in `backend.tests/`
 
 Happy coding! 🚀

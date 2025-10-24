@@ -27,7 +27,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd backend && dotnet run"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:8000 dotnet run"
 waitForPort = 8000
 
 [[workflows.workflow]]
@@ -51,5 +51,5 @@ localPort = 8000
 externalPort = 8000
 
 [[ports]]
-localPort = 37193
+localPort = 39957
 externalPort = 3000
