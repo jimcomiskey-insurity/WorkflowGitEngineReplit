@@ -131,6 +131,18 @@ git config --global core.longpaths true
 git config --global core.autocrlf true
 ```
 
+### Windows Compatibility
+
+The backend includes Windows-specific optimizations to handle file locking issues:
+
+**File Locking Mitigation** (`InitializeSampleData.cs`):
+- LibGit2Sharp can hold file locks on Git pack files (`.idx`, `.pack`) even after disposing Repository objects on Windows
+- **Retry Logic**: `DeleteDirectoryWithRetry()` attempts deletion up to 3 times with 500ms delays between attempts
+- **Forced Garbage Collection**: `ForceGarbageCollection()` called after disposing repositories to release native handles
+- **Read-Only Attributes**: `RemoveReadOnlyAttributes()` removes read-only flags that Git sets on Windows
+- **Graceful Degradation**: If deletion fails after retries, logs a warning and continues startup instead of crashing
+- This prevents the "Access to the path 'pack-*.idx' is denied" error during backend initialization on Windows
+
 ## External Dependencies
 
 ### Backend Dependencies
