@@ -55,6 +55,12 @@ public class VersionControlSteps
         _scenarioContext["RemoteAhead"] = true;
     }
 
+    [When(@"I navigate to the version control page")]
+    public void WhenINavigateToTheVersionControlPage()
+    {
+        VcPage.Navigate();
+    }
+
     [When(@"I view the commit history")]
     public void WhenIViewTheCommitHistory()
     {
