@@ -473,3 +473,8 @@ $RECYCLE.BIN/
 
 # IDE
 .idea/
+ 
+ #   A d d i t i o n a l   c o v e r a g e   f o r   b u i l d   o u t p u t s  
+ * * / [ B b ] i n /  
+ * * / [ O o ] b j /  
+ 
