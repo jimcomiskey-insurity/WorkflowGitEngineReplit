@@ -57,10 +57,25 @@ Preferred communication style: Simple, everyday language.
 
 **Frontend testing patterns:**
 - Use `TestBed.configureTestingModule()` for Angular dependency injection
-- Mock HttpClient using Jest mocks or Angular's HttpTestingController
+- Use `provideHttpClient()` and `provideHttpClientTesting()` providers (Angular 18+) instead of deprecated HttpClientTestingModule
+- Mock HttpClient using Angular's HttpTestingController for HTTP request/response testing
 - Test RxJS observables using marble testing or subscription patterns
 - Use `fixture.detectChanges()` to trigger change detection in tests
 - Mock route parameters and navigation for router-dependent components
+
+**HTTP Testing Setup (Modern Angular 18+):**
+```typescript
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+
+TestBed.configureTestingModule({
+  providers: [
+    provideHttpClient(),
+    provideHttpClientTesting(),
+    YourService
+  ]
+});
+```
 
 ## System Architecture
 

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { WorkflowService, Workflow, ProgramWorkflows, Phase, TaskItem } from './workflow.service';
 import { UserService } from './user.service';
 
@@ -42,8 +43,9 @@ describe('WorkflowService', () => {
     } as any;
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         WorkflowService,
         { provide: UserService, useValue: userServiceMock }
       ]
