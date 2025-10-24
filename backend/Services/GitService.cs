@@ -458,6 +458,10 @@ public class GitService
         {
             current.GitStatus = "modified";
         }
+        else
+        {
+            current.GitStatus = null;
+        }
 
         foreach (var phase in current.Phases)
         {
@@ -496,6 +500,10 @@ public class GitService
         if (current.PhaseName != previous.PhaseName || current.PhaseOrder != previous.PhaseOrder)
         {
             current.GitStatus = "modified";
+        }
+        else
+        {
+            current.GitStatus = null;
         }
 
         foreach (var task in current.Tasks)
@@ -536,6 +544,10 @@ public class GitService
             !current.Dependencies.SequenceEqual(previous.Dependencies))
         {
             current.GitStatus = "modified";
+        }
+        else
+        {
+            current.GitStatus = null;
         }
     }
 
