@@ -1,49 +1,151 @@
-# .NET
-bin/
-obj/
-*.user
+# .NET Build Outputs
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider
+.vs/
+.vscode/
+.idea/
+*.rsuser
 *.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Build Results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Caches
 *.cache
 *.dll
 *.exe
 *.pdb
-*.log
-data/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
-*.DotSettings.user
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+
+# Test Results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+*.codecov
+_Chutzpah*
+
+# Reqnroll / SpecFlow Generated Files
+*.feature.cs
+*.feature.ndjson
+**/Features/**/*.feature.cs
+**/obj/**/Features/**/*.feature.ndjson
 
 # Angular
 node_modules/
 dist/
 .angular/
 *.js.map
-
-# IDE
-.vs/
-.vscode/
-.idea/
-*.swp
-*~
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Runtime Data (Replit-specific)
 /home/runner/workflow-data/
-
-# Test Results
-TestResults/
-*.trx
-*.coverage
-coverage/
+data/
 
 # Screenshots from E2E tests
 screenshots/
 *.png
+!**/assets/**/*.png
 
 # Temporary files
 *.tmp
 *.temp
 /tmp/
+*.swp
+*~
 
 # OS Files
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Environment Files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Keep example files
+!.env.example
