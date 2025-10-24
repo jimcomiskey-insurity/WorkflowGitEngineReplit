@@ -139,11 +139,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
               
               if (shouldPush) {
                 this.pushChanges();
-              } else {
-                alert('Changes committed locally. Remember to push before creating a pull request!');
               }
-            } else {
-              alert('Changes committed successfully!');
             }
           }
         });

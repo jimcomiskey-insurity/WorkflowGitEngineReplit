@@ -83,7 +83,6 @@ export class WorkflowEditorComponent implements OnInit {
     if (this.isNewWorkflow) {
       this.workflowService.createWorkflow(workflowToSave).subscribe({
         next: () => {
-          alert('Workflow created successfully');
           this.router.navigate(['/workflows']);
         },
         error: (error) => {
