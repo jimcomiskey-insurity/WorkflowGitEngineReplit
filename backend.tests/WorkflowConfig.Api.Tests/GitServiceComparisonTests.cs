@@ -342,6 +342,52 @@ public class GitServiceComparisonTests : IDisposable
     }
 
     [Fact]
+    public void EnrichWithGitStatus_WithDeletedWorkflow_ShouldMarkAsDeleted()
+    {
+        // Arrange
+        var userId = "testUser";
+        var workflow1 = new Workflow
+        {
+            WorkflowKey = "workflow-1",
+            WorkflowName = "Workflow 1",
+            Description = "Description 1",
+            Phases = new List<Phase>()
+        };
+        var workflow2 = new Workflow
+        {
+            WorkflowKey = "workflow-2",
+            WorkflowName = "Workflow 2",
+            Description = "Description 2",
+            Phases = new List<Phase>()
+        };
+
+        var programWorkflows = new ProgramWorkflows
+        {
+            Workflows = new List<Workflow> { workflow1, workflow2 }
+        };
+
+        // Create initial commit with two workflows
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+
+        // Act: Delete one workflow
+        programWorkflows.Workflows.Remove(workflow2);
+        _gitService.WriteWorkflows(userId, programWorkflows);
+
+        // Read workflows with git status enrichment
+        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+
+        // Assert
+        enrichedWorkflows.Workflows.Should().HaveCount(2, "deleted workflow should still appear in the list");
+        
+        var existingWorkflow = enrichedWorkflows.Workflows.First(w => w.WorkflowKey == "workflow-1");
+        existingWorkflow.GitStatus.Should().BeNull("existing workflow unchanged");
+        
+        var deletedWorkflow = enrichedWorkflows.Workflows.First(w => w.WorkflowKey == "workflow-2");
+        deletedWorkflow.GitStatus.Should().Be("deleted", "workflow was removed");
+    }
+
+    [Fact]
     public void EnrichWithGitStatus_CommitThenModifyThenCommit_ShouldClearStatusAfterSecondCommit()
     {
         // REGRESSION TEST: Verifies the full workflow of the reported bug
