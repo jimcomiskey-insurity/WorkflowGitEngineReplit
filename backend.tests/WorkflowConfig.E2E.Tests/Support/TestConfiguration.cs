@@ -2,9 +2,11 @@ namespace WorkflowConfig.E2E.Tests.Support;
 
 public static class TestConfiguration
 {
-    public static string BaseUrl => Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:5000";
+    public static string FrontendUrl => Environment.GetEnvironmentVariable("TEST_FRONTEND_URL") ?? "http://localhost:4200";
     
-    public static string BackendUrl => Environment.GetEnvironmentVariable("BACKEND_URL") ?? "http://localhost:5264";
+    public static string BackendUrl => Environment.GetEnvironmentVariable("TEST_BACKEND_URL") ?? "http://localhost:5000";
+    
+    public static string BaseUrl => FrontendUrl;
     
     public static TimeSpan DefaultTimeout => TimeSpan.FromSeconds(30);
     
