@@ -9,72 +9,134 @@ A full-stack application for managing insurance workflow configurations with int
 - **Version Control**: LibGit2Sharp for Git operations
 - **Testing**: xUnit, Reqnroll (BDD), Selenium WebDriver
 
-## Getting Started
+## 🚀 Quick Start
 
-### Prerequisites
+Choose your development environment:
 
-- .NET 8.0 SDK
-- Node.js 20+
-- Visual Studio 2022 (recommended) or VS Code
-- Git
+### Local Development (Windows)
 
-### Cloning the Repository (Windows)
+**For complete step-by-step setup instructions, see [LOCAL_SETUP.md](./LOCAL_SETUP.md)**
 
-To avoid path length issues and line ending problems when cloning to Windows:
-
-```bash
-# Configure Git first
+Quick start:
+```powershell
+# 1. Configure Git for Windows
 git config --global core.longpaths true
 git config --global core.autocrlf true
 
-# Clone to a short path
+# 2. Clone to short path
 cd C:\
 git clone <repository-url> wf
 cd wf
+
+# 3. Start everything
+run-all.bat
 ```
 
-### Building the Solution
+Then visit http://localhost:4200
 
-#### Option 1: Using Visual Studio
-1. Open `WorkflowConfig.sln` in Visual Studio 2022
-2. Build the solution (`Ctrl+Shift+B`)
-3. Set `WorkflowConfig.Api` as the startup project
-4. Press F5 to run
+### Developing on Replit
 
-#### Option 2: Using Command Line
-```bash
-# Build the entire solution
-dotnet build WorkflowConfig.sln
+**For Replit-based development:**
+- Code is already cloned and configured
+- Backend runs on port 5000
+- Frontend runs on port 4200
+- E2E tests run against the Replit environment
 
-# Run the backend API
+## Prerequisites
+
+- .NET 8.0 SDK
+- Node.js 20+
+- Visual Studio 2022 (for local development) or Replit IDE
+- Git (configured for long paths on Windows)
+- Google Chrome (for running E2E tests)
+
+## Building the Solution
+
+### Local Development (Recommended)
+
+**Option 1: Using Batch Scripts (Easiest)**
+```powershell
+# Start both backend and frontend
+run-all.bat
+
+# Or start individually
+start-backend.bat
+start-frontend.bat
+```
+
+**Option 2: Using Visual Studio**
+1. Open `WorkflowConfig.sln`
+2. Build solution (`Ctrl+Shift+B`)
+3. Run backend (F5)
+4. Run frontend in terminal: `cd frontend && npm start`
+
+**Option 3: Using Command Line**
+```powershell
+# Terminal 1 - Backend
 cd backend
 dotnet run
 
-# In a separate terminal, run the frontend
+# Terminal 2 - Frontend
 cd frontend
 npm install
 npm start
 ```
 
-The application will be available at:
+### Running on Replit
+
+The workflows are already configured - just start them in the Replit workspace.
+
+## Application URLs
+
+**Local Development:**
 - Frontend: http://localhost:4200
 - Backend API: http://localhost:5000
 - Swagger UI: http://localhost:5000/swagger
 
-### Running Tests
+**Replit:**
+- URLs are dynamically assigned and shown in the webview
 
-#### Unit Tests
-```bash
-cd backend.tests/WorkflowConfig.Api.Tests
+## Running Tests
+
+### Unit Tests (9 tests - Run Anywhere)
+```powershell
+cd backend.tests\WorkflowConfig.Api.Tests
 dotnet test
 ```
 
-#### End-to-End Tests
+### E2E Tests (11 tests - Requires Running App)
+
+**Local Development:**
+```powershell
+# Start both servers first!
+run-all.bat
+
+# Then in a new terminal:
+cd backend.tests\WorkflowConfig.E2E.Tests
+dotnet test
+```
+
+**On Replit:**
 ```bash
-# Make sure both frontend and backend are running first
 cd backend.tests/WorkflowConfig.E2E.Tests
 dotnet test
 ```
+
+**Note:** E2E tests run against localhost by default. To test against a different environment:
+```powershell
+$env:TEST_FRONTEND_URL = "https://your-app.replit.dev"
+$env:TEST_BACKEND_URL = "https://your-app.replit.dev"
+dotnet test
+```
+
+## Visual Studio Test Explorer
+
+All tests appear in Test Explorer:
+1. Open **Test → Test Explorer**
+2. Click **Run All** to execute all 20 tests
+3. Tests are organized by project:
+   - **WorkflowConfig.Api.Tests** (9 unit tests)
+   - **WorkflowConfig.E2E.Tests** (11 BDD scenarios)
 
 ## Project Structure
 
@@ -110,12 +172,13 @@ WorkflowConfig.sln                  # Visual Studio solution file
 
 ## Documentation
 
-See [replit.md](./replit.md) for comprehensive architecture documentation, including:
-- System design decisions
-- UI/UX specifications
-- API endpoints
-- Testing strategy
-- Deployment considerations
+- **[LOCAL_SETUP.md](./LOCAL_SETUP.md)** - Complete Windows setup guide with troubleshooting
+- **[replit.md](./replit.md)** - Comprehensive architecture documentation:
+  - System design decisions
+  - UI/UX specifications  
+  - API endpoints
+  - Testing strategy
+  - Multi-user support details
 
 ## Contributing
 
