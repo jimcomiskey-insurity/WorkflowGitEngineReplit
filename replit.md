@@ -31,6 +31,37 @@ Preferred communication style: Simple, everyday language.
 - Mirror the backend structure in test projects
 - One test file per service/controller
 
+### Frontend Testing Requirements
+
+**Mandatory for all frontend code changes:**
+- Always write unit tests for new components, services, and utilities
+- Use Jest as the testing framework for Angular frontend code
+- Use jest-preset-angular for Angular-specific Jest configuration
+- Follow Describe/It/Expect pattern (similar to AAA: Arrange, Act, Assert)
+- Target minimum 80% code coverage for new code
+- Run all tests before marking tasks as complete
+- Update existing tests when modifying functionality
+
+**Frontend test execution workflow:**
+- Run `npm test` in the frontend directory before deployment
+- All tests must pass before marking work complete
+- Use Jest's built-in mocking for dependencies and HTTP calls
+- Use Angular's TestBed for component and service testing
+
+**Frontend test organization:**
+- Test files: Co-located with source files using `.spec.ts` suffix
+- Component tests: Test rendering, user interactions, and bindings
+- Service tests: Test business logic, HTTP calls, and RxJS streams
+- Integration tests: Test component-service interactions
+- Each component/service should have a corresponding `.spec.ts` file
+
+**Frontend testing patterns:**
+- Use `TestBed.configureTestingModule()` for Angular dependency injection
+- Mock HttpClient using Jest mocks or Angular's HttpTestingController
+- Test RxJS observables using marble testing or subscription patterns
+- Use `fixture.detectChanges()` to trigger change detection in tests
+- Mock route parameters and navigation for router-dependent components
+
 ## System Architecture
 
 ### UI/UX Decisions
