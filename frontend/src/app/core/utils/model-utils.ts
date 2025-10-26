@@ -180,6 +180,7 @@ export class ModelUtils {
         if (errorContainer && errorContainer.Errors) {
             return _.filter<any>(errorContainer.Errors, err => err.Path);
         }
+        return [];
     }
 
     static getTaskType(task: BaseModel) {

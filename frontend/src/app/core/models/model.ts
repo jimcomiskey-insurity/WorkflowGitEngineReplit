@@ -76,7 +76,7 @@ export abstract class VertexModel extends BaseModel {
         });
     }
 
-    protected _deserialize(input: Object, context: BaseDataContext): void {
+    protected override _deserialize(input: Object, context: BaseDataContext): void {
         var data: any = _.omit(input, ["@Type"]);
         super._deserialize(data, context);
     }
@@ -106,7 +106,7 @@ export abstract class EdgeModel extends BaseModel {
         this.data.In = value;
     }
 
-    protected _deserialize(input: Object, context: BaseDataContext): void {
+    protected override _deserialize(input: Object, context: BaseDataContext): void {
         var data: any = _.omit(input, ["@Relationship", "@RelationshipId", "@Type"]);
         data.Id = input["@RelationshipId"];
         super._deserialize(data, context);
@@ -114,7 +114,7 @@ export abstract class EdgeModel extends BaseModel {
 }
 
 export abstract class DocumentModel extends BaseModel {
-    protected _deserialize(input: Object, context: BaseDataContext): void {
+    protected override _deserialize(input: Object, context: BaseDataContext): void {
         var data: any = _.omit(input, ["@Type"]);
         super._deserialize(data, context);
     }
