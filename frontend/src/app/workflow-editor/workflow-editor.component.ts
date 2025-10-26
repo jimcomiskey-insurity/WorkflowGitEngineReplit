@@ -2,10 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { WorkflowService, Workflow, Phase, TaskItem } from '../services/workflow.service';
+import { Workflow, Phase, TaskItem } from '../services/workflow.service';
+import { WorkflowStateService } from '../services/workflow-state.service';
 import { GitEventService } from '../services/git-event.service';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, map } from 'rxjs/operators';
 
 interface ExtendedPhase extends Phase {
   collapsed?: boolean;
@@ -38,7 +39,7 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private workflowService: WorkflowService,
+    private workflowStateService: WorkflowStateService,
     private gitEventService: GitEventService,
     private router: Router,
     private route: ActivatedRoute
@@ -49,18 +50,33 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
       if (params['key']) {
         this.isNewWorkflow = false;
         this.originalKey = params['key'];
-        this.loadWorkflow(params['key']);
-      }
-    });
-
-    // Reload workflow when git events occur (branch switch, pull, etc.)
-    this.gitEventService.events$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: () => {
-        if (!this.isNewWorkflow && this.originalKey) {
-          this.loadWorkflow(this.originalKey);
-        }
+        
+        // Subscribe to workflows and filter for this specific workflow
+        // Automatically updates when any change occurs (user switch, git ops, etc.)
+        this.workflowStateService.workflows$.pipe(
+          map(workflows => workflows.find(w => w.workflowKey === this.originalKey)),
+          takeUntil(this.destroy$)
+        ).subscribe({
+          next: (workflow) => {
+            if (workflow) {
+              this.workflow = {
+                ...workflow,
+                phases: workflow.phases.map(phase => ({
+                  ...phase,
+                  collapsed: (this.workflow.phases.find(p => p.phaseName === phase.phaseName) as ExtendedPhase)?.collapsed || false
+                } as ExtendedPhase))
+              };
+            } else if (!this.isNewWorkflow) {
+              // Workflow not found
+              console.error('Workflow not found:', this.originalKey);
+              alert('Workflow not found');
+              this.router.navigate(['/workflows']);
+            }
+          },
+          error: (error) => {
+            console.error('Error loading workflow:', error);
+          }
+        });
       }
     });
   }
@@ -68,23 +84,6 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  loadWorkflow(key: string) {
-    this.workflowService.getWorkflow(key).subscribe({
-      next: (workflow) => {
-        this.workflow = workflow;
-        this.workflow.phases = this.workflow.phases.map(phase => ({
-          ...phase,
-          collapsed: false
-        } as ExtendedPhase));
-      },
-      error: (error) => {
-        console.error('Error loading workflow:', error);
-        alert('Failed to load workflow');
-        this.router.navigate(['/workflows']);
-      }
-    });
   }
 
   saveWorkflow() {
@@ -102,7 +101,7 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
     };
 
     if (this.isNewWorkflow) {
-      this.workflowService.createWorkflow(workflowToSave).subscribe({
+      this.workflowStateService.createWorkflow(workflowToSave).subscribe({
         next: () => {
           this.router.navigate(['/workflows']);
         },
@@ -112,11 +111,10 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      this.workflowService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
+      this.workflowStateService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
         next: () => {
           alert('Workflow updated successfully');
           this.closePropertiesDialog();
-          this.loadWorkflow(this.originalKey);
           this.gitEventService.emitCommit();
         },
         error: (error) => {
@@ -256,9 +254,9 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
       })
     };
 
-    this.workflowService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
+    this.workflowStateService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
       next: () => {
-        this.loadWorkflow(this.originalKey);
+        // State automatically refreshes - workflow will update via subscription
         this.gitEventService.emitCommit();
       },
       error: (error) => {

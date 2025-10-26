@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { tap, shareReplay, switchMap, map } from 'rxjs/operators';
+import { tap, shareReplay, switchMap, map, startWith } from 'rxjs/operators';
 import { UserService } from './user.service';
+import { GitEventService } from './git-event.service';
 import { Workflow } from './workflow.service';
 
 export interface ProgramWorkflows {
@@ -36,12 +37,18 @@ export class WorkflowStateService {
 
   constructor(
     private http: HttpClient,
-    private userService: UserService
+    private userService: UserService,
+    private gitEventService: GitEventService
   ) {
-    // Create observable stream that automatically refreshes when user changes or refresh is triggered
+    // Create observable stream that automatically refreshes when:
+    // - User changes
+    // - Manual refresh is triggered
+    // - Git events occur (commit, push, pull, discard, branch switch, etc.)
+    // Note: startWith(null) ensures combineLatest emits immediately on startup
     const userWithRefresh$ = combineLatest([
       this.userService.currentUser$,
-      this.refreshTrigger$
+      this.refreshTrigger$,
+      this.gitEventService.events$.pipe(startWith(null))
     ]).pipe(
       map(([user]) => user)
     );

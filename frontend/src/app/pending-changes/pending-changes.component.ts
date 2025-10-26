@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, merge } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
-import { WorkflowService, Workflow, Phase, TaskItem } from '../services/workflow.service';
-import { UserService } from '../services/user.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Workflow, Phase, TaskItem } from '../services/workflow.service';
+import { WorkflowStateService } from '../services/workflow-state.service';
 
 interface ExtendedPhase extends Phase {
   collapsed: boolean;
@@ -30,41 +30,16 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private workflowService: WorkflowService,
-    private userService: UserService
+    private workflowStateService: WorkflowStateService
   ) {}
 
   ngOnInit() {
-    // Subscribe to user changes and reload workflows
-    merge(this.userService.currentUser$)
-      .pipe(
-        switchMap(() => this.workflowService.getWorkflows()),
-        takeUntil(this.destroy$)
-      )
-      .subscribe({
-        next: (response) => {
-          this.workflows = response.workflows
-            .map(w => this.extendWorkflow(w))
-            .filter(w => w.hasChanges);
-          
-          this.calculateTotalChanges();
-          this.applyFilter();
-        },
-        error: (error) => {
-          console.error('Error loading workflows:', error);
-        }
-      });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  loadWorkflows() {
-    this.workflowService.getWorkflows().subscribe({
-      next: (response) => {
-        this.workflows = response.workflows
+    // Subscribe to workflows - automatically updates when state changes
+    this.workflowStateService.workflows$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (workflows) => {
+        this.workflows = workflows
           .map(w => this.extendWorkflow(w))
           .filter(w => w.hasChanges);
         
@@ -75,6 +50,11 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
         console.error('Error loading workflows:', error);
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   extendWorkflow(workflow: Workflow): ExtendedWorkflow {

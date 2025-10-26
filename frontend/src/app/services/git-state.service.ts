@@ -3,25 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { tap, shareReplay, switchMap, map } from 'rxjs/operators';
 import { UserService } from './user.service';
-
-export interface GitStatus {
-  isDirty: boolean;
-  added: string[];
-  modified: string[];
-  removed: string[];
-  untracked: string[];
-  currentBranch: string;
-  commitsAhead: number;
-  commitsBehind: number;
-  hasRemoteTracking?: boolean;
-}
-
-export interface CommitInfo {
-  sha: string;
-  message: string;
-  author: string;
-  date: string;
-}
+import { GitStatus, CommitInfo } from './git.service';
 
 export interface LastPushedCommitResponse {
   commitSha: string | null;
