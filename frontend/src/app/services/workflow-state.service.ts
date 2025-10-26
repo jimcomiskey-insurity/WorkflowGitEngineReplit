@@ -54,6 +54,8 @@ export class WorkflowStateService {
     );
 
     // Workflows stream
+    // Note: We don't use shareReplay here because it would cache the HTTP response
+    // and prevent fresh fetches when refresh() is called
     this.workflows$ = userWithRefresh$.pipe(
       tap(userId => console.log('[WorkflowStateService] Fetching workflows for user:', userId)),
       switchMap(userId => 
@@ -63,14 +65,12 @@ export class WorkflowStateService {
       tap(workflows => {
         console.log('[WorkflowStateService] Received workflows:', workflows.length, 'workflows');
         this.workflowsSubject.next(workflows);
-      }),
-      shareReplay(1)
+      })
     );
 
     // Derived stream: Count of workflows with pending changes
     this.pendingChangesCount$ = this.workflows$.pipe(
-      map(workflows => this.countPendingChanges(workflows)),
-      shareReplay(1)
+      map(workflows => this.countPendingChanges(workflows))
     );
 
     // Initialize - trigger first load
