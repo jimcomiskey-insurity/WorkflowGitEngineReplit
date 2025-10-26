@@ -210,6 +210,14 @@ public class GitService
             throw new InvalidOperationException("Not currently on a branch");
         }
         
+        // Block direct pushes to master branch
+        if (currentBranch.FriendlyName == "master" || currentBranch.FriendlyName == "main")
+        {
+            throw new InvalidOperationException(
+                "Direct pushes to the master branch are not allowed. " +
+                "Please create a new branch for your changes and submit a pull request.");
+        }
+        
         var options = new PushOptions();
         
         try

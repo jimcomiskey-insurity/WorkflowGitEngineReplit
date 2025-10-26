@@ -128,19 +128,6 @@ export class VersionControlComponent implements OnInit, OnDestroy {
             this.gitStatus = data.status;
             this.commits = data.commits;
             this.closeCommitDialog();
-            
-            // Prompt to push changes to remote
-            if (this.gitStatus.commitsAhead > 0) {
-              const shouldPush = confirm(
-                `Changes committed successfully!\n\n` +
-                `You have ${this.gitStatus.commitsAhead} unpushed commit(s).\n` +
-                `Would you like to push your changes to the remote now?`
-              );
-              
-              if (shouldPush) {
-                this.pushChanges();
-              }
-            }
           }
         });
       },
