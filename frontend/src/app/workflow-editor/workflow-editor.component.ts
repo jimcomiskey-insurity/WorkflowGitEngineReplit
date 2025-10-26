@@ -257,7 +257,7 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
     this.workflowStateService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
       next: () => {
         // State automatically refreshes - workflow will update via subscription
-        this.gitEventService.emitCommit();
+        // No need to emit events here - the WorkflowStateService handles refresh automatically
       },
       error: (error) => {
         console.error('Error persisting workflow:', error);
