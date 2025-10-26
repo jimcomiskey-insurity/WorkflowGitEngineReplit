@@ -201,37 +201,22 @@ describe('VersionControlComponent', () => {
       expect(component.canPush).toBe(false);
     });
 
-    it('should return true for new branch with commits but no tracking', () => {
+    it('should return false on tracked feature branch with history but no commits ahead', () => {
+      // REGRESSION TEST: Ensure the button stays disabled when branch is up-to-date
+      // Even though the branch has commit history, there are no commits to push
       component.gitStatus = {
         isDirty: false,
         added: [],
         modified: [],
         removed: [],
         untracked: [],
-        currentBranch: 'new-feature',
+        currentBranch: 'feature-branch',
         commitsAhead: 0,
         commitsBehind: 0
       };
       component.commits = [
-        { sha: 'abc123', message: 'Initial commit', author: 'Test', date: '2025-01-01T00:00:00Z' }
-      ];
-
-      expect(component.canPush).toBe(true);
-    });
-
-    it('should return false for new branch on master even with commits', () => {
-      component.gitStatus = {
-        isDirty: false,
-        added: [],
-        modified: [],
-        removed: [],
-        untracked: [],
-        currentBranch: 'master',
-        commitsAhead: 0,
-        commitsBehind: 0
-      };
-      component.commits = [
-        { sha: 'abc123', message: 'Initial commit', author: 'Test', date: '2025-01-01T00:00:00Z' }
+        { sha: 'abc123', message: 'First commit', author: 'Test', date: '2025-01-01T00:00:00Z' },
+        { sha: 'def456', message: 'Second commit', author: 'Test', date: '2025-01-02T00:00:00Z' }
       ];
 
       expect(component.canPush).toBe(false);
