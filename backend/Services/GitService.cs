@@ -214,7 +214,7 @@ public class GitService
         if (currentBranch.FriendlyName == "master" || currentBranch.FriendlyName == "main")
         {
             throw new InvalidOperationException(
-                "Direct pushes to the master branch are not allowed. " +
+                $"Direct pushes to the '{currentBranch.FriendlyName}' branch are not allowed. " +
                 "Please create a new branch for your changes and submit a pull request.");
         }
         

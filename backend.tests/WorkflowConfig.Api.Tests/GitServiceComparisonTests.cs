@@ -572,7 +572,7 @@ This ensures open PRs dynamically update as work continues:
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(userId));
-        exception.Message.Should().Contain("Direct pushes to the master branch are not allowed");
+        exception.Message.Should().Contain("Direct pushes to the 'master' branch are not allowed");
         exception.Message.Should().Contain("create a new branch");
     }
 
@@ -646,7 +646,7 @@ This ensures open PRs dynamically update as work continues:
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(userId));
-        exception.Message.Should().Contain("Direct pushes to the master branch are not allowed");
+        exception.Message.Should().Contain("Direct pushes to the 'main' branch are not allowed");
     }
 
     #endregion
