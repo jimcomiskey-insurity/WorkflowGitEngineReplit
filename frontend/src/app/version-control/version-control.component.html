@@ -51,7 +51,7 @@
         </select>
       </div>
 
-      <div *ngIf="gitStatus && (gitStatus.commitsAhead > 0 || gitStatus.commitsBehind > 0)" class="sync-status">
+      <div *ngIf="gitStatus && (gitStatus.commitsAhead > 0 || gitStatus.commitsBehind > 0 || isOnMasterBranch)" class="sync-status">
         <div *ngIf="gitStatus.commitsBehind > 0" class="sync-item behind">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M19 12l-7 7-7-7"/>
@@ -63,6 +63,14 @@
             <path d="M12 19V5M5 12l7-7 7 7"/>
           </svg>
           {{ gitStatus.commitsAhead }} outgoing commit{{ gitStatus.commitsAhead > 1 ? 's' : '' }}
+        </div>
+        <div *ngIf="isOnMasterBranch && gitStatus.commitsAhead > 0" class="sync-item warning">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Direct pushes to {{ gitStatus.currentBranch }} are blocked. Create a new branch or discard changes.
         </div>
       </div>
     </div>

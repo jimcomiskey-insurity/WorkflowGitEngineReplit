@@ -86,8 +86,18 @@ export class VersionControlComponent implements OnInit, OnDestroy {
     return this.gitStatus?.commitsAhead || 0;
   }
 
+  get isOnMasterBranch(): boolean {
+    if (!this.gitStatus?.currentBranch) return false;
+    const branch = this.gitStatus.currentBranch.toLowerCase();
+    return branch === 'master' || branch === 'main';
+  }
+
   get canPush(): boolean {
     if (!this.gitStatus) return false;
+    
+    // Block push if on master/main branch
+    if (this.isOnMasterBranch) return false;
+    
     // Allow push if:
     // 1. There are commits ahead (normal case)
     // 2. OR there are commits but no tracking data (new branch case)
