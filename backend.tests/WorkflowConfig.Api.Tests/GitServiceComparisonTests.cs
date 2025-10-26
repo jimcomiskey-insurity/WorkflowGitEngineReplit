@@ -545,4 +545,109 @@ This ensures open PRs dynamically update as work continues:
     }
 
     #endregion
+
+    #region Master Branch Push Protection Tests
+
+    [Fact]
+    public void Push_OnMasterBranch_ShouldThrowException()
+    {
+        // Arrange
+        var userId = "testUser";
+        var workflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Description",
+            Phases = new List<Phase>()
+        };
+
+        var programWorkflows = new ProgramWorkflows
+        {
+            Workflows = new List<Workflow> { workflow }
+        };
+
+        // Create initial commit on master branch
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(userId));
+        exception.Message.Should().Contain("Direct pushes to the master branch are not allowed");
+        exception.Message.Should().Contain("create a new branch");
+    }
+
+    [Fact]
+    public void Push_OnFeatureBranch_ShouldSucceed()
+    {
+        // Arrange
+        var userId = "testUser";
+        var workflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Description",
+            Phases = new List<Phase>()
+        };
+
+        var programWorkflows = new ProgramWorkflows
+        {
+            Workflows = new List<Workflow> { workflow }
+        };
+
+        // Create initial commit on master
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+
+        // Create and switch to feature branch
+        _gitService.CreateBranch(userId, "feature-branch");
+        _gitService.SwitchBranch(userId, "feature-branch");
+
+        // Make a change on the feature branch
+        workflow.Description = "Updated description";
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Update description", "Test User", "test@example.com");
+
+        // Act - Push should succeed on feature branch
+        _gitService.Push(userId);
+
+        // Assert - If we get here without exception, the push succeeded
+        var status = _gitService.GetStatus(userId);
+        status.CommitsAhead.Should().Be(0, "commits should be pushed to remote");
+    }
+
+    [Fact]
+    public void Push_OnMainBranch_ShouldThrowException()
+    {
+        // Arrange - This test documents that 'main' is also protected
+        var userId = "testUser";
+        var workflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Description",
+            Phases = new List<Phase>()
+        };
+
+        var programWorkflows = new ProgramWorkflows
+        {
+            Workflows = new List<Workflow> { workflow }
+        };
+
+        // Create initial commit
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+
+        // Rename master to main (simulate a main branch)
+        var userRepoPath = _gitService.GetUserRepoPath(userId);
+        using (var repo = new LibGit2Sharp.Repository(userRepoPath))
+        {
+            repo.Branches.Rename("master", "main");
+        }
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(userId));
+        exception.Message.Should().Contain("Direct pushes to the master branch are not allowed");
+    }
+
+    #endregion
 }
