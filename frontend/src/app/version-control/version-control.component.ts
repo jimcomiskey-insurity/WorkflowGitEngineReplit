@@ -98,8 +98,13 @@ export class VersionControlComponent implements OnInit, OnDestroy {
     // Block push if on master/main branch
     if (this.isOnMasterBranch) return false;
     
-    // Only allow push when there are commits ahead of remote
-    return this.gitStatus.commitsAhead > 0;
+    // Allow push when there are commits ahead of remote (tracked branch)
+    if (this.gitStatus.commitsAhead > 0) return true;
+    
+    // Allow push for new branches without remote tracking that have commits
+    if (!this.gitStatus.hasRemoteTracking && this.commits.length > 0) return true;
+    
+    return false;
   }
 
   toggleCommitHistory() {

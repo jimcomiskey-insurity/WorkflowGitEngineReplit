@@ -12,6 +12,7 @@ export interface GitStatus {
   isDirty: boolean;
   commitsAhead: number;
   commitsBehind: number;
+  hasRemoteTracking: boolean;
 }
 
 export interface CommitRequest {
