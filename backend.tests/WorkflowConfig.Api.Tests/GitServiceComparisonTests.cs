@@ -37,6 +37,7 @@ public class GitServiceComparisonTests : IDisposable
         
         _configMock.Setup(c => c["GitSettings:RepoBasePath"]).Returns(Path.Combine(_testBasePath, "user-repos"));
         _configMock.Setup(c => c["GitSettings:CentralRepoPath"]).Returns(Path.Combine(_testBasePath, "central-repo"));
+        _configMock.Setup(c => c["GitSettings:PullRequestsPath"]).Returns(Path.Combine(_testBasePath, "pull-requests"));
         _envMock.Setup(e => e.ContentRootPath).Returns(_testBasePath);
         
         _gitService = new GitService(_configMock.Object, _envMock.Object, _loggerMock.Object);

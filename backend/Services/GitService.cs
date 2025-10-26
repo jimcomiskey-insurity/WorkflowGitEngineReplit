@@ -8,6 +8,7 @@ public class GitService
 {
     private readonly string _repoBasePath;
     private readonly string _centralRepoPath;
+    private readonly string _pullRequestsPath;
     private readonly ILogger<GitService> _logger;
     private const string WorkflowFileName = "workflows.json";
 
@@ -16,6 +17,7 @@ public class GitService
         _logger = logger;
         var repoBasePath = configuration["GitSettings:RepoBasePath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "user-repos");
         var centralRepoPath = configuration["GitSettings:CentralRepoPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "central-repo");
+        var prBasePath = configuration["GitSettings:PullRequestsPath"] ?? "../../workflow-data/pull-requests";
         
         // Resolve paths relative to the content root to ensure consistent behavior in all contexts
         _repoBasePath = Path.IsPathRooted(repoBasePath) 
@@ -24,9 +26,13 @@ public class GitService
         _centralRepoPath = Path.IsPathRooted(centralRepoPath) 
             ? centralRepoPath 
             : Path.GetFullPath(Path.Combine(environment.ContentRootPath, centralRepoPath));
+        _pullRequestsPath = Path.IsPathRooted(prBasePath) 
+            ? prBasePath 
+            : Path.GetFullPath(Path.Combine(environment.ContentRootPath, prBasePath));
         
         Directory.CreateDirectory(_repoBasePath);
         Directory.CreateDirectory(Path.GetDirectoryName(_centralRepoPath)!);
+        Directory.CreateDirectory(_pullRequestsPath);
     }
 
     public void InitializeCentralRepository()
@@ -924,6 +930,16 @@ public class GitService
                 _logger.LogInformation("Deleting central repository at {Path}", _centralRepoPath);
                 Directory.Delete(_centralRepoPath, true);
             }
+
+            // Delete pull requests
+            if (Directory.Exists(_pullRequestsPath))
+            {
+                _logger.LogInformation("Deleting all pull requests at {Path}", _pullRequestsPath);
+                Directory.Delete(_pullRequestsPath, true);
+            }
+            
+            // Recreate pull requests directory (always, even if it didn't exist before)
+            Directory.CreateDirectory(_pullRequestsPath);
 
             // Recreate central repository
             _logger.LogInformation("Recreating central repository");
