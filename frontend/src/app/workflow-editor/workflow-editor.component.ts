@@ -116,6 +116,8 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
         next: () => {
           alert('Workflow updated successfully');
           this.closePropertiesDialog();
+          this.loadWorkflow(this.originalKey);
+          this.gitEventService.emitCommit();
         },
         error: (error) => {
           console.error('Error updating workflow:', error);
@@ -257,6 +259,7 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
     this.workflowService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
       next: () => {
         this.loadWorkflow(this.originalKey);
+        this.gitEventService.emitCommit();
       },
       error: (error) => {
         console.error('Error persisting workflow:', error);
