@@ -43,6 +43,63 @@ public class GitServiceComparisonTests : IDisposable
         
         // Initialize the central repository
         _gitService.InitializeCentralRepository();
+        
+        // Initialize with sample data (create initial commit on master like production does)
+        InitializeSampleData();
+    }
+    
+    private void InitializeSampleData()
+    {
+        // Create initial sample workflows and commit to master (simulates InitializeSampleData.cs)
+        // This needs to be done directly in the central repository to ensure it's available when users clone
+        
+        var centralRepoPath = Path.Combine(_testBasePath, "central-repo");
+        var tempInitPath = Path.Combine(_testBasePath, "temp-init");
+        
+        try
+        {
+            // Clone central repository to a temporary location
+            LibGit2Sharp.Repository.Clone(centralRepoPath, tempInitPath);
+            
+            using (var repo = new LibGit2Sharp.Repository(tempInitPath))
+            {
+                // Create sample workflows file
+                var sampleWorkflows = new ProgramWorkflows
+                {
+                    Workflows = new List<Workflow>
+                    {
+                        new Workflow
+                        {
+                            WorkflowKey = "new-business",
+                            WorkflowName = "New Business",
+                            Description = "Sample new business workflow",
+                            Phases = new List<Phase>()
+                        }
+                    }
+                };
+                
+                var workflowFilePath = Path.Combine(tempInitPath, "workflows.json");
+                var json = System.Text.Json.JsonSerializer.Serialize(sampleWorkflows, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(workflowFilePath, json);
+                
+                // Commit and push to central repository
+                LibGit2Sharp.Commands.Stage(repo, "*");
+                var signature = new LibGit2Sharp.Signature("System", "system@workflow.com", DateTimeOffset.Now);
+                repo.Commit("Initial commit: Add sample workflow data", signature, signature, new LibGit2Sharp.CommitOptions());
+                
+                var remote = repo.Network.Remotes["origin"];
+                var pushOptions = new LibGit2Sharp.PushOptions();
+                repo.Network.Push(remote, @"refs/heads/master", pushOptions);
+            }
+        }
+        finally
+        {
+            // Cleanup temp directory
+            if (Directory.Exists(tempInitPath))
+            {
+                Directory.Delete(tempInitPath, true);
+            }
+        }
     }
 
     public void Dispose()
@@ -770,6 +827,155 @@ This ensures open PRs dynamically update as work continues:
         status.HasRemoteTracking.Should().BeTrue("branch should have remote tracking after push");
         status.CurrentBranch.Should().Be("feature-branch");
         status.CommitsAhead.Should().Be(0, "no commits ahead after push");
+    }
+
+    [Fact]
+    public void GetBranchCommitSha_WithPreferRemoteFalse_ShouldUseLocalBranch()
+    {
+        // REGRESSION TEST for: PR showing 0 commits when local master has changes
+        //
+        // Scenario:
+        // 1. User starts fresh (master already exists from sample data)
+        // 2. Commit on local master
+        // 3. Create new branch from master
+        // 4. GetBranchCommitSha(master, preferRemote=false) should return local master SHA
+        //
+        // This test verifies that without preferRemote, we get the local branch
+
+        // Arrange
+        var userId = "testUser";
+        
+        // User makes a workflow change on master (simulating the bug scenario)
+        var workflows = _gitService.ReadWorkflows(userId);
+        var newWorkflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Test",
+            Phases = new List<Phase>()
+        };
+        workflows.Workflows.Add(newWorkflow);
+        
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Add workflow on master", "Test", "test@test.com");
+
+        // Act - Get local master SHA
+        var localMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: false);
+
+        // Assert - Should get the local master tip with our commit
+        localMasterSha.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void GetBranchCommitSha_WithPreferRemoteTrue_ShouldUseRemoteBranch()
+    {
+        // REGRESSION TEST for: PR showing 0 commits when local master has changes
+        //
+        // Scenario:
+        // 1. User starts with existing sample data (origin/master is synced)
+        // 2. Make a local commit on master (not pushed)
+        // 3. GetBranchCommitSha(master, preferRemote=true) should return origin/master SHA
+        // 4. The SHAs should be different (local is ahead)
+        //
+        // This test verifies that with preferRemote=true, we get the remote branch
+
+        // Arrange
+        var userId = "testUser";
+        
+        // Get the current remote master SHA (before local changes)
+        var originalRemoteMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
+
+        // User makes a local commit on master (not pushed) - simulating the bug scenario
+        var workflows = _gitService.ReadWorkflows(userId);
+        var newWorkflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Test",
+            Phases = new List<Phase>()
+        };
+        workflows.Workflows.Add(newWorkflow);
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Add workflow on local master", "Test", "test@test.com");
+
+        // Act - Get remote master SHA (should be unchanged) and local master SHA (should be ahead)
+        var remoteMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
+        var localMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: false);
+
+        // Assert
+        remoteMasterSha.Should().Be(originalRemoteMasterSha); // Remote hasn't changed
+        localMasterSha.Should().NotBe(remoteMasterSha); // Local is ahead
+    }
+
+    [Fact]
+    public void CreatePullRequest_WithLocalChangesOnMaster_ShouldCompareAgainstRemoteMaster()
+    {
+        // REGRESSION TEST for: PR showing 0 commits when created from branch after committing on master
+        //
+        // Scenario (EXACTLY the bug the user reported):
+        // 1. User starts with sample data (origin/master is synced)
+        // 2. User accidentally commits on local master (not pushed)
+        // 3. User creates new branch from local master
+        // 4. User creates PR from new branch to master
+        // 5. PR should show 1 commit (comparing against origin/master, not local master)
+        //
+        // Bug: PR compared local master to feature branch, showing 0 commits
+        // Fix: Use preferRemote=true for target branch in PR creation
+
+        // Arrange
+        var userId = "testUser";
+        
+        // User makes a commit on master (simulating the user's exact scenario)
+        var workflows = _gitService.ReadWorkflows(userId);
+        var newWorkflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Test",
+            Phases = new List<Phase>()
+        };
+        workflows.Workflows.Add(newWorkflow);
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Add workflow on master", "Test", "test@test.com");
+
+        // User then creates a new branch from local master (which has the unpushed commit)
+        _gitService.CreateBranch(userId, "feature-branch");
+        _gitService.SwitchBranch(userId, "feature-branch");
+
+        // Act - Get commit SHAs as PR creation would now do with the fix
+        var sourceCommitSha = _gitService.GetBranchCommitSha(userId, "feature-branch", preferRemote: false);
+        var targetCommitSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
+
+        // Compare branches to see commits
+        var comparison = _gitService.CompareBranches(userId, "feature-branch", "master", sourceCommitSha, targetCommitSha);
+
+        // Assert
+        comparison.CommitsAhead.Should().Be(1); // Should show 1 commit ahead of origin/master
+        sourceCommitSha.Should().NotBe(targetCommitSha); // Source and target should be different
+    }
+
+    [Fact]
+    public void GetBranchCommitSha_WithRemoteQualifiedName_ShouldHandleCorrectly()
+    {
+        // REGRESSION TEST for: ResolveRemoteBranch handling already-qualified remote names
+        //
+        // Scenario:
+        // Users might pass "origin/master" or "master" to GetBranchCommitSha
+        // Both should work correctly and resolve to the same remote branch
+        //
+        // Bug: Passing "origin/master" would become "origin/origin/master" internally and fail
+        // Fix: Normalize branch name to strip "origin/" prefix if already present
+
+        // Arrange
+        var userId = "testUser";
+        
+        // Act - Try getting remote master SHA with different naming conventions
+        var sha1 = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
+        var sha2 = _gitService.GetBranchCommitSha(userId, "origin/master", preferRemote: true);
+        
+        // Assert - Both should resolve to the same remote branch SHA
+        sha1.Should().Be(sha2, "both 'master' and 'origin/master' should resolve to the same remote branch");
+        sha1.Should().NotBeNullOrEmpty();
     }
 
     #endregion

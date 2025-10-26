@@ -104,8 +104,10 @@ public class PullRequestController : ControllerBase
         try
         {
             // Capture the current commit SHAs of both branches at PR creation time
-            var sourceCommitSha = _gitService.GetBranchCommitSha(userId, request.SourceBranch);
-            var targetCommitSha = _gitService.GetBranchCommitSha(userId, request.TargetBranch);
+            // Source: use local branch (what we're trying to merge)
+            // Target: use remote branch (the true base - origin/master, not local master)
+            var sourceCommitSha = _gitService.GetBranchCommitSha(userId, request.SourceBranch, preferRemote: false);
+            var targetCommitSha = _gitService.GetBranchCommitSha(userId, request.TargetBranch, preferRemote: true);
             
             var pullRequest = _pullRequestService.CreatePullRequest(userId, request, sourceCommitSha, targetCommitSha);
             return CreatedAtAction(nameof(GetPullRequest), new { userId, number = pullRequest.Number }, pullRequest);

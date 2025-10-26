@@ -98,6 +98,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 - Employs RxJS `switchMap` and `merge` for data refreshing and multi-user data isolation.
 - Includes Git status enrichment to identify changes at workflow, phase, and task levels.
 - Tasks have unique `TaskId` for stable tracking, with legacy tasks receiving deterministic IDs.
+- **PR Comparison Fix**: Pull requests now correctly compare against remote branches (origin/master) rather than local branches, ensuring accurate commit counts even when local master has unpushed changes. The `GetBranchCommitSha` method with `preferRemote=true` strictly uses remote tracking branches with branch name normalization to handle both "master" and "origin/master" inputs.
 
 ### Feature Specifications
 

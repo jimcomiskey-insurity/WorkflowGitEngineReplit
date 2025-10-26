@@ -612,7 +612,52 @@ public class GitService
         return branch;
     }
 
-    public string GetBranchCommitSha(string userId, string branchName)
+    private Branch? ResolveRemoteBranch(Repository repo, string branchName)
+    {
+        // Strictly resolve ONLY remote tracking branches
+        // This is critical for PR comparisons to use the correct base (origin/master, not local master)
+        // Do NOT fall back to local branches as this would reintroduce the 0-commit PR bug
+        
+        // Normalize branch name: strip "origin/" or "refs/remotes/origin/" prefix if already present
+        var normalizedName = branchName;
+        if (normalizedName.StartsWith("refs/remotes/origin/"))
+        {
+            normalizedName = normalizedName.Substring("refs/remotes/origin/".Length);
+        }
+        else if (normalizedName.StartsWith("origin/"))
+        {
+            normalizedName = normalizedName.Substring("origin/".Length);
+        }
+        
+        // Try different remote branch formats
+        var branch = repo.Branches[$"origin/{normalizedName}"];
+        if (branch != null && branch.IsRemote)
+        {
+            return branch;
+        }
+
+        // Try with refs/remotes/ prefix
+        branch = repo.Branches[$"refs/remotes/origin/{normalizedName}"];
+        if (branch != null && branch.IsRemote)
+        {
+            return branch;
+        }
+
+        // Check if there's a local branch with remote tracking information
+        var localBranch = repo.Branches[normalizedName] ?? repo.Branches[$"refs/heads/{normalizedName}"];
+        if (localBranch != null && localBranch.TrackedBranch != null)
+        {
+            // Return the remote tracking branch (this is what we want for PR comparisons)
+            return localBranch.TrackedBranch;
+        }
+
+        // If we reach here, no remote tracking branch was found
+        // Return null to signal that remote is not available
+        // The caller (GetBranchCommitSha with preferRemote=true) will throw a clear error
+        return null;
+    }
+
+    public string GetBranchCommitSha(string userId, string branchName, bool preferRemote = false)
     {
         EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
@@ -622,7 +667,25 @@ public class GitService
         // Fetch latest from remote to ensure we have all branches
         Fetch(repo);
         
-        var branch = ResolveBranch(repo, branchName);
+        Branch? branch;
+        if (preferRemote)
+        {
+            // For PR comparisons, we MUST use the remote tracking branch to get the true base
+            // Do NOT fall back to local branch as this would reintroduce the 0-commit PR bug
+            branch = ResolveRemoteBranch(repo, branchName);
+            
+            if (branch == null)
+            {
+                throw new InvalidOperationException(
+                    $"Remote branch '{branchName}' not found. This may indicate the remote repository " +
+                    $"is not properly synchronized or the branch hasn't been pushed yet.");
+            }
+        }
+        else
+        {
+            branch = ResolveBranch(repo, branchName);
+        }
+        
         if (branch == null || branch.Tip == null)
         {
             throw new ArgumentException($"Invalid branch: {branchName}");
