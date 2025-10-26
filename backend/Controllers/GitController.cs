@@ -93,6 +93,38 @@ public class GitController : ControllerBase
         return Ok(commits);
     }
 
+    [HttpGet("last-pushed-commit")]
+    public IActionResult GetLastPushedCommit([FromQuery] string userId = "default")
+    {
+        try
+        {
+            var commitSha = _gitService.GetLastPushedCommitSha(userId);
+            if (commitSha == null)
+            {
+                return Ok(new { commitSha = (string?)null, message = "No pushed commits found for current branch" });
+            }
+            return Ok(new { commitSha });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("reset-to-commit")]
+    public IActionResult ResetToCommit([FromBody] ResetToCommitRequest request, [FromQuery] string userId = "default")
+    {
+        try
+        {
+            _gitService.ResetToCommit(userId, request.CommitSha);
+            return Ok(new { message = "Successfully reset to commit" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpPost("reset")]
     public IActionResult ResetRepositories()
     {
@@ -119,4 +151,9 @@ public class CommitRequest
 public class BranchRequest
 {
     public string BranchName { get; set; } = string.Empty;
+}
+
+public class ResetToCommitRequest
+{
+    public string CommitSha { get; set; } = string.Empty;
 }
