@@ -6,16 +6,20 @@ import { Subject, merge } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 import { WorkflowService } from './services/workflow.service';
 import { UserService } from './services/user.service';
+import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, FormsModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, FormsModule, GitToolbarComponent],
   template: `
     <div class="app-container">
       <header class="top-header">
         <div class="header-content">
-          <div class="header-title">Insurance Workflow Configuration</div>
+          <div class="header-left">
+            <div class="header-title">Insurance Workflow Configuration</div>
+            <app-git-toolbar></app-git-toolbar>
+          </div>
           <div class="user-selector">
             <label for="user-select">User:</label>
             <select id="user-select" [(ngModel)]="currentUser" (change)="onUserChange()">
@@ -106,12 +110,21 @@ import { UserService } from './services/user.service';
       align-items: center;
       justify-content: space-between;
       padding: 0 24px;
+      gap: 24px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex: 1;
     }
 
     .header-title {
       font-size: 16px;
       font-weight: 600;
       color: var(--text-primary);
+      white-space: nowrap;
     }
 
     .user-selector {

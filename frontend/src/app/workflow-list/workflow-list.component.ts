@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { WorkflowService, Workflow } from '../services/workflow.service';
 import { UserService } from '../services/user.service';
+import { GitEventService } from '../services/git-event.service';
 import { Subject, merge } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 
@@ -21,11 +22,17 @@ export class WorkflowListComponent implements OnInit, OnDestroy {
   constructor(
     private workflowService: WorkflowService,
     private userService: UserService,
+    private gitEventService: GitEventService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    merge(this.userService.currentUser$, this.refresh$).pipe(
+    // Refresh workflows when user changes OR when git events occur OR manual refresh
+    merge(
+      this.userService.currentUser$, 
+      this.refresh$,
+      this.gitEventService.events$
+    ).pipe(
       switchMap(() => this.workflowService.getWorkflows()),
       takeUntil(this.destroy$)
     ).subscribe({

@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { WorkflowService, Workflow, Phase, TaskItem } from '../services/workflow.service';
+import { GitEventService } from '../services/git-event.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface ExtendedPhase extends Phase {
   collapsed?: boolean;
@@ -15,7 +18,7 @@ interface ExtendedPhase extends Phase {
   templateUrl: './workflow-editor.component.html',
   styleUrls: ['./workflow-editor.component.css']
 })
-export class WorkflowEditorComponent implements OnInit {
+export class WorkflowEditorComponent implements OnInit, OnDestroy {
   workflow: Workflow = {
     workflowName: '',
     workflowKey: '',
@@ -32,9 +35,11 @@ export class WorkflowEditorComponent implements OnInit {
   editingTaskIndex: number | null = null;
   editingPhase: ExtendedPhase | null = null;
   editingTask: TaskItem | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private workflowService: WorkflowService,
+    private gitEventService: GitEventService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -47,6 +52,22 @@ export class WorkflowEditorComponent implements OnInit {
         this.loadWorkflow(params['key']);
       }
     });
+
+    // Reload workflow when git events occur (branch switch, pull, etc.)
+    this.gitEventService.events$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: () => {
+        if (!this.isNewWorkflow && this.originalKey) {
+          this.loadWorkflow(this.originalKey);
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadWorkflow(key: string) {

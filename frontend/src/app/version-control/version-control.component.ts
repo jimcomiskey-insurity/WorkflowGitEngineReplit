@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GitService, GitStatus, CommitInfo } from '../services/git.service';
 import { UserService } from '../services/user.service';
+import { GitEventService } from '../services/git-event.service';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, Subject, merge } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
@@ -22,7 +23,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   showBranchDialog = false;
   commitMessage = '';
   authorName = 'User';
-  authorEmail = 'user@workflow.com';
+  authorEmail = 'User@workflow.com';
   newBranchName = '';
   selectedBranch = '';
   private destroy$ = new Subject<void>();
@@ -30,7 +31,8 @@ export class VersionControlComponent implements OnInit, OnDestroy {
 
   constructor(
     private gitService: GitService,
-    private userService: UserService
+    private userService: UserService,
+    private gitEventService: GitEventService
   ) {}
 
   ngOnInit() {
@@ -132,6 +134,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       authorEmail: this.authorEmail
     }).subscribe({
       next: () => {
+        this.gitEventService.emitCommit();
         forkJoin({
           status: this.gitService.getStatus(),
           commits: this.gitService.getCommits(20)
@@ -157,6 +160,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
 
     this.gitService.discard().subscribe({
       next: () => {
+        this.gitEventService.emitDiscard();
         this.refreshAllData();
         alert('Changes discarded');
       },
@@ -170,6 +174,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   pullChanges() {
     this.gitService.pull().subscribe({
       next: () => {
+        this.gitEventService.emitPull();
         this.refreshAllData();
         alert('Changes pulled successfully!');
       },
@@ -183,6 +188,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   pushChanges() {
     this.gitService.push().subscribe({
       next: () => {
+        this.gitEventService.emitPush();
         this.refreshAllData();
         alert('Changes pushed successfully!');
       },
@@ -216,6 +222,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       next: () => {
         this.gitService.switchBranch(branchName).subscribe({
           next: () => {
+            this.gitEventService.emitBranchSwitch(branchName);
             this.refreshAllData();
           },
           error: (error) => {
@@ -246,6 +253,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
 
     this.gitService.switchBranch(this.selectedBranch).subscribe({
       next: () => {
+        this.gitEventService.emitBranchSwitch(this.selectedBranch);
         this.refreshAllData();
       },
       error: (error) => {
