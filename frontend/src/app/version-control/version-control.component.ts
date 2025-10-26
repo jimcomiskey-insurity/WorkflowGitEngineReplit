@@ -26,6 +26,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   authorEmail = 'User@workflow.com';
   newBranchName = '';
   selectedBranch = '';
+  lastPushedCommitSha: string | null = null;
   private destroy$ = new Subject<void>();
   private refresh$ = new Subject<void>();
 
@@ -40,7 +41,8 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       switchMap(() => forkJoin({
         status: this.gitService.getStatus(),
         commits: this.gitService.getCommits(20),
-        branches: this.gitService.getBranches()
+        branches: this.gitService.getBranches(),
+        lastPushedCommit: this.gitService.getLastPushedCommit()
       })),
       takeUntil(this.destroy$)
     ).subscribe({
@@ -49,6 +51,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
         this.commits = data.commits;
         this.branches = data.branches;
         this.selectedBranch = data.status.currentBranch || '';
+        this.lastPushedCommitSha = data.lastPushedCommit.commitSha;
       },
       error: (error) => {
         console.error('Error loading data:', error);
@@ -297,6 +300,37 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error resetting repositories:', error);
         alert('Failed to reset repositories: ' + (error.error?.error || error.message));
+      }
+    });
+  }
+
+  isLastPushedCommit(commit: CommitInfo): boolean {
+    return this.lastPushedCommitSha !== null && commit.sha === this.lastPushedCommitSha;
+  }
+
+  canResetToCommit(commit: CommitInfo): boolean {
+    return this.isLastPushedCommit(commit);
+  }
+
+  resetToCommit(commit: CommitInfo) {
+    const confirmMessage = `This will reset your current branch to this commit:\n\n` +
+      `${this.getShortSha(commit.sha)} - ${commit.message}\n\n` +
+      `Any local commits after this point will be removed, but your working directory changes will be preserved.\n\n` +
+      `Are you sure you want to continue?`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    this.gitService.resetToCommit(commit.sha).subscribe({
+      next: () => {
+        this.gitEventService.emitCommit(); // Trigger refresh in other components
+        this.refreshAllData();
+        alert('Successfully reset to commit!');
+      },
+      error: (error) => {
+        console.error('Error resetting to commit:', error);
+        alert('Failed to reset to commit: ' + (error.error?.error || error.message));
       }
     });
   }

@@ -81,6 +81,16 @@ export class GitService {
     return this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${userId}&count=${count}`);
   }
 
+  getLastPushedCommit(): Observable<{ commitSha: string | null; message?: string }> {
+    const userId = this.userService.getCurrentUser();
+    return this.http.get<{ commitSha: string | null; message?: string }>(`${this.apiUrl}/last-pushed-commit?userId=${userId}`);
+  }
+
+  resetToCommit(commitSha: string): Observable<any> {
+    const userId = this.userService.getCurrentUser();
+    return this.http.post(`${this.apiUrl}/reset-to-commit?userId=${userId}`, { commitSha });
+  }
+
   resetAllRepositories(): Observable<any> {
     return this.http.post(`${this.apiUrl}/reset`, {});
   }

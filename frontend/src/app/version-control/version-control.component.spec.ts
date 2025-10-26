@@ -22,7 +22,9 @@ describe('VersionControlComponent', () => {
       commit: jest.fn(),
       push: jest.fn(),
       pull: jest.fn(),
-      switchBranch: jest.fn()
+      switchBranch: jest.fn(),
+      getLastPushedCommit: jest.fn(),
+      resetToCommit: jest.fn()
     } as unknown as jest.Mocked<GitService>;
 
     const userServiceMock = {
@@ -58,6 +60,7 @@ describe('VersionControlComponent', () => {
     } as GitStatus));
     gitService.getCommits.mockReturnValue(of([]));
     gitService.getBranches.mockReturnValue(of(['master']));
+    gitService.getLastPushedCommit.mockReturnValue(of({ commitSha: null }));
 
     fixture = TestBed.createComponent(VersionControlComponent);
     component = fixture.componentInstance;
@@ -397,6 +400,128 @@ describe('VersionControlComponent', () => {
       component.onBranchChange();
 
       expect(gitService.switchBranch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Reset Functionality', () => {
+    it('should identify last pushed commit correctly', () => {
+      const commitSha = 'abc123def456';
+      component.lastPushedCommitSha = commitSha;
+      
+      const commit1 = { sha: commitSha, message: 'Pushed commit', author: 'User', date: '2025-01-01T00:00:00Z' };
+      const commit2 = { sha: 'xyz789', message: 'Local commit', author: 'User', date: '2025-01-02T00:00:00Z' };
+
+      expect(component.isLastPushedCommit(commit1)).toBe(true);
+      expect(component.isLastPushedCommit(commit2)).toBe(false);
+    });
+
+    it('should return false for isLastPushedCommit when lastPushedCommitSha is null', () => {
+      component.lastPushedCommitSha = null;
+      const commit = { sha: 'abc123', message: 'Test commit', author: 'User', date: '2025-01-01T00:00:00Z' };
+
+      expect(component.isLastPushedCommit(commit)).toBe(false);
+    });
+
+    it('should allow reset only for last pushed commit', () => {
+      const commitSha = 'abc123def456';
+      component.lastPushedCommitSha = commitSha;
+      
+      const lastPushedCommit = { sha: commitSha, message: 'Pushed', author: 'User', date: '2025-01-01T00:00:00Z' };
+      const localCommit = { sha: 'xyz789', message: 'Local', author: 'User', date: '2025-01-02T00:00:00Z' };
+
+      expect(component.canResetToCommit(lastPushedCommit)).toBe(true);
+      expect(component.canResetToCommit(localCommit)).toBe(false);
+    });
+
+    it('should call gitService.resetToCommit when resetToCommit is confirmed', () => {
+      const commitSha = 'abc123def456';
+      const commit = { sha: commitSha, message: 'Test commit', author: 'User', date: '2025-01-01T00:00:00Z' };
+      
+      jest.spyOn(window, 'confirm').mockReturnValue(true);
+      jest.spyOn(window, 'alert').mockImplementation(() => {});
+      gitService.resetToCommit.mockReturnValue(of({}));
+      gitService.getStatus.mockReturnValue(of({
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'feature-branch',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      } as GitStatus));
+      gitService.getCommits.mockReturnValue(of([commit]));
+      gitService.getBranches.mockReturnValue(of(['master', 'feature-branch']));
+      gitService.getLastPushedCommit.mockReturnValue(of({ commitSha: commitSha }));
+
+      component.resetToCommit(commit);
+
+      expect(gitService.resetToCommit).toHaveBeenCalledWith(commitSha);
+    });
+
+    it('should not call gitService.resetToCommit when reset is cancelled', () => {
+      const commit = { sha: 'abc123', message: 'Test', author: 'User', date: '2025-01-01T00:00:00Z' };
+      
+      jest.spyOn(window, 'confirm').mockReturnValue(false);
+      gitService.resetToCommit.mockReturnValue(of({}));
+
+      component.resetToCommit(commit);
+
+      expect(gitService.resetToCommit).not.toHaveBeenCalled();
+    });
+
+    it('should display alert on successful reset', () => {
+      const commit = { sha: 'abc123', message: 'Test', author: 'User', date: '2025-01-01T00:00:00Z' };
+      
+      jest.spyOn(window, 'confirm').mockReturnValue(true);
+      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+      gitService.resetToCommit.mockReturnValue(of({}));
+      gitService.getStatus.mockReturnValue(of({
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'master',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      } as GitStatus));
+      gitService.getCommits.mockReturnValue(of([]));
+      gitService.getBranches.mockReturnValue(of(['master']));
+      gitService.getLastPushedCommit.mockReturnValue(of({ commitSha: null }));
+
+      component.resetToCommit(commit);
+
+      expect(alertSpy).toHaveBeenCalledWith('Successfully reset to commit!');
+    });
+
+    it('should load lastPushedCommitSha on init', (done) => {
+      const commitSha = 'abc123def456';
+      
+      gitService.getLastPushedCommit.mockReturnValue(of({ commitSha: commitSha }));
+      gitService.getStatus.mockReturnValue(of({
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'master',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      } as GitStatus));
+      gitService.getCommits.mockReturnValue(of([]));
+      gitService.getBranches.mockReturnValue(of(['master']));
+
+      const newComponent = new VersionControlComponent(gitService, userService, gitEventService);
+      newComponent.ngOnInit();
+
+      setTimeout(() => {
+        expect(newComponent.lastPushedCommitSha).toBe(commitSha);
+        done();
+      }, 100);
     });
   });
 });

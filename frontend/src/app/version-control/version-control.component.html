@@ -129,12 +129,26 @@
         <div *ngFor="let commit of commits" class="commit-item">
           <div class="commit-sha">{{ getShortSha(commit.sha) }}</div>
           <div class="commit-details">
-            <div class="commit-message">{{ commit.message }}</div>
+            <div class="commit-message">
+              {{ commit.message }}
+              <span *ngIf="isLastPushedCommit(commit)" class="commit-badge">Last Pushed</span>
+            </div>
             <div class="commit-meta">
               <span>{{ commit.author }}</span>
               <span>{{ formatDate(commit.date) }}</span>
             </div>
           </div>
+          <button 
+            *ngIf="canResetToCommit(commit)" 
+            class="reset-button" 
+            (click)="resetToCommit(commit)"
+            title="Reset to this commit">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+            </svg>
+            Reset
+          </button>
         </div>
       </div>
     </div>

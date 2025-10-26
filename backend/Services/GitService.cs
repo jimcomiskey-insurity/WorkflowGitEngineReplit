@@ -1068,6 +1068,71 @@ public class GitService
         repo.Network.Push(remote, $"refs/heads/{targetBranch}", options);
     }
 
+    public string? GetLastPushedCommitSha(string userId)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        using var repo = new Repository(userRepoPath);
+        
+        // Fetch latest from remote
+        Fetch(repo);
+        
+        var currentBranch = repo.Head;
+        if (currentBranch == null || !currentBranch.IsCurrentRepositoryHead)
+        {
+            return null;
+        }
+        
+        // Get the remote tracking branch for the current branch
+        var trackedBranch = currentBranch.TrackedBranch;
+        if (trackedBranch == null)
+        {
+            return null; // No remote tracking branch, so no pushed commits
+        }
+        
+        return trackedBranch.Tip?.Sha;
+    }
+
+    public void ResetToCommit(string userId, string commitSha)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        using var repo = new Repository(userRepoPath);
+        
+        // Fetch latest from remote to ensure we have up-to-date tracking information
+        Fetch(repo);
+        
+        var currentBranch = repo.Head;
+        if (currentBranch == null || !currentBranch.IsCurrentRepositoryHead)
+        {
+            throw new InvalidOperationException("Not currently on a branch");
+        }
+        
+        // Get the last pushed commit (remote tracking branch tip)
+        var lastPushedSha = GetLastPushedCommitSha(userId);
+        
+        // Safety check: Only allow resetting to the last pushed commit
+        if (commitSha != lastPushedSha)
+        {
+            throw new InvalidOperationException(
+                "For safety, you can only reset to the last pushed commit. " +
+                "This prevents accidentally losing committed work.");
+        }
+        
+        // Verify the commit exists
+        var commit = repo.Lookup<Commit>(commitSha);
+        if (commit == null)
+        {
+            throw new ArgumentException($"Commit {commitSha} not found in repository");
+        }
+        
+        // Perform a mixed reset (keeps working directory changes, removes commits)
+        // This is safer than hard reset as it preserves uncommitted work
+        repo.Reset(ResetMode.Mixed, commit);
+    }
+
     public void ResetAllRepositories(string sampleDataPath)
     {
         _logger.LogInformation("Starting repository reset...");
