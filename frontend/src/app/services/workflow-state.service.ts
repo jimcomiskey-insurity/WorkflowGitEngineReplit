@@ -55,11 +55,15 @@ export class WorkflowStateService {
 
     // Workflows stream
     this.workflows$ = userWithRefresh$.pipe(
+      tap(userId => console.log('[WorkflowStateService] Fetching workflows for user:', userId)),
       switchMap(userId => 
         this.http.get<ProgramWorkflows>(`${this.apiUrl}?userId=${userId}`)
       ),
       map(response => response.workflows),
-      tap(workflows => this.workflowsSubject.next(workflows)),
+      tap(workflows => {
+        console.log('[WorkflowStateService] Received workflows:', workflows.length, 'workflows');
+        this.workflowsSubject.next(workflows);
+      }),
       shareReplay(1)
     );
 
@@ -99,6 +103,7 @@ export class WorkflowStateService {
    * This causes all subscribed components to receive updated data.
    */
   public refresh(): void {
+    console.log('[WorkflowStateService] Manual refresh triggered');
     this.refreshTrigger$.next();
   }
 
@@ -129,8 +134,12 @@ export class WorkflowStateService {
 
   updateWorkflow(key: string, workflow: Workflow): Observable<Workflow> {
     const userId = this.userService.getCurrentUser();
+    console.log('[WorkflowStateService] Updating workflow:', key);
     return this.http.put<Workflow>(`${this.apiUrl}/${key}?userId=${userId}`, workflow).pipe(
-      tap(() => this.refresh())
+      tap(() => {
+        console.log('[WorkflowStateService] Workflow updated, triggering refresh');
+        this.refresh();
+      })
     );
   }
 
