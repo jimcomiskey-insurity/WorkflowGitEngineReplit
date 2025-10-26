@@ -1,11 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GitService, GitStatus } from '../services/git.service';
-import { UserService } from '../services/user.service';
+import { GitStateService } from '../services/git-state.service';
 import { GitEventService } from '../services/git-event.service';
-import { Subject, merge } from 'rxjs';
-import { switchMap, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { GitStatus } from '../services/git.service';
 
 @Component({
   selector: 'app-git-toolbar',
@@ -191,30 +191,28 @@ export class GitToolbarComponent implements OnInit, OnDestroy {
   selectedBranch = '';
   isLoading = false;
   private destroy$ = new Subject<void>();
-  private refresh$ = new Subject<void>();
 
   constructor(
-    private gitService: GitService,
-    private userService: UserService,
+    private gitStateService: GitStateService,
     private gitEventService: GitEventService
   ) {}
 
   ngOnInit() {
-    merge(this.userService.currentUser$, this.refresh$).pipe(
-      switchMap(() => this.gitService.getStatus()),
+    // Subscribe to git status - automatically updates when state changes
+    this.gitStateService.gitStatus$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (status) => {
         this.gitStatus = status;
-        this.selectedBranch = status.currentBranch || '';
+        this.selectedBranch = status?.currentBranch || '';
       },
       error: (error) => {
         console.error('Error loading git status:', error);
       }
     });
 
-    merge(this.userService.currentUser$, this.refresh$).pipe(
-      switchMap(() => this.gitService.getBranches()),
+    // Subscribe to branches - automatically updates when state changes
+    this.gitStateService.branches$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (branches) => {
@@ -225,13 +223,13 @@ export class GitToolbarComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Listen to branch-switch events to update the dropdown
     this.gitEventService.events$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (event) => {
         if (event.type === 'branch-switch' && event.branchName) {
           this.selectedBranch = event.branchName;
-          this.refresh$.next();
         }
       }
     });
@@ -278,16 +276,15 @@ export class GitToolbarComponent implements OnInit, OnDestroy {
     if (this.selectedBranch && this.selectedBranch !== this.gitStatus?.currentBranch) {
       this.isLoading = true;
       const targetBranch = this.selectedBranch;
-      this.gitService.switchBranch(targetBranch).subscribe({
+      this.gitStateService.switchBranch(targetBranch).subscribe({
         next: () => {
           this.gitEventService.emitBranchSwitch(targetBranch);
           this.isLoading = false;
         },
         error: (error) => {
           console.error('Error switching branch:', error);
-          alert('Failed to switch branch: ' + error.error?.error || error.message);
+          alert('Failed to switch branch: ' + (error.error?.error || error.message));
           this.isLoading = false;
-          this.refresh$.next();
         }
       });
     }
@@ -295,15 +292,14 @@ export class GitToolbarComponent implements OnInit, OnDestroy {
 
   pullChanges() {
     this.isLoading = true;
-    this.gitService.pull().subscribe({
+    this.gitStateService.pull().subscribe({
       next: () => {
-        this.refresh$.next();
         this.gitEventService.emitPull();
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error pulling changes:', error);
-        alert('Failed to pull changes: ' + error.error?.error || error.message);
+        alert('Failed to pull changes: ' + (error.error?.error || error.message));
         this.isLoading = false;
       }
     });
@@ -313,15 +309,14 @@ export class GitToolbarComponent implements OnInit, OnDestroy {
     if (!this.canPush) return;
 
     this.isLoading = true;
-    this.gitService.push().subscribe({
+    this.gitStateService.push().subscribe({
       next: () => {
-        this.refresh$.next();
         this.gitEventService.emitPush();
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error pushing changes:', error);
-        alert('Failed to push changes: ' + error.error?.error || error.message);
+        alert('Failed to push changes: ' + (error.error?.error || error.message));
         this.isLoading = false;
       }
     });

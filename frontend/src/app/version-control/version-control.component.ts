@@ -1,11 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GitService, GitStatus, CommitInfo } from '../services/git.service';
-import { UserService } from '../services/user.service';
+import { GitStateService } from '../services/git-state.service';
 import { GitEventService } from '../services/git-event.service';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, Subject, merge } from 'rxjs';
-import { switchMap, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { GitStatus, CommitInfo } from '../services/git.service';
 
 @Component({
   selector: 'app-version-control',
@@ -28,50 +28,72 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   selectedBranch = '';
   lastPushedCommitSha: string | null = null;
   private destroy$ = new Subject<void>();
-  private refresh$ = new Subject<void>();
 
   constructor(
-    private gitService: GitService,
-    private userService: UserService,
+    private gitStateService: GitStateService,
     private gitEventService: GitEventService
   ) {}
 
   ngOnInit() {
-    merge(this.userService.currentUser$, this.refresh$).pipe(
-      switchMap(() => forkJoin({
-        status: this.gitService.getStatus(),
-        commits: this.gitService.getCommits(20),
-        branches: this.gitService.getBranches(),
-        lastPushedCommit: this.gitService.getLastPushedCommit()
-      })),
+    // Subscribe to git status - automatically updates when state changes
+    this.gitStateService.gitStatus$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
-      next: (data) => {
-        this.gitStatus = data.status;
-        this.commits = data.commits;
-        this.branches = data.branches;
-        this.selectedBranch = data.status.currentBranch || '';
-        this.lastPushedCommitSha = data.lastPushedCommit.commitSha;
+      next: (status) => {
+        this.gitStatus = status;
+        this.selectedBranch = status?.currentBranch || '';
       },
       error: (error) => {
-        console.error('Error loading data:', error);
+        console.error('Error loading git status:', error);
       }
     });
 
+    // Subscribe to commits - automatically updates when state changes
+    this.gitStateService.commits$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (commits) => {
+        this.commits = commits;
+      },
+      error: (error) => {
+        console.error('Error loading commits:', error);
+      }
+    });
+
+    // Subscribe to branches - automatically updates when state changes
+    this.gitStateService.branches$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (branches) => {
+        this.branches = branches;
+      },
+      error: (error) => {
+        console.error('Error loading branches:', error);
+      }
+    });
+
+    // Subscribe to last pushed commit - automatically updates when state changes
+    this.gitStateService.lastPushedCommit$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (commitSha) => {
+        this.lastPushedCommitSha = commitSha;
+      },
+      error: (error) => {
+        console.error('Error loading last pushed commit:', error);
+      }
+    });
+
+    // Listen to branch-switch events to update the dropdown
     this.gitEventService.events$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (event) => {
         if (event.type === 'branch-switch' && event.branchName) {
           this.selectedBranch = event.branchName;
-          this.refresh$.next();
         }
       }
     });
-  }
-
-  refreshAllData() {
-    this.refresh$.next();
   }
 
   ngOnDestroy() {
@@ -142,23 +164,10 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.gitService.commit({
-      message: this.commitMessage,
-      authorName: this.authorName,
-      authorEmail: this.authorEmail
-    }).subscribe({
+    this.gitStateService.commit(this.commitMessage).subscribe({
       next: () => {
         this.gitEventService.emitCommit();
-        forkJoin({
-          status: this.gitService.getStatus(),
-          commits: this.gitService.getCommits(20)
-        }).subscribe({
-          next: (data) => {
-            this.gitStatus = data.status;
-            this.commits = data.commits;
-            this.closeCommitDialog();
-          }
-        });
+        this.closeCommitDialog();
       },
       error: (error) => {
         console.error('Error committing changes:', error);
@@ -172,10 +181,9 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.gitService.discard().subscribe({
+    this.gitStateService.discard().subscribe({
       next: () => {
         this.gitEventService.emitDiscard();
-        this.refreshAllData();
         alert('Changes discarded');
       },
       error: (error) => {
@@ -186,10 +194,9 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   }
 
   pullChanges() {
-    this.gitService.pull().subscribe({
+    this.gitStateService.pull().subscribe({
       next: () => {
         this.gitEventService.emitPull();
-        this.refreshAllData();
         alert('Changes pulled successfully!');
       },
       error: (error) => {
@@ -200,10 +207,9 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   }
 
   pushChanges() {
-    this.gitService.push().subscribe({
+    this.gitStateService.push().subscribe({
       next: () => {
         this.gitEventService.emitPush();
-        this.refreshAllData();
         alert('Changes pushed successfully!');
       },
       error: (error) => {
@@ -232,17 +238,15 @@ export class VersionControlComponent implements OnInit, OnDestroy {
     const branchName = this.newBranchName;
     this.closeBranchDialog();
     
-    this.gitService.createBranch(branchName).subscribe({
+    this.gitStateService.createBranch(branchName).subscribe({
       next: () => {
-        this.gitService.switchBranch(branchName).subscribe({
+        this.gitStateService.switchBranch(branchName).subscribe({
           next: () => {
             this.gitEventService.emitBranchSwitch(branchName);
-            this.refreshAllData();
           },
           error: (error) => {
             console.error('Error switching to new branch:', error);
             alert('Branch created but failed to switch to it');
-            this.refreshAllData();
           }
         });
       },
@@ -266,7 +270,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
     }
 
     const targetBranch = this.selectedBranch;
-    this.gitService.switchBranch(targetBranch).subscribe({
+    this.gitStateService.switchBranch(targetBranch).subscribe({
       next: () => {
         this.gitEventService.emitBranchSwitch(targetBranch);
       },
@@ -292,7 +296,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.gitService.resetAllRepositories().subscribe({
+    this.gitStateService.resetAllRepositories().subscribe({
       next: (response) => {
         alert('All repositories have been reset successfully! The page will reload to reflect the changes.');
         window.location.reload();
@@ -322,10 +326,9 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.gitService.resetToCommit(commit.sha).subscribe({
+    this.gitStateService.resetToCommit(commit.sha).subscribe({
       next: () => {
         this.gitEventService.emitCommit(); // Trigger refresh in other components
-        this.refreshAllData();
         alert('Successfully reset to commit!');
       },
       error: (error) => {
