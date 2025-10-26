@@ -309,7 +309,7 @@ export class VersionControlComponent implements OnInit, OnDestroy {
   }
 
   canResetToCommit(commit: CommitInfo): boolean {
-    return this.isLastPushedCommit(commit);
+    return this.isLastPushedCommit(commit) && (this.gitStatus?.commitsAhead ?? 0) > 0;
   }
 
   resetToCommit(commit: CommitInfo) {

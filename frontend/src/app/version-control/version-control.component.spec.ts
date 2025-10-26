@@ -422,15 +422,46 @@ describe('VersionControlComponent', () => {
       expect(component.isLastPushedCommit(commit)).toBe(false);
     });
 
-    it('should allow reset only for last pushed commit', () => {
+    it('should allow reset only for last pushed commit when there are unpushed commits', () => {
       const commitSha = 'abc123def456';
       component.lastPushedCommitSha = commitSha;
+      component.gitStatus = {
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'feature-branch',
+        commitsAhead: 2,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      };
       
       const lastPushedCommit = { sha: commitSha, message: 'Pushed', author: 'User', date: '2025-01-01T00:00:00Z' };
       const localCommit = { sha: 'xyz789', message: 'Local', author: 'User', date: '2025-01-02T00:00:00Z' };
 
       expect(component.canResetToCommit(lastPushedCommit)).toBe(true);
       expect(component.canResetToCommit(localCommit)).toBe(false);
+    });
+
+    it('should not allow reset when there are no unpushed commits', () => {
+      const commitSha = 'abc123def456';
+      component.lastPushedCommitSha = commitSha;
+      component.gitStatus = {
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'feature-branch',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      };
+      
+      const lastPushedCommit = { sha: commitSha, message: 'Pushed', author: 'User', date: '2025-01-01T00:00:00Z' };
+
+      expect(component.canResetToCommit(lastPushedCommit)).toBe(false);
     });
 
     it('should call gitService.resetToCommit when resetToCommit is confirmed', () => {
