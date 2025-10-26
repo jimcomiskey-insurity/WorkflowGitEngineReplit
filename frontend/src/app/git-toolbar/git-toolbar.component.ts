@@ -224,6 +224,17 @@ export class GitToolbarComponent implements OnInit, OnDestroy {
         console.error('Error loading branches:', error);
       }
     });
+
+    this.gitEventService.events$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (event) => {
+        if (event.type === 'branch-switch' && event.branchName) {
+          this.selectedBranch = event.branchName;
+          this.refresh$.next();
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -266,10 +277,10 @@ export class GitToolbarComponent implements OnInit, OnDestroy {
   onBranchChange() {
     if (this.selectedBranch && this.selectedBranch !== this.gitStatus?.currentBranch) {
       this.isLoading = true;
-      this.gitService.switchBranch(this.selectedBranch).subscribe({
+      const targetBranch = this.selectedBranch;
+      this.gitService.switchBranch(targetBranch).subscribe({
         next: () => {
-          this.refresh$.next();
-          this.gitEventService.emitBranchSwitch(this.selectedBranch);
+          this.gitEventService.emitBranchSwitch(targetBranch);
           this.isLoading = false;
         },
         error: (error) => {

@@ -54,6 +54,17 @@ export class VersionControlComponent implements OnInit, OnDestroy {
         console.error('Error loading data:', error);
       }
     });
+
+    this.gitEventService.events$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (event) => {
+        if (event.type === 'branch-switch' && event.branchName) {
+          this.selectedBranch = event.branchName;
+          this.refresh$.next();
+        }
+      }
+    });
   }
 
   refreshAllData() {
@@ -251,10 +262,10 @@ export class VersionControlComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.gitService.switchBranch(this.selectedBranch).subscribe({
+    const targetBranch = this.selectedBranch;
+    this.gitService.switchBranch(targetBranch).subscribe({
       next: () => {
-        this.gitEventService.emitBranchSwitch(this.selectedBranch);
-        this.refreshAllData();
+        this.gitEventService.emitBranchSwitch(targetBranch);
       },
       error: (error) => {
         console.error('Error switching branch:', error);

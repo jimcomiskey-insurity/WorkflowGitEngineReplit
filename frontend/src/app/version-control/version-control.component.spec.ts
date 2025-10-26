@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { VersionControlComponent } from './version-control.component';
 import { GitService, GitStatus } from '../services/git.service';
 import { UserService } from '../services/user.service';
+import { GitEventService } from '../services/git-event.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of } from 'rxjs';
@@ -11,6 +12,7 @@ describe('VersionControlComponent', () => {
   let fixture: ComponentFixture<VersionControlComponent>;
   let gitService: jest.Mocked<GitService>;
   let userService: jest.Mocked<UserService>;
+  let gitEventService: GitEventService;
 
   beforeEach(async () => {
     const gitServiceMock = {
@@ -19,7 +21,8 @@ describe('VersionControlComponent', () => {
       getBranches: jest.fn(),
       commit: jest.fn(),
       push: jest.fn(),
-      pull: jest.fn()
+      pull: jest.fn(),
+      switchBranch: jest.fn()
     } as unknown as jest.Mocked<GitService>;
 
     const userServiceMock = {
@@ -33,12 +36,14 @@ describe('VersionControlComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: GitService, useValue: gitServiceMock },
-        { provide: UserService, useValue: userServiceMock }
+        { provide: UserService, useValue: userServiceMock },
+        GitEventService
       ]
     }).compileComponents();
 
     gitService = TestBed.inject(GitService) as jest.Mocked<GitService>;
     userService = TestBed.inject(UserService) as jest.Mocked<UserService>;
+    gitEventService = TestBed.inject(GitEventService);
     
     // Setup default responses
     gitService.getStatus.mockReturnValue(of({
@@ -321,6 +326,77 @@ describe('VersionControlComponent', () => {
       };
 
       expect(component.hasCommitsToPush).toBe(false);
+    });
+  });
+
+  describe('Branch Dropdown Synchronization', () => {
+    it('should update selectedBranch when GitEventService emits branch-switch event', (done) => {
+      component.selectedBranch = 'master';
+      
+      gitService.getStatus.mockReturnValue(of({
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'feature-1',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      } as GitStatus));
+      gitService.getCommits.mockReturnValue(of([]));
+      gitService.getBranches.mockReturnValue(of(['master', 'feature-1']));
+
+      gitEventService.emitBranchSwitch('feature-1');
+
+      setTimeout(() => {
+        expect(component.selectedBranch).toBe('feature-1');
+        done();
+      }, 100);
+    });
+
+    it('should emit branch-switch event when onBranchChange is called', (done) => {
+      component.selectedBranch = 'feature-1';
+      component.gitStatus = {
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'master',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      };
+      gitService.switchBranch.mockReturnValue(of(void 0));
+
+      gitEventService.events$.subscribe((event) => {
+        if (event.type === 'branch-switch') {
+          expect(event.branchName).toBe('feature-1');
+          done();
+        }
+      });
+
+      component.onBranchChange();
+    });
+
+    it('should not call switchBranch if selectedBranch is the same as current branch', () => {
+      component.selectedBranch = 'master';
+      component.gitStatus = {
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'master',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      };
+
+      component.onBranchChange();
+
+      expect(gitService.switchBranch).not.toHaveBeenCalled();
     });
   });
 });
