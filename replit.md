@@ -87,8 +87,14 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 **Frontend**:
 - Built with Angular 20.3.6 (Standalone Components) using client-side routing and lazy-loaded components.
-- Utilizes RxJS for state management and asynchronous operations.
-- Employs a service-based architecture and automatically refreshes data based on user selection.
+- **Centralized State Management**: Implements reactive state management using RxJS BehaviorSubjects via dedicated state services:
+  - `GitStateService`: Manages Git state (status, commits, branches, lastPushedCommit) with automatic refresh after all Git operations
+  - `WorkflowStateService`: Manages workflow state with automatic refresh on user changes, manual triggers, and Git events
+  - All components subscribe to observable streams and automatically receive updates
+  - Eliminates manual refresh logic across components
+  - Ensures automatic synchronization - all UI components stay in sync with backend state changes
+- Components use subscription-based architecture for automatic data updates without manual refresh calls
+- State services use `shareReplay(1)` to provide cached, consistent data to all subscribers
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API, providing RESTful endpoints.
