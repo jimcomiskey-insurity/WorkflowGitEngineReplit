@@ -134,7 +134,8 @@ public class GitService
             CurrentBranch = repo.Head.FriendlyName,
             IsDirty = status.IsDirty,
             CommitsAhead = commitsAhead,
-            CommitsBehind = commitsBehind
+            CommitsBehind = commitsBehind,
+            HasRemoteTracking = currentBranch.TrackedBranch != null
         };
     }
 
