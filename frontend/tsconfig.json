@@ -4,7 +4,7 @@
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": false,
-    "noImplicitOverride": true,
+    "noImplicitOverride": false,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -21,9 +21,11 @@
       "ES2022",
       "dom"
     ],
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "paths": {
-      "@Core/*": ["app/core/*"]
+      "@Core/*": ["src/app/core/*"],
+      "@Services/*": ["src/app/core/services/*"],
+      "src/*": ["src/*"]
     }
   },
   "angularCompilerOptions": {
