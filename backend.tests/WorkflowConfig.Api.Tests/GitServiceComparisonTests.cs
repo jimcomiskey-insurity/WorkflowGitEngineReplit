@@ -980,4 +980,291 @@ This ensures open PRs dynamically update as work continues:
     }
 
     #endregion
+
+    #region Central Repository PR Comparison Tests
+
+    [Fact]
+    public void CompareBranchesInCentral_WithNewBranch_ShouldShowCommitsAheadAndChanges()
+    {
+        // REGRESSION TEST: PRs must use central repository for comparison
+        //
+        // Scenario:
+        // 1. User creates a branch and makes commits locally
+        // 2. User pushes to central repository
+        // 3. PR comparison uses central repository to get accurate counts
+        //
+        // This test verifies the architectural fix that PRs interact only with central repo
+
+        // Arrange
+        var userId = "testUser";
+        
+        // Create a feature branch and add a new workflow (this will ensure user repo)
+        _gitService.CreateBranch(userId, "feature/new-workflow");
+        _gitService.SwitchBranch(userId, "feature/new-workflow");
+        
+        var newWorkflow = new Workflow
+        {
+            WorkflowKey = "feature-workflow",
+            WorkflowName = "Feature Workflow",
+            Description = "Added in feature branch",
+            Phases = new List<Phase>
+            {
+                new Phase
+                {
+                    PhaseName = "Initial Phase",
+                    PhaseOrder = 1,
+                    Tasks = new List<TaskItem>
+                    {
+                        new TaskItem
+                        {
+                            TaskId = "task-1",
+                            TaskName = "Feature Task",
+                            TaskType = "Manual",
+                            AssignedRole = "Developer",
+                            EstimatedDurationHours = 3.0,
+                            Dependencies = new List<string>(),
+                            IsAutomated = false
+                        }
+                    }
+                }
+            }
+        };
+        
+        var workflows = _gitService.ReadWorkflows(userId);
+        workflows.Workflows.Add(newWorkflow);
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Add feature workflow", "Test User", "test@example.com");
+        
+        // Push to central repository
+        _gitService.Push(userId);
+
+        // Act: Compare branches in central repository
+        var comparison = _gitService.CompareBranchesInCentral("feature/new-workflow", "master");
+
+        // Assert
+        comparison.Should().NotBeNull();
+        comparison.SourceBranch.Should().Be("feature/new-workflow");
+        comparison.TargetBranch.Should().Be("master");
+        comparison.CommitsAhead.Should().Be(1, "feature branch has 1 commit ahead of master");
+        comparison.CommitsBehind.Should().Be(0, "feature branch is not behind master");
+        
+        // Verify commit details
+        comparison.Commits.Should().ContainSingle();
+        var commit = comparison.Commits.First();
+        commit.Message.Should().Contain("Add feature workflow");
+        commit.Author.Should().Be("Test User");
+        
+        // Verify workflow changes
+        comparison.Changes.Should().ContainSingle();
+        var change = comparison.Changes.First();
+        change.WorkflowKey.Should().Be("feature-workflow");
+        change.ChangeType.Should().Be("added");
+        change.SourceWorkflow.Should().NotBeNull();
+        change.TargetWorkflow.Should().BeNull();
+    }
+
+    [Fact]
+    public void CompareBranchesInCentral_WithModifiedWorkflow_ShouldDetectChanges()
+    {
+        // Arrange
+        var userId = "testUser";
+        
+        // Get the existing workflow from master and modify it (this will ensure user repo)
+        var workflows = _gitService.ReadWorkflows(userId);
+        var existingWorkflow = workflows.Workflows.First();
+        var originalName = existingWorkflow.WorkflowName;
+        
+        // Create feature branch and modify workflow
+        _gitService.CreateBranch(userId, "feature/modify-workflow");
+        _gitService.SwitchBranch(userId, "feature/modify-workflow");
+        
+        existingWorkflow.WorkflowName = "Modified Workflow Name";
+        existingWorkflow.Description = "Modified Description";
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Modify workflow", "Test User", "test@example.com");
+        _gitService.Push(userId);
+
+        // Act: Compare in central repository
+        var comparison = _gitService.CompareBranchesInCentral("feature/modify-workflow", "master");
+
+        // Assert
+        comparison.CommitsAhead.Should().Be(1);
+        comparison.Changes.Should().ContainSingle();
+        
+        var change = comparison.Changes.First();
+        change.ChangeType.Should().Be("modified");
+        change.SourceWorkflow.Should().NotBeNull();
+        change.TargetWorkflow.Should().NotBeNull();
+        change.SourceWorkflow!.WorkflowName.Should().Be("Modified Workflow Name");
+        change.TargetWorkflow!.WorkflowName.Should().Be(originalName);
+    }
+
+    [Fact]
+    public void CompareBranchesInCentral_WithMultipleCommits_ShouldCountAllCommits()
+    {
+        // Arrange
+        var userId = "testUser";
+        
+        // Create feature branch (this will ensure user repo)
+        _gitService.CreateBranch(userId, "feature/multiple-commits");
+        _gitService.SwitchBranch(userId, "feature/multiple-commits");
+        
+        var workflows = _gitService.ReadWorkflows(userId);
+        
+        // Make first commit
+        var workflow1 = new Workflow
+        {
+            WorkflowKey = "workflow-1",
+            WorkflowName = "First Workflow",
+            Description = "First commit",
+            Phases = new List<Phase>()
+        };
+        workflows.Workflows.Add(workflow1);
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "First commit", "Test User", "test@example.com");
+        
+        // Make second commit
+        var workflow2 = new Workflow
+        {
+            WorkflowKey = "workflow-2",
+            WorkflowName = "Second Workflow",
+            Description = "Second commit",
+            Phases = new List<Phase>()
+        };
+        workflows.Workflows.Add(workflow2);
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Second commit", "Test User", "test@example.com");
+        
+        // Push to central
+        _gitService.Push(userId);
+
+        // Act
+        var comparison = _gitService.CompareBranchesInCentral("feature/multiple-commits", "master");
+
+        // Assert
+        comparison.CommitsAhead.Should().Be(2, "feature branch has 2 commits ahead");
+        comparison.Commits.Should().HaveCount(2);
+        // Note: Messages may contain newlines, so check if they start with the expected text
+        comparison.Commits.Should().Contain(c => c.Message.StartsWith("First commit"));
+        comparison.Commits.Should().Contain(c => c.Message.StartsWith("Second commit"));
+        
+        // Should show both added workflows
+        comparison.Changes.Should().HaveCount(2);
+        comparison.Changes.Should().AllSatisfy(c => c.ChangeType.Should().Be("added"));
+    }
+
+    [Fact]
+    public void CompareBranchesInCentral_IndependentOfUserRepoState_ShouldUseOnlyCentralRepo()
+    {
+        // CRITICAL TEST: Verifies architectural fix
+        //
+        // This test ensures that PR comparisons use ONLY the central repository,
+        // not the user's local repository state. This prevents issues where:
+        // - User has unpushed commits
+        // - User's local master is out of sync
+        // - Different users see different PR commit counts
+
+        // Arrange
+        var userId = "testUser";
+        
+        // Create and push feature branch (this will ensure user repo)
+        _gitService.CreateBranch(userId, "feature/central-test");
+        _gitService.SwitchBranch(userId, "feature/central-test");
+        
+        var workflows = _gitService.ReadWorkflows(userId);
+        workflows.Workflows.Add(new Workflow
+        {
+            WorkflowKey = "central-workflow",
+            WorkflowName = "Central Test",
+            Description = "Test",
+            Phases = new List<Phase>()
+        });
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Add workflow", "Test User", "test@example.com");
+        _gitService.Push(userId);
+        
+        // Switch back to master and make LOCAL unpushed commits
+        _gitService.SwitchBranch(userId, "master");
+        workflows = _gitService.ReadWorkflows(userId);
+        workflows.Workflows.Add(new Workflow
+        {
+            WorkflowKey = "local-only-workflow",
+            WorkflowName = "Local Only",
+            Description = "This is only in user's local master, not pushed",
+            Phases = new List<Phase>()
+        });
+        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.CommitChanges(userId, "Local unpushed commit", "Test User", "test@example.com");
+        // Intentionally NOT pushing to central
+
+        // Act: Compare in central repository
+        // This should NOT see the unpushed local commit
+        var comparison = _gitService.CompareBranchesInCentral("feature/central-test", "master");
+
+        // Assert: Comparison should use central repo state, ignoring local unpushed commits
+        comparison.CommitsAhead.Should().Be(1, "only the pushed commit should count");
+        comparison.Changes.Should().ContainSingle();
+        comparison.Changes.First().WorkflowKey.Should().Be("central-workflow");
+        
+        // The local-only workflow should NOT appear in changes since it's not in central repo
+        comparison.Changes.Should().NotContain(c => c.WorkflowKey == "local-only-workflow");
+    }
+
+    [Fact]
+    public void CompareBranchesInCentral_WithDivergentBranches_ShouldCalculateAheadAndBehind()
+    {
+        // This tests the scenario where branches have diverged:
+        // - Feature branch has commits not in master
+        // - Master has commits not in feature branch
+
+        // Arrange
+        var user1 = "user1";
+        var user2 = "user2";
+        
+        // User1 creates feature branch from master
+        _gitService.CreateBranch(user1, "feature/diverge-test");
+        _gitService.SwitchBranch(user1, "feature/diverge-test");
+        
+        var workflows1 = _gitService.ReadWorkflows(user1);
+        workflows1.Workflows.Add(new Workflow
+        {
+            WorkflowKey = "feature-wf",
+            WorkflowName = "Feature",
+            Description = "Feature work",
+            Phases = new List<Phase>()
+        });
+        _gitService.WriteWorkflows(user1, workflows1);
+        _gitService.CommitChanges(user1, "Feature commit", "User1", "user1@example.com");
+        _gitService.Push(user1);
+        
+        // User2 creates a different feature branch from master (parallel work)
+        _gitService.CreateBranch(user2, "feature/parallel-work");
+        _gitService.SwitchBranch(user2, "feature/parallel-work");
+        
+        var workflows2 = _gitService.ReadWorkflows(user2);
+        workflows2.Workflows.Add(new Workflow
+        {
+            WorkflowKey = "parallel-wf",
+            WorkflowName = "Parallel",
+            Description = "Parallel work",
+            Phases = new List<Phase>()
+        });
+        _gitService.WriteWorkflows(user2, workflows2);
+        _gitService.CommitChanges(user2, "Parallel commit", "User2", "user2@example.com");
+        _gitService.Push(user2);
+
+        // Act: Compare the two feature branches
+        var comparison = _gitService.CompareBranchesInCentral("feature/diverge-test", "feature/parallel-work");
+
+        // Assert
+        comparison.CommitsAhead.Should().Be(1, "diverge-test has 1 commit not in parallel-work");
+        comparison.CommitsBehind.Should().Be(1, "diverge-test is missing 1 commit from parallel-work");
+        
+        // Verify the changes are different workflows
+        comparison.Changes.Should().HaveCount(2);
+        comparison.Changes.Should().Contain(c => c.WorkflowKey == "feature-wf" && c.ChangeType == "added");
+        comparison.Changes.Should().Contain(c => c.WorkflowKey == "parallel-wf" && c.ChangeType == "deleted");
+    }
+
+    #endregion
 }

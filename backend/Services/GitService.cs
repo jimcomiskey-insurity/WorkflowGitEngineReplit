@@ -317,7 +317,7 @@ public class GitService
         return repo.Branches.Select(b => b.FriendlyName).ToList();
     }
 
-    public List<CommitInfo> GetCommitHistory(string userId, int count = 20)
+    public List<Models.CommitInfo> GetCommitHistory(string userId, int count = 20)
     {
         EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
@@ -326,7 +326,7 @@ public class GitService
         
         return repo.Commits
             .Take(count)
-            .Select(c => new CommitInfo
+            .Select(c => new Models.CommitInfo
             {
                 Sha = c.Sha,
                 Message = c.MessageShort,
@@ -663,6 +663,24 @@ public class GitService
         return null;
     }
 
+    public string GetBranchCommitShaFromCentral(string branchName)
+    {
+        // For pull requests: work directly with the central repository
+        // PRs should only care about branches that have been pushed to central
+        using var repo = new Repository(_centralRepoPath);
+        
+        // In a bare repository, all branches are what would be "remote" branches in a clone
+        // Look for refs/heads/branchName
+        var branch = repo.Branches[branchName] ?? repo.Branches[$"refs/heads/{branchName}"];
+        
+        if (branch == null || branch.Tip == null)
+        {
+            throw new ArgumentException($"Branch '{branchName}' not found in central repository. Make sure the branch has been pushed.");
+        }
+
+        return branch.Tip.Sha;
+    }
+
     public string GetBranchCommitSha(string userId, string branchName, bool preferRemote = false)
     {
         EnsureUserRepository(userId);
@@ -698,6 +716,146 @@ public class GitService
         }
 
         return branch.Tip.Sha;
+    }
+
+    public BranchComparison CompareBranchesInCentral(string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
+    {
+        // For pull requests: work directly with the central repository
+        // This ensures we're comparing branches as they exist in the central repo (what was pushed)
+        using var repo = new Repository(_centralRepoPath);
+        
+        // Get source commit - either from SHA or from branch tip
+        Commit sourceCommit;
+        if (!string.IsNullOrEmpty(sourceCommitSha))
+        {
+            // Use the stored commit SHA (for merged PRs)
+            sourceCommit = repo.Lookup<Commit>(sourceCommitSha);
+            if (sourceCommit == null)
+            {
+                throw new ArgumentException($"Invalid source commit SHA: {sourceCommitSha}");
+            }
+        }
+        else
+        {
+            // Use the current branch tip in central repo (for open PRs)
+            var sourceBranchRef = repo.Branches[sourceBranch] ?? repo.Branches[$"refs/heads/{sourceBranch}"];
+            if (sourceBranchRef == null || sourceBranchRef.Tip == null)
+            {
+                throw new ArgumentException($"Source branch '{sourceBranch}' not found in central repository");
+            }
+            sourceCommit = sourceBranchRef.Tip;
+        }
+        
+        // Get target commit - either from SHA or from branch tip
+        Commit targetCommit;
+        if (!string.IsNullOrEmpty(targetCommitSha))
+        {
+            // Use the stored commit SHA (for merged PRs)
+            targetCommit = repo.Lookup<Commit>(targetCommitSha);
+            if (targetCommit == null)
+            {
+                throw new ArgumentException($"Invalid target commit SHA: {targetCommitSha}");
+            }
+        }
+        else
+        {
+            // Use the current branch tip in central repo (for open PRs)
+            var targetBranchRef = repo.Branches[targetBranch] ?? repo.Branches[$"refs/heads/{targetBranch}"];
+            if (targetBranchRef == null || targetBranchRef.Tip == null)
+            {
+                throw new ArgumentException($"Target branch '{targetBranch}' not found in central repository");
+            }
+            targetCommit = targetBranchRef.Tip;
+        }
+        
+        // Calculate commits ahead and behind
+        var aheadFilter = new CommitFilter
+        {
+            IncludeReachableFrom = sourceCommit,
+            ExcludeReachableFrom = targetCommit
+        };
+        var commitsAhead = repo.Commits.QueryBy(aheadFilter).Count();
+        
+        var behindFilter = new CommitFilter
+        {
+            IncludeReachableFrom = targetCommit,
+            ExcludeReachableFrom = sourceCommit
+        };
+        var commitsBehind = repo.Commits.QueryBy(behindFilter).Count();
+        
+        // Get the actual commit objects for the ahead commits
+        var aheadCommits = repo.Commits.QueryBy(aheadFilter)
+            .Select(c => new Models.CommitInfo
+            {
+                Sha = c.Sha,
+                Message = c.Message,
+                Author = c.Author.Name,
+                Date = c.Author.When
+            })
+            .ToList();
+        
+        // Get workflows from both branches for change detection
+        var sourceWorkflows = GetWorkflowsFromCommit(repo, sourceCommit);
+        var targetWorkflows = GetWorkflowsFromCommit(repo, targetCommit);
+
+        var changes = new List<WorkflowChange>();
+
+        // Find added and modified workflows
+        foreach (var sourceWorkflow in sourceWorkflows)
+        {
+            var targetWorkflow = targetWorkflows.FirstOrDefault(w => w.WorkflowKey == sourceWorkflow.WorkflowKey);
+            
+            if (targetWorkflow == null)
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = sourceWorkflow.WorkflowKey,
+                    WorkflowName = sourceWorkflow.WorkflowName,
+                    ChangeType = "added",
+                    SourceWorkflow = sourceWorkflow,
+                    TargetWorkflow = null
+                });
+            }
+            else if (!WorkflowsAreEqual(sourceWorkflow, targetWorkflow))
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = sourceWorkflow.WorkflowKey,
+                    WorkflowName = sourceWorkflow.WorkflowName,
+                    ChangeType = "modified",
+                    SourceWorkflow = sourceWorkflow,
+                    TargetWorkflow = targetWorkflow
+                });
+            }
+        }
+
+        // Find deleted workflows
+        foreach (var targetWorkflow in targetWorkflows)
+        {
+            var sourceWorkflow = sourceWorkflows.FirstOrDefault(w => w.WorkflowKey == targetWorkflow.WorkflowKey);
+            
+            if (sourceWorkflow == null)
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = targetWorkflow.WorkflowKey,
+                    WorkflowName = targetWorkflow.WorkflowName,
+                    ChangeType = "deleted",
+                    SourceWorkflow = null,
+                    TargetWorkflow = targetWorkflow
+                });
+            }
+        }
+        
+        return new BranchComparison
+        {
+            SourceBranch = sourceBranch,
+            TargetBranch = targetBranch,
+            CommitsAhead = commitsAhead,
+            CommitsBehind = commitsBehind,
+            Changes = changes,
+            Commits = aheadCommits
+        };
     }
 
     public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)

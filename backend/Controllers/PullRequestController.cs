@@ -77,12 +77,12 @@ public class PullRequestController : ControllerBase
             }
 
             // Use the stored commit SHAs only for merged PRs to show historical changes
-            // For open PRs, use null to compare current branch tips (allows updates after PR creation)
+            // For open PRs, use null to compare current branch tips in central repo (allows updates after PR creation)
             var sourceCommitSha = pullRequest.Status == "merged" ? pullRequest.SourceCommitSha : null;
             var targetCommitSha = pullRequest.Status == "merged" ? pullRequest.TargetCommitSha : null;
             
-            var comparison = _gitService.CompareBranches(
-                userId, 
+            // Compare branches in the central repository (not user's local repo)
+            var comparison = _gitService.CompareBranchesInCentral(
                 pullRequest.SourceBranch, 
                 pullRequest.TargetBranch, 
                 sourceCommitSha,
@@ -103,14 +103,17 @@ public class PullRequestController : ControllerBase
     {
         try
         {
-            // Capture the current commit SHAs of both branches at PR creation time
-            // Source: use local branch (what we're trying to merge)
-            // Target: use remote branch (the true base - origin/master, not local master)
-            var sourceCommitSha = _gitService.GetBranchCommitSha(userId, request.SourceBranch, preferRemote: false);
-            var targetCommitSha = _gitService.GetBranchCommitSha(userId, request.TargetBranch, preferRemote: true);
+            // Pull requests work directly with the central repository
+            // Both branches must be pushed to central before creating a PR
+            var sourceCommitSha = _gitService.GetBranchCommitShaFromCentral(request.SourceBranch);
+            var targetCommitSha = _gitService.GetBranchCommitShaFromCentral(request.TargetBranch);
             
             var pullRequest = _pullRequestService.CreatePullRequest(userId, request, sourceCommitSha, targetCommitSha);
             return CreatedAtAction(nameof(GetPullRequest), new { userId, number = pullRequest.Number }, pullRequest);
+        }
+        catch (ArgumentException ex) when (ex.Message.Contains("not found in central repository"))
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {

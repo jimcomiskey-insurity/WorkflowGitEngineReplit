@@ -28,7 +28,9 @@ public class BranchComparison
     public string SourceBranch { get; set; } = string.Empty;
     public string TargetBranch { get; set; } = string.Empty;
     public int CommitsAhead { get; set; }
+    public int CommitsBehind { get; set; }
     public List<WorkflowChange> Changes { get; set; } = new();
+    public List<CommitInfo> Commits { get; set; } = new();
 }
 
 public class WorkflowChange
