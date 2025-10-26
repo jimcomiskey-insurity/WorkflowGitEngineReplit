@@ -650,4 +650,127 @@ This ensures open PRs dynamically update as work continues:
     }
 
     #endregion
+
+    #region HasRemoteTracking Tests
+
+    [Fact]
+    public void GetStatus_OnNewBranchWithoutRemote_ShouldReturnHasRemoteTrackingFalse()
+    {
+        // Arrange
+        var userId = "testUser";
+        var workflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Description",
+            Phases = new List<Phase>()
+        };
+
+        var programWorkflows = new ProgramWorkflows
+        {
+            Workflows = new List<Workflow> { workflow }
+        };
+
+        // Create initial commit on master
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+
+        // Create a new branch without pushing
+        _gitService.CreateBranch(userId, "feature-branch");
+        _gitService.SwitchBranch(userId, "feature-branch");
+
+        // Act
+        var status = _gitService.GetStatus(userId);
+
+        // Assert
+        status.HasRemoteTracking.Should().BeFalse("new branch has no remote tracking");
+        status.CurrentBranch.Should().Be("feature-branch");
+    }
+
+    [Fact]
+    public void GetStatus_OnTrackedBranch_ShouldReturnHasRemoteTrackingTrue()
+    {
+        // Arrange
+        var userId = "testUser";
+        var workflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Description",
+            Phases = new List<Phase>()
+        };
+
+        var programWorkflows = new ProgramWorkflows
+        {
+            Workflows = new List<Workflow> { workflow }
+        };
+
+        // Create initial commit
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+
+        // Create and switch to a feature branch
+        _gitService.CreateBranch(userId, "feature-branch");
+        _gitService.SwitchBranch(userId, "feature-branch");
+
+        // Make a change and commit
+        workflow.Description = "Updated";
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Update", "Test User", "test@example.com");
+
+        // Push to establish tracking
+        _gitService.Push(userId);
+
+        // Act
+        var status = _gitService.GetStatus(userId);
+
+        // Assert
+        status.HasRemoteTracking.Should().BeTrue("branch should have remote tracking after push");
+        status.CurrentBranch.Should().Be("feature-branch");
+    }
+
+    [Fact]
+    public void GetStatus_AfterPushingNewBranch_ShouldReturnHasRemoteTrackingTrue()
+    {
+        // Arrange
+        var userId = "testUser";
+        var workflow = new Workflow
+        {
+            WorkflowKey = "test-workflow",
+            WorkflowName = "Test Workflow",
+            Description = "Description",
+            Phases = new List<Phase>()
+        };
+
+        var programWorkflows = new ProgramWorkflows
+        {
+            Workflows = new List<Workflow> { workflow }
+        };
+
+        // Create initial commit on master
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+
+        // Create and switch to new branch
+        _gitService.CreateBranch(userId, "feature-branch");
+        _gitService.SwitchBranch(userId, "feature-branch");
+
+        // Make a change and commit
+        workflow.Description = "Updated Description";
+        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.CommitChanges(userId, "Update description", "Test User", "test@example.com");
+
+        // Push the branch
+        _gitService.Push(userId);
+
+        // Act
+        var status = _gitService.GetStatus(userId);
+
+        // Assert
+        status.HasRemoteTracking.Should().BeTrue("branch should have remote tracking after push");
+        status.CurrentBranch.Should().Be("feature-branch");
+        status.CommitsAhead.Should().Be(0, "no commits ahead after push");
+    }
+
+    #endregion
 }
