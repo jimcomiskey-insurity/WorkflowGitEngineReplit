@@ -75,7 +75,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'master',
         commitsAhead: 0,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.isOnMasterBranch).toBe(true);
@@ -90,7 +91,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'main',
         commitsAhead: 0,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.isOnMasterBranch).toBe(true);
@@ -105,7 +107,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'MASTER',
         commitsAhead: 0,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.isOnMasterBranch).toBe(true);
@@ -120,7 +123,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'feature-branch',
         commitsAhead: 0,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.isOnMasterBranch).toBe(false);
@@ -143,7 +147,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'master',
         commitsAhead: 3,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.canPush).toBe(false);
@@ -158,7 +163,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'main',
         commitsAhead: 2,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.canPush).toBe(false);
@@ -173,7 +179,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'feature-branch',
         commitsAhead: 1,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.canPush).toBe(true);
@@ -188,7 +195,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'feature-branch',
         commitsAhead: 0,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
       component.commits = [];
 
@@ -212,11 +220,70 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'feature-branch',
         commitsAhead: 0,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
       component.commits = [
         { sha: 'abc123', message: 'First commit', author: 'Test', date: '2025-01-01T00:00:00Z' },
         { sha: 'def456', message: 'Second commit', author: 'Test', date: '2025-01-02T00:00:00Z' }
+      ];
+
+      expect(component.canPush).toBe(false);
+    });
+
+    it('should return true on new branch without remote tracking that has commits', () => {
+      // New feature: Allow push on new branches without remote tracking
+      component.gitStatus = {
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'feature-branch',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: false
+      };
+      component.commits = [
+        { sha: 'abc123', message: 'First commit', author: 'Test', date: '2025-01-01T00:00:00Z' }
+      ];
+
+      expect(component.canPush).toBe(true);
+    });
+
+    it('should return false on new branch without remote tracking that has no commits', () => {
+      // New branch with no commits should not allow push
+      component.gitStatus = {
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'feature-branch',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: false
+      };
+      component.commits = [];
+
+      expect(component.canPush).toBe(false);
+    });
+
+    it('should return false on master branch without remote tracking even with commits', () => {
+      // Master branch push should be blocked even if no remote tracking
+      component.gitStatus = {
+        isDirty: false,
+        added: [],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'master',
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: false
+      };
+      component.commits = [
+        { sha: 'abc123', message: 'First commit', author: 'Test', date: '2025-01-01T00:00:00Z' }
       ];
 
       expect(component.canPush).toBe(false);
@@ -233,7 +300,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'feature-branch',
         commitsAhead: 2,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.hasCommitsToPush).toBe(true);
@@ -248,7 +316,8 @@ describe('VersionControlComponent', () => {
         untracked: [],
         currentBranch: 'master',
         commitsAhead: 0,
-        commitsBehind: 0
+        commitsBehind: 0,
+        hasRemoteTracking: true
       };
 
       expect(component.hasCommitsToPush).toBe(false);
