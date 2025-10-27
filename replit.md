@@ -98,7 +98,12 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API, providing RESTful endpoints.
-- Workflows are stored as JSON files in the filesystem for Git versioning.
+- **Split-File Persistence**: Workflows are persisted using a split-file structure for better Git tracking:
+  - `workflow-list.json`: Contains ordered list of workflow Guid IDs
+  - `workflows/{workflowId}.json`: Individual JSON file for each workflow
+  - Each workflow has a unique `Guid Id` property for stable identification
+  - Deleting a workflow removes both its entry from the list and its individual file
+  - **Backward Compatibility**: System reads legacy `workflows.json` format and auto-migrates to split-file format on first write
 - Integrates LibGit2Sharp for all Git operations.
 - Supports multi-user access through isolated, user-specific Git repositories connected to a central repository.
 - Employs RxJS `switchMap` and `merge` for data refreshing and multi-user data isolation.
@@ -116,7 +121,11 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 ### System Design Choices
 
--   **File-based Storage**: Workflows are stored as JSON files for Git integration, human readability, and portability.
+-   **Split-File Persistence**: Workflows use a split-file structure for improved Git granularity:
+    -   **Benefits**: Individual workflow changes affect only that workflow's file, clearer Git history, easier conflict resolution, explicit deletions
+    -   **Format**: `workflow-list.json` for ordered IDs + `workflows/{guid}.json` per workflow
+    -   **Migration**: Automatic migration from legacy single-file format on first write operation
+    -   **Backward Compatibility**: All Git operations (merge, conflict resolution, status enrichment) support both legacy and new formats
 -   **Persistent Storage**: All runtime data (user repositories, pull requests) is stored in `/home/runner/workflow-data/` to ensure data persistence across restarts, avoid nested Git repositories, and separate application code from runtime data.
 -   **Multi-user Support**: Each user operates within an isolated Git repository cloned from a central one, ensuring data separation and individual version control.
 -   **API Integration**: Frontend communicates with the backend via Workflow Service (`/api/workflows`) and Git Service (`/api/git`) APIs.

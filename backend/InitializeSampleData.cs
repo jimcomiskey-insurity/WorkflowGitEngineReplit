@@ -41,12 +41,14 @@ public static class DataInitializer
                     return;
                 }
 
-                // Ensure all workflows have IDs
+                // Ensure all workflows have deterministic IDs based on WorkflowKey
                 foreach (var workflow in sampleData.Workflows)
                 {
                     if (workflow.Id == Guid.Empty)
                     {
-                        workflow.Id = Guid.NewGuid();
+                        using var sha256 = System.Security.Cryptography.SHA256.Create();
+                        var hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(workflow.WorkflowKey));
+                        workflow.Id = new Guid(hashBytes.Take(16).ToArray());
                     }
                 }
 

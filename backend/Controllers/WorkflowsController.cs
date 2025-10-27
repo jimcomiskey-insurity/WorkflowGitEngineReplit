@@ -63,7 +63,11 @@ public class WorkflowsController : ControllerBase
             return NotFound();
         }
 
+        // Preserve the existing workflow ID to maintain split-file persistence stability
+        var existingId = workflows.Workflows[index].Id;
         workflow.WorkflowKey = workflowKey;
+        workflow.Id = existingId;
+        
         workflows.Workflows[index] = workflow;
         _gitService.WriteWorkflows(userId, workflows);
         

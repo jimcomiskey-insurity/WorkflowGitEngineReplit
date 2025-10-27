@@ -362,6 +362,7 @@ public class GitService
             }
 
             var result = new ProgramWorkflows { Workflows = workflows };
+            EnsureWorkflowIds(result);
             EnsureTaskIds(result);
             return result;
         }
@@ -377,9 +378,23 @@ public class GitService
         var json = File.ReadAllText(legacyFilePath);
         var legacyWorkflows = JsonSerializer.Deserialize<ProgramWorkflows>(json) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
         
+        EnsureWorkflowIds(legacyWorkflows);
         EnsureTaskIds(legacyWorkflows);
         
         return legacyWorkflows;
+    }
+
+    private void EnsureWorkflowIds(ProgramWorkflows programWorkflows)
+    {
+        foreach (var workflow in programWorkflows.Workflows)
+        {
+            if (workflow.Id == Guid.Empty)
+            {
+                // Generate deterministic ID based on WorkflowKey for stability
+                workflow.Id = GenerateDeterministicGuid(workflow.WorkflowKey);
+                _logger.LogInformation($"Generated deterministic ID {workflow.Id} for workflow {workflow.WorkflowKey}");
+            }
+        }
     }
 
     private void EnsureTaskIds(ProgramWorkflows programWorkflows)
@@ -400,6 +415,13 @@ public class GitService
         }
     }
 
+    private Guid GenerateDeterministicGuid(string input)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+        return new Guid(hashBytes.Take(16).ToArray());
+    }
+
     private string GenerateDeterministicId(string workflowKey, string phaseName, int phaseOrder, string taskName, int taskIndex)
     {
         var input = $"{workflowKey}|{phaseName}|{phaseOrder}|{taskName}|{taskIndex}";
@@ -414,15 +436,8 @@ public class GitService
         EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
 
-        // Ensure all workflows have IDs (generate for legacy data)
-        foreach (var workflow in workflows.Workflows)
-        {
-            if (workflow.Id == Guid.Empty)
-            {
-                workflow.Id = Guid.NewGuid();
-                _logger.LogInformation($"Generated new ID {workflow.Id} for workflow {workflow.WorkflowKey}");
-            }
-        }
+        // Ensure all workflows have stable, deterministic IDs
+        EnsureWorkflowIds(workflows);
 
         // Read existing workflow list to detect deletions
         var existingWorkflowList = ReadWorkflowListIfExists(userRepoPath);
@@ -567,12 +582,9 @@ public class GitService
 
         try
         {
-            var previousVersionJson = GetFileContentFromCommit(repo, headCommit, WorkflowFileName);
-            var previousVersion = string.IsNullOrEmpty(previousVersionJson)
-                ? new ProgramWorkflows { Workflows = new List<Workflow>() }
-                : JsonSerializer.Deserialize<ProgramWorkflows>(previousVersionJson) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
-
-            EnsureTaskIds(previousVersion);
+            // Use GetWorkflowsFromCommit which supports both split-file and legacy formats
+            var previousWorkflows = GetWorkflowsFromCommit(repo, headCommit);
+            var previousVersion = new ProgramWorkflows { Workflows = previousWorkflows };
 
             foreach (var workflow in programWorkflows.Workflows)
             {
@@ -1139,6 +1151,42 @@ public class GitService
 
     private List<Workflow> GetWorkflowsFromCommit(Repository repo, Commit commit)
     {
+        // Try new split-file format first
+        var workflowListEntry = commit[WorkflowListFileName];
+        if (workflowListEntry != null)
+        {
+            var listBlob = (Blob)workflowListEntry.Target;
+            var listJson = listBlob.GetContentText();
+            var workflowList = JsonSerializer.Deserialize<WorkflowList>(listJson);
+            
+            if (workflowList != null && workflowList.WorkflowIds.Any())
+            {
+                var workflows = new List<Workflow>();
+                foreach (var workflowId in workflowList.WorkflowIds)
+                {
+                    var workflowPath = $"{WorkflowsDirectory}/{workflowId}.json";
+                    var workflowEntry = commit[workflowPath];
+                    
+                    if (workflowEntry != null)
+                    {
+                        var workflowBlob = (Blob)workflowEntry.Target;
+                        var workflowJson = workflowBlob.GetContentText();
+                        var workflow = JsonSerializer.Deserialize<Workflow>(workflowJson);
+                        
+                        if (workflow != null)
+                        {
+                            workflows.Add(workflow);
+                        }
+                    }
+                }
+                
+                var programWorkflowsWrapper = new ProgramWorkflows { Workflows = workflows };
+                EnsureTaskIds(programWorkflowsWrapper);
+                return workflows;
+            }
+        }
+
+        // Fallback to legacy single-file format
         var workflowsEntry = commit[WorkflowFileName];
         
         if (workflowsEntry == null)
@@ -1150,23 +1198,23 @@ public class GitService
         var json = blob.GetContentText();
         
         // Deserialize as ProgramWorkflows (with root Workflows property) or fallback to direct list
-        List<Workflow> workflows;
+        List<Workflow> legacyWorkflows;
         try
         {
             var programWorkflows = JsonSerializer.Deserialize<ProgramWorkflows>(json);
-            workflows = programWorkflows?.Workflows ?? new List<Workflow>();
+            legacyWorkflows = programWorkflows?.Workflows ?? new List<Workflow>();
         }
         catch
         {
             // Fallback: try deserializing as direct list
-            workflows = JsonSerializer.Deserialize<List<Workflow>>(json) ?? new List<Workflow>();
+            legacyWorkflows = JsonSerializer.Deserialize<List<Workflow>>(json) ?? new List<Workflow>();
         }
         
         // Ensure all tasks have TaskIds
-        var programWorkflowsWrapper = new ProgramWorkflows { Workflows = workflows };
-        EnsureTaskIds(programWorkflowsWrapper);
+        var legacyWrapper = new ProgramWorkflows { Workflows = legacyWorkflows };
+        EnsureTaskIds(legacyWrapper);
         
-        return workflows;
+        return legacyWorkflows;
     }
 
     private bool WorkflowsAreEqual(Workflow w1, Workflow w2)
