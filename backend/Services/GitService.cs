@@ -511,6 +511,17 @@ public class GitService
         var options = new JsonSerializerOptions { WriteIndented = true };
         var json = JsonSerializer.Serialize(workflowList, options);
         
+        // Only write if content has changed (avoid unnecessary Git modifications)
+        if (File.Exists(listFilePath))
+        {
+            var existingContent = File.ReadAllText(listFilePath);
+            if (existingContent == json)
+            {
+                // Content unchanged, skip write
+                return;
+            }
+        }
+        
         using var fileStream = new FileStream(listFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
         using var streamWriter = new StreamWriter(fileStream);
         streamWriter.Write(json);
@@ -526,6 +537,17 @@ public class GitService
         var workflowFilePath = GetWorkflowFilePath(userRepoPath, workflow.Id);
         var options = new JsonSerializerOptions { WriteIndented = true };
         var json = JsonSerializer.Serialize(workflow, options);
+        
+        // Only write if content has changed (avoid unnecessary Git modifications)
+        if (File.Exists(workflowFilePath))
+        {
+            var existingContent = File.ReadAllText(workflowFilePath);
+            if (existingContent == json)
+            {
+                // Content unchanged, skip write
+                return;
+            }
+        }
         
         using var fileStream = new FileStream(workflowFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
         using var streamWriter = new StreamWriter(fileStream);

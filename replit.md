@@ -125,6 +125,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
     -   **Benefits**: Individual workflow changes affect only that workflow's file, clearer Git history, easier conflict resolution, explicit deletions
     -   **Format**: `workflow-list.json` for ordered IDs + `workflows/{guid}.json` per workflow
     -   **Migration**: Automatic migration from legacy single-file format on first write operation
+    -   **Write Optimization**: Files are only written when content actually changes, preventing unnecessary Git modifications and ensuring clean pending changes
     -   **Backward Compatibility**: All Git operations (merge, conflict resolution, status enrichment) support both legacy and new formats
 -   **Persistent Storage**: All runtime data (user repositories, pull requests) is stored in `/home/runner/workflow-data/` to ensure data persistence across restarts, avoid nested Git repositories, and separate application code from runtime data.
 -   **Multi-user Support**: Each user operates within an isolated Git repository cloned from a central one, ensuring data separation and individual version control.
