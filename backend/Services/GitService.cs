@@ -1618,12 +1618,21 @@ public class GitService
 
         Commands.Stage(repo, WorkflowFileName);
 
-        var signature = new Signature("System", "system@workflow.local", DateTimeOffset.Now);
-        repo.Commit($"Merge {sourceBranch} into {targetBranch} (conflicts resolved)", signature, signature);
+        // Check if there are any actual changes to commit
+        var status = repo.RetrieveStatus();
+        var hasChanges = status.Any(s => s.State != FileStatus.Ignored && s.State != FileStatus.Unaltered);
+        
+        if (hasChanges)
+        {
+            var signature = new Signature("System", "system@workflow.local", DateTimeOffset.Now);
+            repo.Commit($"Merge {sourceBranch} into {targetBranch} (conflicts resolved)", signature, signature);
 
-        var remote = repo.Network.Remotes["origin"];
-        var options = new PushOptions();
-        repo.Network.Push(remote, $"refs/heads/{targetBranch}", options);
+            var remote = repo.Network.Remotes["origin"];
+            var options = new PushOptions();
+            repo.Network.Push(remote, $"refs/heads/{targetBranch}", options);
+        }
+        // If no changes, the resolution resulted in the same state as target branch
+        // This is valid (e.g., when choosing to "keep" in a deletion conflict where target has the item)
     }
 
     private List<Workflow> ApplyConflictResolutions(
