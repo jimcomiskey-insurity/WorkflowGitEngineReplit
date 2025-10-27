@@ -1066,16 +1066,18 @@ public class GitService
         // Checkout target branch
         Commands.Checkout(repo, targetBranchRef);
 
-        // Merge source into target
+        // Merge source into target - now properly detects conflicts
         var signature = new Signature("System", "system@workflow.local", DateTimeOffset.Now);
         var mergeResult = repo.Merge(sourceCommit, signature, new MergeOptions
         {
-            FileConflictStrategy = CheckoutFileConflictStrategy.Theirs,
-            MergeFileFavor = MergeFileFavor.Theirs
+            FailOnConflict = false,
+            CommitOnSuccess = true
         });
 
         if (mergeResult.Status == MergeStatus.Conflicts)
         {
+            // Abort the merge to clean up the working directory
+            repo.Reset(ResetMode.Hard);
             throw new InvalidOperationException("Merge conflicts detected");
         }
 
@@ -1148,6 +1150,399 @@ public class GitService
         // Perform a mixed reset (keeps working directory changes, removes commits)
         // This is safer than hard reset as it preserves uncommitted work
         repo.Reset(ResetMode.Mixed, commit);
+    }
+
+    public MergeConflictInfo GetMergeConflicts(string userId, string sourceBranch, string targetBranch)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        using var repo = new Repository(userRepoPath);
+        
+        Fetch(repo);
+        
+        var sourceBranchRef = ResolveBranch(repo, sourceBranch);
+        var targetBranchRef = ResolveBranch(repo, targetBranch);
+
+        if (sourceBranchRef == null || targetBranchRef == null)
+        {
+            throw new ArgumentException($"Invalid source or target branch");
+        }
+
+        var conflictInfo = new MergeConflictInfo
+        {
+            SourceBranch = sourceBranch,
+            TargetBranch = targetBranch
+        };
+
+        var baseCommit = repo.ObjectDatabase.FindMergeBase(sourceBranchRef.Tip, targetBranchRef.Tip);
+        
+        if (baseCommit == null)
+        {
+            return conflictInfo;
+        }
+
+        var baseWorkflows = GetWorkflowsAtCommit(repo, baseCommit);
+        var sourceWorkflows = GetWorkflowsAtCommit(repo, sourceBranchRef.Tip);
+        var targetWorkflows = GetWorkflowsAtCommit(repo, targetBranchRef.Tip);
+
+        foreach (var sourceWorkflow in sourceWorkflows)
+        {
+            var baseWorkflow = baseWorkflows.FirstOrDefault(w => w.WorkflowKey == sourceWorkflow.WorkflowKey);
+            var targetWorkflow = targetWorkflows.FirstOrDefault(w => w.WorkflowKey == sourceWorkflow.WorkflowKey);
+
+            if (targetWorkflow == null) continue;
+
+            var workflowConflict = CompareWorkflowsForConflicts(
+                sourceWorkflow, 
+                targetWorkflow, 
+                baseWorkflow);
+
+            if (workflowConflict != null && 
+                (workflowConflict.FieldConflicts.Any() || workflowConflict.PhaseConflicts.Any()))
+            {
+                conflictInfo.WorkflowConflicts.Add(workflowConflict);
+            }
+        }
+
+        conflictInfo.TotalConflicts = conflictInfo.WorkflowConflicts.Sum(wc => 
+            wc.FieldConflicts.Count + 
+            wc.PhaseConflicts.Sum(pc => pc.FieldConflicts.Count + pc.TaskConflicts.Sum(tc => tc.FieldConflicts.Count)));
+
+        return conflictInfo;
+    }
+
+    private WorkflowConflict? CompareWorkflowsForConflicts(
+        Workflow source, 
+        Workflow target, 
+        Workflow? baseWorkflow)
+    {
+        var conflict = new WorkflowConflict
+        {
+            WorkflowKey = source.WorkflowKey,
+            WorkflowName = source.WorkflowName
+        };
+
+        if (baseWorkflow != null)
+        {
+            if (source.WorkflowName != target.WorkflowName && 
+                (source.WorkflowName != baseWorkflow.WorkflowName || 
+                 target.WorkflowName != baseWorkflow.WorkflowName))
+            {
+                conflict.FieldConflicts.Add(new FieldConflict
+                {
+                    FieldName = "WorkflowName",
+                    BaseValue = baseWorkflow.WorkflowName,
+                    CurrentValue = target.WorkflowName,
+                    IncomingValue = source.WorkflowName
+                });
+            }
+
+            if (source.Description != target.Description && 
+                (source.Description != baseWorkflow.Description || 
+                 target.Description != baseWorkflow.Description))
+            {
+                conflict.FieldConflicts.Add(new FieldConflict
+                {
+                    FieldName = "Description",
+                    BaseValue = baseWorkflow.Description,
+                    CurrentValue = target.Description,
+                    IncomingValue = source.Description
+                });
+            }
+        }
+
+        foreach (var sourcePhase in source.Phases ?? new List<Phase>())
+        {
+            var targetPhase = target.Phases?.FirstOrDefault(p => p.PhaseName == sourcePhase.PhaseName);
+            var basePhase = baseWorkflow?.Phases?.FirstOrDefault(p => p.PhaseName == sourcePhase.PhaseName);
+
+            if (targetPhase != null)
+            {
+                var phaseConflict = ComparePhases(sourcePhase, targetPhase, basePhase);
+                if (phaseConflict != null && 
+                    (phaseConflict.FieldConflicts.Any() || phaseConflict.TaskConflicts.Any()))
+                {
+                    conflict.PhaseConflicts.Add(phaseConflict);
+                }
+            }
+        }
+
+        return conflict;
+    }
+
+    private PhaseConflict? ComparePhases(Phase source, Phase target, Phase? basePhase)
+    {
+        var conflict = new PhaseConflict
+        {
+            PhaseName = source.PhaseName,
+            PhaseOrder = source.PhaseOrder
+        };
+
+        if (basePhase != null)
+        {
+            if (source.PhaseName != target.PhaseName && 
+                (source.PhaseName != basePhase.PhaseName || 
+                 target.PhaseName != basePhase.PhaseName))
+            {
+                conflict.FieldConflicts.Add(new FieldConflict
+                {
+                    FieldName = "PhaseName",
+                    BaseValue = basePhase.PhaseName,
+                    CurrentValue = target.PhaseName,
+                    IncomingValue = source.PhaseName
+                });
+            }
+        }
+
+        foreach (var sourceTask in source.Tasks ?? new List<TaskItem>())
+        {
+            var targetTask = target.Tasks?.FirstOrDefault(t => t.TaskId == sourceTask.TaskId);
+            var baseTask = basePhase?.Tasks?.FirstOrDefault(t => t.TaskId == sourceTask.TaskId);
+
+            if (targetTask != null)
+            {
+                var taskConflict = CompareTasks(sourceTask, targetTask, baseTask);
+                if (taskConflict != null && taskConflict.FieldConflicts.Any())
+                {
+                    conflict.TaskConflicts.Add(taskConflict);
+                }
+            }
+        }
+
+        return conflict;
+    }
+
+    private TaskConflict? CompareTasks(TaskItem source, TaskItem target, TaskItem? baseTask)
+    {
+        var conflict = new TaskConflict
+        {
+            TaskId = source.TaskId,
+            TaskName = source.TaskName
+        };
+
+        if (baseTask != null)
+        {
+            if (source.TaskName != target.TaskName && 
+                (source.TaskName != baseTask.TaskName || 
+                 target.TaskName != baseTask.TaskName))
+            {
+                conflict.FieldConflicts.Add(new FieldConflict
+                {
+                    FieldName = "TaskName",
+                    BaseValue = baseTask.TaskName,
+                    CurrentValue = target.TaskName,
+                    IncomingValue = source.TaskName
+                });
+            }
+
+            if (source.AssignedRole != target.AssignedRole && 
+                (source.AssignedRole != baseTask.AssignedRole || 
+                 target.AssignedRole != baseTask.AssignedRole))
+            {
+                conflict.FieldConflicts.Add(new FieldConflict
+                {
+                    FieldName = "AssignedRole",
+                    BaseValue = baseTask.AssignedRole,
+                    CurrentValue = target.AssignedRole,
+                    IncomingValue = source.AssignedRole
+                });
+            }
+        }
+
+        return conflict;
+    }
+
+    private List<Workflow> GetWorkflowsAtCommit(Repository repo, Commit commit)
+    {
+        return GetWorkflowsFromCommit(repo, commit);
+    }
+
+    public void ResolveAndMerge(
+        string userId, 
+        string sourceBranch, 
+        string targetBranch, 
+        List<ConflictResolution> resolutions)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        using var repo = new Repository(userRepoPath);
+        
+        Fetch(repo);
+        
+        var sourceBranchRef = ResolveBranch(repo, sourceBranch);
+        var targetBranchRef = ResolveBranch(repo, targetBranch);
+
+        if (sourceBranchRef == null || targetBranchRef == null)
+        {
+            throw new ArgumentException($"Invalid source or target branch");
+        }
+
+        Commands.Checkout(repo, targetBranchRef);
+
+        var sourceWorkflows = GetWorkflowsAtCommit(repo, sourceBranchRef.Tip);
+        var targetWorkflows = GetWorkflowsAtCommit(repo, targetBranchRef.Tip);
+
+        var mergedWorkflows = ApplyConflictResolutions(sourceWorkflows, targetWorkflows, resolutions);
+
+        var workflowsPath = Path.Combine(userRepoPath, WorkflowFileName);
+        var wrapper = new ProgramWorkflows { Workflows = mergedWorkflows };
+        File.WriteAllText(workflowsPath, JsonSerializer.Serialize(wrapper, new JsonSerializerOptions { WriteIndented = true }));
+
+        Commands.Stage(repo, WorkflowFileName);
+
+        var signature = new Signature("System", "system@workflow.local", DateTimeOffset.Now);
+        repo.Commit($"Merge {sourceBranch} into {targetBranch} (conflicts resolved)", signature, signature);
+
+        var remote = repo.Network.Remotes["origin"];
+        var options = new PushOptions();
+        repo.Network.Push(remote, $"refs/heads/{targetBranch}", options);
+    }
+
+    private List<Workflow> ApplyConflictResolutions(
+        List<Workflow> sourceWorkflows,
+        List<Workflow> targetWorkflows,
+        List<ConflictResolution> resolutions)
+    {
+        var result = new List<Workflow>();
+
+        foreach (var targetWorkflow in targetWorkflows)
+        {
+            var sourceWorkflow = sourceWorkflows.FirstOrDefault(w => w.WorkflowKey == targetWorkflow.WorkflowKey);
+            if (sourceWorkflow == null)
+            {
+                result.Add(targetWorkflow);
+                continue;
+            }
+
+            var mergedWorkflow = new Workflow
+            {
+                WorkflowKey = targetWorkflow.WorkflowKey,
+                WorkflowName = ApplyResolution(resolutions, targetWorkflow.WorkflowKey, null, null, "WorkflowName", 
+                    targetWorkflow.WorkflowName, sourceWorkflow.WorkflowName),
+                Description = ApplyResolution(resolutions, targetWorkflow.WorkflowKey, null, null, "Description", 
+                    targetWorkflow.Description, sourceWorkflow.Description),
+                Phases = MergePhases(targetWorkflow.Phases, sourceWorkflow.Phases, resolutions, targetWorkflow.WorkflowKey)
+            };
+
+            result.Add(mergedWorkflow);
+        }
+
+        foreach (var sourceWorkflow in sourceWorkflows)
+        {
+            if (!result.Any(w => w.WorkflowKey == sourceWorkflow.WorkflowKey))
+            {
+                result.Add(sourceWorkflow);
+            }
+        }
+
+        return result;
+    }
+
+    private List<Phase>? MergePhases(
+        List<Phase>? targetPhases,
+        List<Phase>? sourcePhases,
+        List<ConflictResolution> resolutions,
+        string workflowKey)
+    {
+        if (targetPhases == null && sourcePhases == null) return null;
+        
+        var result = new List<Phase>();
+        var allPhaseNames = new HashSet<string>();
+        
+        if (targetPhases != null) allPhaseNames.UnionWith(targetPhases.Select(p => p.PhaseName));
+        if (sourcePhases != null) allPhaseNames.UnionWith(sourcePhases.Select(p => p.PhaseName));
+
+        foreach (var phaseName in allPhaseNames)
+        {
+            var targetPhase = targetPhases?.FirstOrDefault(p => p.PhaseName == phaseName);
+            var sourcePhase = sourcePhases?.FirstOrDefault(p => p.PhaseName == phaseName);
+
+            if (targetPhase != null && sourcePhase != null)
+            {
+                result.Add(new Phase
+                {
+                    PhaseName = ApplyResolution(resolutions, workflowKey, phaseName, null, "PhaseName", 
+                        targetPhase.PhaseName, sourcePhase.PhaseName),
+                    PhaseOrder = targetPhase.PhaseOrder,
+                    Tasks = MergeTasks(targetPhase.Tasks, sourcePhase.Tasks, resolutions, workflowKey, phaseName)
+                });
+            }
+            else
+            {
+                result.Add(targetPhase ?? sourcePhase!);
+            }
+        }
+
+        return result;
+    }
+
+    private List<TaskItem>? MergeTasks(
+        List<TaskItem>? targetTasks,
+        List<TaskItem>? sourceTasks,
+        List<ConflictResolution> resolutions,
+        string workflowKey,
+        string phaseName)
+    {
+        if (targetTasks == null && sourceTasks == null) return null;
+        
+        var result = new List<TaskItem>();
+        var allTaskIds = new HashSet<string>();
+        
+        if (targetTasks != null) allTaskIds.UnionWith(targetTasks.Where(t => t.TaskId != null).Select(t => t.TaskId!));
+        if (sourceTasks != null) allTaskIds.UnionWith(sourceTasks.Where(t => t.TaskId != null).Select(t => t.TaskId!));
+
+        foreach (var taskId in allTaskIds)
+        {
+            var targetTask = targetTasks?.FirstOrDefault(t => t.TaskId == taskId);
+            var sourceTask = sourceTasks?.FirstOrDefault(t => t.TaskId == taskId);
+
+            if (targetTask != null && sourceTask != null)
+            {
+                result.Add(new TaskItem
+                {
+                    TaskId = taskId,
+                    TaskName = ApplyResolution(resolutions, workflowKey, phaseName, taskId, "TaskName", 
+                        targetTask.TaskName, sourceTask.TaskName),
+                    TaskType = targetTask.TaskType,
+                    AssignedRole = ApplyResolution(resolutions, workflowKey, phaseName, taskId, "AssignedRole", 
+                        targetTask.AssignedRole, sourceTask.AssignedRole),
+                    EstimatedDurationHours = targetTask.EstimatedDurationHours,
+                    Dependencies = targetTask.Dependencies,
+                    IsAutomated = targetTask.IsAutomated
+                });
+            }
+            else
+            {
+                result.Add(targetTask ?? sourceTask!);
+            }
+        }
+
+        return result;
+    }
+
+    private string ApplyResolution(
+        List<ConflictResolution> resolutions,
+        string workflowKey,
+        string? phaseName,
+        string? taskId,
+        string fieldName,
+        string currentValue,
+        string incomingValue)
+    {
+        var resolution = resolutions.FirstOrDefault(r =>
+            r.WorkflowKey == workflowKey &&
+            r.PhaseName == phaseName &&
+            r.TaskId == taskId &&
+            r.FieldName == fieldName);
+
+        if (resolution != null)
+        {
+            return resolution.Resolution == "current" ? currentValue : incomingValue;
+        }
+
+        return currentValue == incomingValue ? currentValue : currentValue;
     }
 
     public void ResetAllRepositories(string sampleDataPath)

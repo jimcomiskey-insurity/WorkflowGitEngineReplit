@@ -160,6 +160,71 @@ public class PullRequestController : ControllerBase
         }
     }
 
+    [HttpGet("{number}/conflicts")]
+    public ActionResult<MergeConflictInfo> GetMergeConflicts(
+        [FromQuery] string userId,
+        int number)
+    {
+        try
+        {
+            var pullRequest = _pullRequestService.GetPullRequest(userId, number);
+            
+            if (pullRequest == null)
+            {
+                return NotFound(new { message = $"Pull request #{number} not found" });
+            }
+
+            if (pullRequest.Status != "open")
+            {
+                return BadRequest(new { message = "Only open pull requests can be analyzed for conflicts" });
+            }
+
+            var conflicts = _gitService.GetMergeConflicts(userId, pullRequest.SourceBranch, pullRequest.TargetBranch);
+            
+            return Ok(conflicts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting merge conflicts for PR #{Number}, user {UserId}", number, userId);
+            return StatusCode(500, new { message = "Error analyzing merge conflicts" });
+        }
+    }
+
+    [HttpPost("{number}/resolve-conflicts")]
+    public ActionResult<PullRequest> ResolveAndMergePullRequest(
+        [FromQuery] string userId,
+        int number,
+        [FromBody] ResolveConflictsRequest request)
+    {
+        try
+        {
+            var pullRequest = _pullRequestService.GetPullRequest(userId, number);
+            
+            if (pullRequest == null)
+            {
+                return NotFound(new { message = $"Pull request #{number} not found" });
+            }
+
+            if (pullRequest.Status != "open")
+            {
+                return BadRequest(new { message = "Only open pull requests can be merged" });
+            }
+
+            // Perform the Git merge with conflict resolutions
+            _gitService.ResolveAndMerge(userId, pullRequest.SourceBranch, pullRequest.TargetBranch, request.Resolutions);
+
+            // Update PR status
+            var mergedPr = _pullRequestService.MergePullRequest(userId, number);
+
+            return Ok(mergedPr);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resolving conflicts and merging PR #{Number} for user {UserId}", number, userId);
+            return StatusCode(500, new { message = "Error resolving and merging pull request" });
+        }
+    }
+
     [HttpPost("{number}/close")]
     public ActionResult<PullRequest> ClosePullRequest(
         [FromQuery] string userId,

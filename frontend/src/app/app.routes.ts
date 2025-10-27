@@ -33,5 +33,9 @@ export const routes: Routes = [
   {
     path: 'pull-requests/:number',
     loadComponent: () => import('./pull-request-detail/pull-request-detail.component').then(m => m.PullRequestDetailComponent)
+  },
+  {
+    path: 'pull-requests/:number/resolve-conflicts',
+    loadComponent: () => import('./conflict-resolution/conflict-resolution.component').then(m => m.ConflictResolutionComponent)
   }
 ];

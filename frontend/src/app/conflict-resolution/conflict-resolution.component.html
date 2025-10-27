@@ -1,0 +1,178 @@
+<div class="conflict-resolution-container">
+  <div class="header">
+    <h1>Resolve Merge Conflicts</h1>
+    <p class="subtitle" *ngIf="conflicts">
+      Pull Request #{{prNumber}}: {{conflicts.sourceBranch}} → {{conflicts.targetBranch}}
+    </p>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Loading conflict information...
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && conflicts" class="conflicts-content">
+    <div class="conflict-summary">
+      <span class="conflict-count">{{ conflicts.totalConflicts }} conflict<span *ngIf="conflicts.totalConflicts !== 1">s</span> found</span>
+      <span class="separator">•</span>
+      <span class="workflow-count">{{ conflicts.workflowConflicts.length }} workflow<span *ngIf="conflicts.workflowConflicts.length !== 1">s</span> affected</span>
+    </div>
+
+    <div class="instructions">
+      Review each conflict below and choose which version to keep. The "Current" version is from the target branch ({{conflicts.targetBranch}}), and "Incoming" is from your source branch ({{conflicts.sourceBranch}}).
+    </div>
+
+    <div class="workflow-conflicts">
+      <div *ngFor="let workflowConflict of conflicts.workflowConflicts" class="workflow-conflict-card">
+        <div class="workflow-header">
+          <div class="workflow-info">
+            <span class="workflow-icon">📋</span>
+            <div>
+              <h2>{{ workflowConflict.workflowName }}</h2>
+              <span class="workflow-key">{{ workflowConflict.workflowKey }}</span>
+            </div>
+          </div>
+          <span class="conflict-badge">{{ getConflictCount(workflowConflict) }} conflict<span *ngIf="getConflictCount(workflowConflict) !== 1">s</span></span>
+        </div>
+
+        <!-- Workflow-level conflicts -->
+        <div *ngIf="workflowConflict.fieldConflicts.length > 0" class="field-conflicts">
+          <div *ngFor="let fieldConflict of workflowConflict.fieldConflicts" class="conflict-item">
+            <div class="conflict-label">⚠️ {{ fieldConflict.fieldName }} conflict</div>
+            <div class="conflict-choices">
+              <label class="choice" [class.selected]="fieldConflict.resolution === 'current'">
+                <input 
+                  type="radio" 
+                  [name]="'wf-' + workflowConflict.workflowKey + '-' + fieldConflict.fieldName"
+                  value="current"
+                  [(ngModel)]="fieldConflict.resolution">
+                <div class="choice-content">
+                  <div class="choice-header">
+                    <span class="choice-label">Keep Current ({{conflicts.targetBranch}})</span>
+                  </div>
+                  <div class="choice-value">{{ fieldConflict.currentValue }}</div>
+                  <div class="choice-meta" *ngIf="fieldConflict.baseValue">
+                    <span class="original-label">Original:</span> {{ fieldConflict.baseValue }}
+                  </div>
+                </div>
+              </label>
+
+              <label class="choice" [class.selected]="fieldConflict.resolution === 'incoming'">
+                <input 
+                  type="radio" 
+                  [name]="'wf-' + workflowConflict.workflowKey + '-' + fieldConflict.fieldName"
+                  value="incoming"
+                  [(ngModel)]="fieldConflict.resolution">
+                <div class="choice-content">
+                  <div class="choice-header">
+                    <span class="choice-label">Keep Incoming ({{conflicts.sourceBranch}})</span>
+                  </div>
+                  <div class="choice-value">{{ fieldConflict.incomingValue }}</div>
+                  <div class="choice-meta" *ngIf="fieldConflict.baseValue">
+                    <span class="original-label">Original:</span> {{ fieldConflict.baseValue }}
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase-level conflicts -->
+        <div *ngFor="let phaseConflict of workflowConflict.phaseConflicts" class="phase-conflicts">
+          <div class="phase-header">
+            Phase: {{ phaseConflict.phaseName }}
+          </div>
+
+          <div *ngFor="let fieldConflict of phaseConflict.fieldConflicts" class="conflict-item">
+            <div class="conflict-label">⚠️ {{ fieldConflict.fieldName }} conflict</div>
+            <div class="conflict-choices">
+              <label class="choice" [class.selected]="fieldConflict.resolution === 'current'">
+                <input 
+                  type="radio" 
+                  [name]="'phase-' + workflowConflict.workflowKey + '-' + phaseConflict.phaseName + '-' + fieldConflict.fieldName"
+                  value="current"
+                  [(ngModel)]="fieldConflict.resolution">
+                <div class="choice-content">
+                  <div class="choice-header">
+                    <span class="choice-label">Keep Current</span>
+                  </div>
+                  <div class="choice-value">{{ fieldConflict.currentValue }}</div>
+                </div>
+              </label>
+
+              <label class="choice" [class.selected]="fieldConflict.resolution === 'incoming'">
+                <input 
+                  type="radio" 
+                  [name]="'phase-' + workflowConflict.workflowKey + '-' + phaseConflict.phaseName + '-' + fieldConflict.fieldName"
+                  value="incoming"
+                  [(ngModel)]="fieldConflict.resolution">
+                <div class="choice-content">
+                  <div class="choice-header">
+                    <span class="choice-label">Keep Incoming</span>
+                  </div>
+                  <div class="choice-value">{{ fieldConflict.incomingValue }}</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Task-level conflicts -->
+          <div *ngFor="let taskConflict of phaseConflict.taskConflicts" class="task-conflicts">
+            <div class="task-header">
+              Task: {{ taskConflict.taskName }}
+            </div>
+
+            <div *ngFor="let fieldConflict of taskConflict.fieldConflicts" class="conflict-item">
+              <div class="conflict-label">⚠️ {{ fieldConflict.fieldName }} conflict</div>
+              <div class="conflict-choices">
+                <label class="choice" [class.selected]="fieldConflict.resolution === 'current'">
+                  <input 
+                    type="radio" 
+                    [name]="'task-' + workflowConflict.workflowKey + '-' + phaseConflict.phaseName + '-' + taskConflict.taskId + '-' + fieldConflict.fieldName"
+                    value="current"
+                    [(ngModel)]="fieldConflict.resolution">
+                  <div class="choice-content">
+                    <div class="choice-header">
+                      <span class="choice-label">Keep Current</span>
+                    </div>
+                    <div class="choice-value">{{ fieldConflict.currentValue }}</div>
+                  </div>
+                </label>
+
+                <label class="choice" [class.selected]="fieldConflict.resolution === 'incoming'">
+                  <input 
+                    type="radio" 
+                    [name]="'task-' + workflowConflict.workflowKey + '-' + phaseConflict.phaseName + '-' + taskConflict.taskId + '-' + fieldConflict.fieldName"
+                    value="incoming"
+                    [(ngModel)]="fieldConflict.resolution">
+                  <div class="choice-content">
+                    <div class="choice-header">
+                      <span class="choice-label">Keep Incoming</span>
+                    </div>
+                    <div class="choice-value">{{ fieldConflict.incomingValue }}</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" (click)="cancel()" [disabled]="resolving">
+        Cancel
+      </button>
+      <button 
+        class="btn btn-primary" 
+        (click)="resolveAndMerge()" 
+        [disabled]="!isAllResolved() || resolving">
+        <span *ngIf="!resolving">Resolve Conflicts & Merge</span>
+        <span *ngIf="resolving">Merging...</span>
+      </button>
+    </div>
+  </div>
+</div>
