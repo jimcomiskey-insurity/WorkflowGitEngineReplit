@@ -41,14 +41,20 @@ public static class DataInitializer
                     return;
                 }
 
-                // Ensure all workflows have deterministic IDs based on WorkflowKey
+                // Ensure all workflows have IDs (use existing from JSON or generate deterministic ones)
                 foreach (var workflow in sampleData.Workflows)
                 {
                     if (workflow.Id == Guid.Empty)
                     {
+                        // Generate deterministic ID based on WorkflowKey only if not already set in JSON
                         using var sha256 = System.Security.Cryptography.SHA256.Create();
                         var hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(workflow.WorkflowKey));
                         workflow.Id = new Guid(hashBytes.Take(16).ToArray());
+                        Console.WriteLine($"Generated ID {workflow.Id} for workflow {workflow.WorkflowKey}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Using existing ID {workflow.Id} for workflow {workflow.WorkflowKey}");
                     }
                 }
 

@@ -1,6 +1,7 @@
 {
   "Workflows": [
     {
+      "Id": "9c4f4e4a-6b2e-8f3a-1d5c-7e8f9a0b1c2d",
       "WorkflowName": "New Business",
       "WorkflowKey": "NB-001",
       "Description": "Handles initial policy creation, rating, underwriting, and issuance.",
@@ -10,6 +11,7 @@
           "PhaseOrder": 1,
           "Tasks": [
             {
+              "TaskId": "TASK-NB-001",
               "TaskName": "Capture Applicant Information",
               "TaskType": "DataEntry",
               "AssignedRole": "Agent",
@@ -18,6 +20,7 @@
               "IsAutomated": false
             },
             {
+              "TaskId": "TASK-NB-002",
               "TaskName": "Generate Quote",
               "TaskType": "Rating",
               "AssignedRole": "System",
@@ -32,6 +35,7 @@
           "PhaseOrder": 2,
           "Tasks": [
             {
+              "TaskId": "TASK-NB-003",
               "TaskName": "Underwriter Review",
               "TaskType": "Review",
               "AssignedRole": "Underwriter",
@@ -40,6 +44,7 @@
               "IsAutomated": false
             },
             {
+              "TaskId": "TASK-NB-004",
               "TaskName": "Request Additional Info",
               "TaskType": "FollowUp",
               "AssignedRole": "Underwriter",
@@ -54,6 +59,7 @@
           "PhaseOrder": 3,
           "Tasks": [
             {
+              "TaskId": "TASK-NB-005",
               "TaskName": "Issue Policy Documents",
               "TaskType": "DocumentGeneration",
               "AssignedRole": "System",
@@ -66,6 +72,7 @@
       ]
     },
     {
+      "Id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
       "WorkflowName": "Endorsement",
       "WorkflowKey": "END-002",
       "Description": "Handles mid-term policy changes such as adding vehicles or updating coverages.",
@@ -75,6 +82,7 @@
           "PhaseOrder": 1,
           "Tasks": [
             {
+              "TaskId": "TASK-END-001",
               "TaskName": "Receive Endorsement Request",
               "TaskType": "Intake",
               "AssignedRole": "CSR",
@@ -83,6 +91,7 @@
               "IsAutomated": false
             },
             {
+              "TaskId": "TASK-END-002",
               "TaskName": "Validate Policy Status",
               "TaskType": "Validation",
               "AssignedRole": "System",
@@ -97,6 +106,7 @@
           "PhaseOrder": 2,
           "Tasks": [
             {
+              "TaskId": "TASK-END-003",
               "TaskName": "Recalculate Premium",
               "TaskType": "Rating",
               "AssignedRole": "System",
@@ -105,6 +115,7 @@
               "IsAutomated": true
             },
             {
+              "TaskId": "TASK-END-004",
               "TaskName": "Underwriter Approval",
               "TaskType": "Approval",
               "AssignedRole": "Underwriter",
@@ -119,6 +130,7 @@
           "PhaseOrder": 3,
           "Tasks": [
             {
+              "TaskId": "TASK-END-005",
               "TaskName": "Send Endorsement Confirmation",
               "TaskType": "Notification",
               "AssignedRole": "System",
@@ -131,6 +143,7 @@
       ]
     },
     {
+      "Id": "b2c3d4e5-f6a7-8901-2345-67890abcdef1",
       "WorkflowName": "Cancel",
       "WorkflowKey": "CAN-003",
       "Description": "Handles cancellation of active policies either by insured or company action.",
@@ -140,6 +153,7 @@
           "PhaseOrder": 1,
           "Tasks": [
             {
+              "TaskId": "TASK-CAN-001",
               "TaskName": "Receive Cancellation Request",
               "TaskType": "Intake",
               "AssignedRole": "CSR",
@@ -148,6 +162,7 @@
               "IsAutomated": false
             },
             {
+              "TaskId": "TASK-CAN-002",
               "TaskName": "Validate Effective Date",
               "TaskType": "Validation",
               "AssignedRole": "System",
@@ -162,6 +177,7 @@
           "PhaseOrder": 2,
           "Tasks": [
             {
+              "TaskId": "TASK-CAN-003",
               "TaskName": "Calculate Return Premium",
               "TaskType": "Accounting",
               "AssignedRole": "System",
@@ -170,6 +186,7 @@
               "IsAutomated": true
             },
             {
+              "TaskId": "TASK-CAN-004",
               "TaskName": "Approve Cancellation",
               "TaskType": "Approval",
               "AssignedRole": "Underwriter",
@@ -184,6 +201,7 @@
           "PhaseOrder": 3,
           "Tasks": [
             {
+              "TaskId": "TASK-CAN-005",
               "TaskName": "Send Notice of Cancellation",
               "TaskType": "Notification",
               "AssignedRole": "System",
@@ -196,6 +214,7 @@
       ]
     },
     {
+      "Id": "c3d4e5f6-a7b8-9012-3456-7890abcdef12",
       "WorkflowName": "Reinstatement",
       "WorkflowKey": "REIN-004",
       "Description": "Reinstates a previously canceled policy upon payment or approval.",
@@ -205,6 +224,7 @@
           "PhaseOrder": 1,
           "Tasks": [
             {
+              "TaskId": "TASK-REIN-001",
               "TaskName": "Validate Reinstatement Eligibility",
               "TaskType": "Validation",
               "AssignedRole": "System",
@@ -213,6 +233,7 @@
               "IsAutomated": true
             },
             {
+              "TaskId": "TASK-REIN-002",
               "TaskName": "Underwriter Review",
               "TaskType": "Approval",
               "AssignedRole": "Underwriter",
@@ -227,6 +248,7 @@
           "PhaseOrder": 2,
           "Tasks": [
             {
+              "TaskId": "TASK-REIN-003",
               "TaskName": "Restore Coverage and Billing",
               "TaskType": "SystemUpdate",
               "AssignedRole": "System",
@@ -235,6 +257,7 @@
               "IsAutomated": true
             },
             {
+              "TaskId": "TASK-REIN-004",
               "TaskName": "Send Confirmation Notice",
               "TaskType": "Notification",
               "AssignedRole": "System",
@@ -248,4 +271,3 @@
     }
   ]
 }
- 
