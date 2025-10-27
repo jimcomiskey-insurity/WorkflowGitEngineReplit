@@ -10,7 +10,9 @@ public class GitService
     private readonly string _centralRepoPath;
     private readonly string _pullRequestsPath;
     private readonly ILogger<GitService> _logger;
-    private const string WorkflowFileName = "workflows.json";
+    private const string WorkflowFileName = "workflows.json"; // Legacy format
+    private const string WorkflowListFileName = "workflow-list.json";
+    private const string WorkflowsDirectory = "workflows";
 
     public GitService(IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
     {
@@ -340,19 +342,44 @@ public class GitService
     {
         EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
-        var filePath = Path.Combine(userRepoPath, WorkflowFileName);
 
-        if (!File.Exists(filePath))
+        // Try new split-file format first
+        var workflowList = ReadWorkflowListIfExists(userRepoPath);
+        if (workflowList != null)
+        {
+            var workflows = new List<Workflow>();
+            foreach (var workflowId in workflowList.WorkflowIds)
+            {
+                var workflow = ReadWorkflowFileIfExists(userRepoPath, workflowId);
+                if (workflow != null)
+                {
+                    workflows.Add(workflow);
+                }
+                else
+                {
+                    _logger.LogWarning($"Workflow file not found for ID {workflowId}, skipping");
+                }
+            }
+
+            var result = new ProgramWorkflows { Workflows = workflows };
+            EnsureTaskIds(result);
+            return result;
+        }
+
+        // Fallback to legacy single-file format
+        var legacyFilePath = Path.Combine(userRepoPath, WorkflowFileName);
+        if (!File.Exists(legacyFilePath))
         {
             return new ProgramWorkflows { Workflows = new List<Workflow>() };
         }
 
-        var json = File.ReadAllText(filePath);
-        var workflows = JsonSerializer.Deserialize<ProgramWorkflows>(json) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
+        _logger.LogInformation($"Reading workflows from legacy format for user {userId}");
+        var json = File.ReadAllText(legacyFilePath);
+        var legacyWorkflows = JsonSerializer.Deserialize<ProgramWorkflows>(json) ?? new ProgramWorkflows { Workflows = new List<Workflow>() };
         
-        EnsureTaskIds(workflows);
+        EnsureTaskIds(legacyWorkflows);
         
-        return workflows;
+        return legacyWorkflows;
     }
 
     private void EnsureTaskIds(ProgramWorkflows programWorkflows)
@@ -386,21 +413,132 @@ public class GitService
     {
         EnsureUserRepository(userId);
         var userRepoPath = GetUserRepoPath(userId);
-        var filePath = Path.Combine(userRepoPath, WorkflowFileName);
 
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        var json = JsonSerializer.Serialize(workflows, options);
-        
-        // Write file with explicit flush to ensure changes are committed to disk
-        using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-        using (var streamWriter = new StreamWriter(fileStream))
+        // Ensure all workflows have IDs (generate for legacy data)
+        foreach (var workflow in workflows.Workflows)
         {
-            streamWriter.Write(json);
-            streamWriter.Flush();
-            fileStream.Flush(flushToDisk: true); // Force OS-level flush to disk
+            if (workflow.Id == Guid.Empty)
+            {
+                workflow.Id = Guid.NewGuid();
+                _logger.LogInformation($"Generated new ID {workflow.Id} for workflow {workflow.WorkflowKey}");
+            }
         }
+
+        // Read existing workflow list to detect deletions
+        var existingWorkflowList = ReadWorkflowListIfExists(userRepoPath);
+        var existingIds = existingWorkflowList?.WorkflowIds ?? new List<Guid>();
+        var newIds = workflows.Workflows.Select(w => w.Id).ToList();
+
+        // Delete orphaned workflow files
+        var deletedIds = existingIds.Except(newIds).ToList();
+        foreach (var deletedId in deletedIds)
+        {
+            DeleteWorkflowFile(userRepoPath, deletedId);
+            _logger.LogInformation($"Deleted orphaned workflow file for ID {deletedId}");
+        }
+
+        // Write workflow list file
+        var workflowList = new WorkflowList { WorkflowIds = newIds };
+        WriteWorkflowListFile(userRepoPath, workflowList);
+
+        // Write individual workflow files
+        foreach (var workflow in workflows.Workflows)
+        {
+            WriteWorkflowFile(userRepoPath, workflow);
+        }
+
+        _logger.LogInformation($"Written {workflows.Workflows.Count} workflows in split-file format for user {userId}");
+    }
+
+    // Helper methods for split-file persistence (new format)
+    private string GetWorkflowsDirectoryPath(string userRepoPath)
+    {
+        return Path.Combine(userRepoPath, WorkflowsDirectory);
+    }
+
+    private string GetWorkflowFilePath(string userRepoPath, Guid workflowId)
+    {
+        return Path.Combine(GetWorkflowsDirectoryPath(userRepoPath), $"{workflowId}.json");
+    }
+
+    private string GetWorkflowListFilePath(string userRepoPath)
+    {
+        return Path.Combine(userRepoPath, WorkflowListFileName);
+    }
+
+    private WorkflowList? ReadWorkflowListIfExists(string userRepoPath)
+    {
+        var listFilePath = GetWorkflowListFilePath(userRepoPath);
+        if (!File.Exists(listFilePath))
+        {
+            return null;
+        }
+
+        var json = File.ReadAllText(listFilePath);
+        return JsonSerializer.Deserialize<WorkflowList>(json);
+    }
+
+    private Workflow? ReadWorkflowFileIfExists(string userRepoPath, Guid workflowId)
+    {
+        var workflowFilePath = GetWorkflowFilePath(userRepoPath, workflowId);
+        if (!File.Exists(workflowFilePath))
+        {
+            return null;
+        }
+
+        var json = File.ReadAllText(workflowFilePath);
+        return JsonSerializer.Deserialize<Workflow>(json);
+    }
+
+    private void WriteWorkflowListFile(string userRepoPath, WorkflowList workflowList)
+    {
+        var listFilePath = GetWorkflowListFilePath(userRepoPath);
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var json = JsonSerializer.Serialize(workflowList, options);
         
-        _logger.LogInformation($"Workflow file written and flushed for user {userId}");
+        using var fileStream = new FileStream(listFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        using var streamWriter = new StreamWriter(fileStream);
+        streamWriter.Write(json);
+        streamWriter.Flush();
+        fileStream.Flush(flushToDisk: true);
+    }
+
+    private void WriteWorkflowFile(string userRepoPath, Workflow workflow)
+    {
+        var workflowsDir = GetWorkflowsDirectoryPath(userRepoPath);
+        Directory.CreateDirectory(workflowsDir);
+        
+        var workflowFilePath = GetWorkflowFilePath(userRepoPath, workflow.Id);
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var json = JsonSerializer.Serialize(workflow, options);
+        
+        using var fileStream = new FileStream(workflowFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        using var streamWriter = new StreamWriter(fileStream);
+        streamWriter.Write(json);
+        streamWriter.Flush();
+        fileStream.Flush(flushToDisk: true);
+    }
+
+    private void DeleteWorkflowFile(string userRepoPath, Guid workflowId)
+    {
+        var workflowFilePath = GetWorkflowFilePath(userRepoPath, workflowId);
+        if (File.Exists(workflowFilePath))
+        {
+            File.Delete(workflowFilePath);
+        }
+    }
+
+    private List<string> GetAllWorkflowFilePaths(string userRepoPath)
+    {
+        var workflowsDir = GetWorkflowsDirectoryPath(userRepoPath);
+        if (!Directory.Exists(workflowsDir))
+        {
+            return new List<string>();
+        }
+
+        return Directory.GetFiles(workflowsDir, "*.json")
+            .Select(f => Path.Combine(WorkflowsDirectory, Path.GetFileName(f)))
+            .ToList();
     }
 
     public ProgramWorkflows ReadWorkflowsWithGitStatus(string userId)
