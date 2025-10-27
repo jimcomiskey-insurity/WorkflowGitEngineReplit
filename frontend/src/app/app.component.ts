@@ -2,9 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, merge } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
-import { WorkflowService } from './services/workflow.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { WorkflowStateService } from './services/workflow-state.service';
 import { UserService } from './services/user.service';
 import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
 
@@ -272,7 +272,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private workflowService: WorkflowService,
+    private workflowStateService: WorkflowStateService,
     private userService: UserService
   ) {
     this.currentUser = this.userService.getCurrentUser();
@@ -280,15 +280,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Subscribe to user changes and reload data
-    merge(this.userService.currentUser$)
-      .pipe(
-        switchMap(() => this.workflowService.getWorkflows()),
-        takeUntil(this.destroy$)
-      )
+    // Subscribe to pending changes count from WorkflowStateService
+    // This automatically updates when workflows change
+    this.workflowStateService.pendingChangesCount$
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.pendingChangesCount = this.countAllChanges(response.workflows);
+        next: (count) => {
+          this.pendingChangesCount = count;
         },
         error: (error) => {
           console.error('Error loading pending changes count:', error);
@@ -303,29 +301,5 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onUserChange() {
     this.userService.setCurrentUser(this.currentUser);
-  }
-
-  countAllChanges(workflows: any[]): number {
-    let total = 0;
-    
-    workflows.forEach(workflow => {
-      if (workflow.gitStatus && workflow.gitStatus !== 'none') {
-        total++;
-      }
-      
-      workflow.phases?.forEach((phase: any) => {
-        if (phase.gitStatus && phase.gitStatus !== 'none') {
-          total++;
-        }
-        
-        phase.tasks?.forEach((task: any) => {
-          if (task.gitStatus && task.gitStatus !== 'none') {
-            total++;
-          }
-        });
-      });
-    });
-    
-    return total;
   }
 }
