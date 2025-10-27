@@ -113,7 +113,6 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
     } else {
       this.workflowStateService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
         next: () => {
-          alert('Workflow updated successfully');
           this.closePropertiesDialog();
           this.gitEventService.emitCommit();
         },
