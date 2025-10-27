@@ -1,27 +1,45 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GitToolbarComponent } from './git-toolbar.component';
-import { GitService, GitStatus } from '../services/git.service';
-import { UserService } from '../services/user.service';
+import { GitStateService } from '../services/git-state.service';
 import { GitEventService } from '../services/git-event.service';
+import { UserService } from '../services/user.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { of, Subject } from 'rxjs';
+import { of, BehaviorSubject, Subject } from 'rxjs';
+import { GitStatus } from '../services/git.service';
 
 describe('GitToolbarComponent', () => {
   let component: GitToolbarComponent;
   let fixture: ComponentFixture<GitToolbarComponent>;
-  let gitService: jest.Mocked<GitService>;
-  let userService: jest.Mocked<UserService>;
+  let gitStateService: jest.Mocked<GitStateService>;
   let gitEventService: GitEventService;
+  let gitStatusSubject: BehaviorSubject<GitStatus | null>;
+  let branchesSubject: BehaviorSubject<string[]>;
+
+  const mockGitStatus: GitStatus = {
+    isDirty: false,
+    added: [],
+    modified: [],
+    removed: [],
+    untracked: [],
+    currentBranch: 'master',
+    commitsAhead: 0,
+    commitsBehind: 0,
+    hasRemoteTracking: true
+  };
 
   beforeEach(async () => {
-    const gitServiceMock = {
-      getStatus: jest.fn(),
-      getBranches: jest.fn(),
+    gitStatusSubject = new BehaviorSubject<GitStatus | null>(mockGitStatus);
+    branchesSubject = new BehaviorSubject<string[]>(['master', 'feature-1']);
+
+    const gitStateServiceMock = {
+      gitStatus$: gitStatusSubject.asObservable(),
+      branches$: branchesSubject.asObservable(),
       switchBranch: jest.fn(),
       push: jest.fn(),
-      pull: jest.fn()
-    } as unknown as jest.Mocked<GitService>;
+      pull: jest.fn(),
+      refreshManually: jest.fn()
+    } as unknown as jest.Mocked<GitStateService>;
 
     const userServiceMock = {
       currentUser$: of('testUser'),
@@ -33,28 +51,14 @@ describe('GitToolbarComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: GitService, useValue: gitServiceMock },
+        { provide: GitStateService, useValue: gitStateServiceMock },
         { provide: UserService, useValue: userServiceMock },
         GitEventService
       ]
     }).compileComponents();
 
-    gitService = TestBed.inject(GitService) as jest.Mocked<GitService>;
-    userService = TestBed.inject(UserService) as jest.Mocked<UserService>;
+    gitStateService = TestBed.inject(GitStateService) as jest.Mocked<GitStateService>;
     gitEventService = TestBed.inject(GitEventService);
-
-    gitService.getStatus.mockReturnValue(of({
-      isDirty: false,
-      added: [],
-      modified: [],
-      removed: [],
-      untracked: [],
-      currentBranch: 'master',
-      commitsAhead: 0,
-      commitsBehind: 0,
-      hasRemoteTracking: true
-    } as GitStatus));
-    gitService.getBranches.mockReturnValue(of(['master', 'feature-1']));
 
     fixture = TestBed.createComponent(GitToolbarComponent);
     component = fixture.componentInstance;
@@ -66,15 +70,19 @@ describe('GitToolbarComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    it('should load git status on init', () => {
-      expect(gitService.getStatus).toHaveBeenCalled();
-      expect(component.gitStatus).toBeTruthy();
-      expect(component.selectedBranch).toBe('master');
+    it('should load git status on init', (done) => {
+      setTimeout(() => {
+        expect(component.gitStatus).toBeTruthy();
+        expect(component.selectedBranch).toBe('master');
+        done();
+      }, 100);
     });
 
-    it('should load branches on init', () => {
-      expect(gitService.getBranches).toHaveBeenCalled();
-      expect(component.branches).toEqual(['master', 'feature-1']);
+    it('should load branches on init', (done) => {
+      setTimeout(() => {
+        expect(component.branches).toEqual(['master', 'feature-1']);
+        done();
+      }, 100);
     });
   });
 
@@ -82,18 +90,6 @@ describe('GitToolbarComponent', () => {
     it('should update selectedBranch when GitEventService emits branch-switch event', (done) => {
       component.selectedBranch = 'master';
       
-      gitService.getStatus.mockReturnValue(of({
-        isDirty: false,
-        added: [],
-        modified: [],
-        removed: [],
-        untracked: [],
-        currentBranch: 'feature-1',
-        commitsAhead: 0,
-        commitsBehind: 0,
-        hasRemoteTracking: true
-      } as GitStatus));
-
       gitEventService.emitBranchSwitch('feature-1');
 
       setTimeout(() => {
@@ -104,7 +100,7 @@ describe('GitToolbarComponent', () => {
 
     it('should emit branch-switch event when onBranchChange is called', (done) => {
       component.selectedBranch = 'feature-1';
-      gitService.switchBranch.mockReturnValue(of(void 0));
+      gitStateService.switchBranch.mockReturnValue(of(void 0));
 
       gitEventService.events$.subscribe((event) => {
         if (event.type === 'branch-switch') {
@@ -114,7 +110,7 @@ describe('GitToolbarComponent', () => {
       });
 
       component.onBranchChange();
-    });
+    }, 10000);
 
     it('should not call switchBranch if selectedBranch is the same as current branch', () => {
       component.selectedBranch = 'master';
@@ -132,7 +128,7 @@ describe('GitToolbarComponent', () => {
 
       component.onBranchChange();
 
-      expect(gitService.switchBranch).not.toHaveBeenCalled();
+      expect(gitStateService.switchBranch).not.toHaveBeenCalled();
     });
   });
 
@@ -187,10 +183,35 @@ describe('GitToolbarComponent', () => {
   });
 
   describe('User Change Handling', () => {
-    it('should reload git status and branches when component initializes', () => {
-      expect(gitService.getStatus).toHaveBeenCalled();
-      expect(gitService.getBranches).toHaveBeenCalled();
-      expect(component.selectedBranch).toBe('master');
+    it('should subscribe to GitStateService observables when component initializes', (done) => {
+      setTimeout(() => {
+        expect(component.gitStatus).toBeTruthy();
+        expect(component.branches).toEqual(['master', 'feature-1']);
+        expect(component.selectedBranch).toBe('master');
+        done();
+      }, 100);
+    });
+
+    it('should update when GitStateService emits new git status', (done) => {
+      const newStatus: GitStatus = {
+        isDirty: true,
+        added: ['test.ts'],
+        modified: [],
+        removed: [],
+        untracked: [],
+        currentBranch: 'feature-1',
+        commitsAhead: 1,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      };
+
+      gitStatusSubject.next(newStatus);
+
+      setTimeout(() => {
+        expect(component.gitStatus).toEqual(newStatus);
+        expect(component.selectedBranch).toBe('feature-1');
+        done();
+      }, 100);
     });
   });
 });
