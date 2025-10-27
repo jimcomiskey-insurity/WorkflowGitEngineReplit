@@ -133,11 +133,19 @@ public class GitService
             commitsBehind = repo.Commits.QueryBy(behindFilter).Count();
         }
 
+        // Include both staged and unstaged deletions in the Removed list
+        var removedFiles = status
+            .Where(s => s.State.HasFlag(FileStatus.DeletedFromWorkdir) || 
+                       s.State.HasFlag(FileStatus.DeletedFromIndex))
+            .Select(s => s.FilePath)
+            .Distinct()
+            .ToList();
+
         return new GitStatus
         {
             Added = status.Added.Select(s => s.FilePath).ToList(),
             Modified = status.Modified.Select(s => s.FilePath).ToList(),
-            Removed = status.Removed.Select(s => s.FilePath).ToList(),
+            Removed = removedFiles,
             Untracked = status.Untracked.Select(s => s.FilePath).ToList(),
             CurrentBranch = repo.Head.FriendlyName,
             IsDirty = status.IsDirty,
