@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { tap, shareReplay, switchMap, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable, merge } from 'rxjs';
+import { tap, switchMap, map, startWith } from 'rxjs/operators';
 import { UserService } from './user.service';
+import { GitEventService } from './git-event.service';
 import { GitStatus, CommitInfo } from './git.service';
 
 export interface LastPushedCommitResponse {
@@ -41,55 +42,59 @@ export class GitStateService {
 
   constructor(
     private http: HttpClient,
-    private userService: UserService
+    private userService: UserService,
+    private gitEventService: GitEventService
   ) {
-    // Create observable streams that automatically refresh when user changes or refresh is triggered
-    const userWithRefresh$ = combineLatest([
+    console.log('[GitStateService] Initializing');
+    
+    // Create observable streams that automatically refresh when:
+    // 1. User changes
+    // 2. Manual refresh is triggered
+    // 3. Any Git event occurs (workflow save, commit, push, pull, etc.)
+    const refreshTriggers$ = merge(
       this.userService.currentUser$,
-      this.refreshTrigger$
-    ]).pipe(
-      map(([user]) => user)
+      this.refreshTrigger$,
+      this.gitEventService.events$.pipe(startWith(null))
+    ).pipe(
+      map(() => this.userService.getCurrentUser())
     );
 
-    // Git status stream
-    this.gitStatus$ = userWithRefresh$.pipe(
-      switchMap(userId => 
-        this.http.get<GitStatus>(`${this.apiUrl}/status?userId=${userId}`)
-      ),
-      tap(status => this.gitStatusSubject.next(status)),
-      shareReplay(1)
+    // Git status stream - refreshes on any trigger
+    this.gitStatus$ = refreshTriggers$.pipe(
+      switchMap(userId => {
+        console.log('[GitStateService] Fetching Git status for user:', userId);
+        return this.http.get<GitStatus>(`${this.apiUrl}/status?userId=${userId}`);
+      }),
+      tap(status => {
+        console.log('[GitStateService] Received Git status, isDirty:', status.isDirty);
+        this.gitStatusSubject.next(status);
+      })
     );
 
-    // Commits stream
-    this.commits$ = userWithRefresh$.pipe(
+    // Commits stream - refreshes on any trigger
+    this.commits$ = refreshTriggers$.pipe(
       switchMap(userId => 
         this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${userId}&count=20`)
       ),
-      tap(commits => this.commitsSubject.next(commits)),
-      shareReplay(1)
+      tap(commits => this.commitsSubject.next(commits))
     );
 
-    // Branches stream
-    this.branches$ = userWithRefresh$.pipe(
+    // Branches stream - refreshes on any trigger
+    this.branches$ = refreshTriggers$.pipe(
       switchMap(userId => 
         this.http.get<string[]>(`${this.apiUrl}/branches?userId=${userId}`)
       ),
-      tap(branches => this.branchesSubject.next(branches)),
-      shareReplay(1)
+      tap(branches => this.branchesSubject.next(branches))
     );
 
-    // Last pushed commit stream
-    this.lastPushedCommit$ = userWithRefresh$.pipe(
+    // Last pushed commit stream - refreshes on any trigger
+    this.lastPushedCommit$ = refreshTriggers$.pipe(
       switchMap(userId => 
         this.http.get<LastPushedCommitResponse>(`${this.apiUrl}/last-pushed-commit?userId=${userId}`)
       ),
       map(response => response.commitSha),
-      tap(commitSha => this.lastPushedCommitSubject.next(commitSha)),
-      shareReplay(1)
+      tap(commitSha => this.lastPushedCommitSubject.next(commitSha))
     );
-
-    // Initialize - trigger first load
-    this.refresh();
   }
 
   /**
