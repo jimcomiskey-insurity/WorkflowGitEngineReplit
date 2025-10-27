@@ -15,6 +15,7 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class WorkflowListComponent implements OnInit, OnDestroy {
   workflows: Workflow[] = [];
+  activeWorkflows: Workflow[] = [];
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -29,6 +30,8 @@ export class WorkflowListComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (workflows) => {
         this.workflows = workflows;
+        // Filter out deleted workflows - they only appear in Pending Changes
+        this.activeWorkflows = workflows.filter(w => w.gitStatus !== 'deleted');
       },
       error: (error) => {
         console.error('Error loading workflows:', error);
