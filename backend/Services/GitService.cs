@@ -1225,9 +1225,10 @@ public class GitService
 
         if (baseWorkflow != null)
         {
-            if (source.WorkflowName != target.WorkflowName && 
-                (source.WorkflowName != baseWorkflow.WorkflowName || 
-                 target.WorkflowName != baseWorkflow.WorkflowName))
+            // Only report conflict if BOTH branches changed the field from base AND they differ
+            if (source.WorkflowName != baseWorkflow.WorkflowName && 
+                target.WorkflowName != baseWorkflow.WorkflowName &&
+                source.WorkflowName != target.WorkflowName)
             {
                 conflict.FieldConflicts.Add(new FieldConflict
                 {
@@ -1238,9 +1239,9 @@ public class GitService
                 });
             }
 
-            if (source.Description != target.Description && 
-                (source.Description != baseWorkflow.Description || 
-                 target.Description != baseWorkflow.Description))
+            if (source.Description != baseWorkflow.Description && 
+                target.Description != baseWorkflow.Description &&
+                source.Description != target.Description)
             {
                 conflict.FieldConflicts.Add(new FieldConflict
                 {
@@ -1281,9 +1282,10 @@ public class GitService
 
         if (basePhase != null)
         {
-            if (source.PhaseName != target.PhaseName && 
-                (source.PhaseName != basePhase.PhaseName || 
-                 target.PhaseName != basePhase.PhaseName))
+            // Only report conflict if BOTH branches changed the field from base AND they differ
+            if (source.PhaseName != basePhase.PhaseName && 
+                target.PhaseName != basePhase.PhaseName &&
+                source.PhaseName != target.PhaseName)
             {
                 conflict.FieldConflicts.Add(new FieldConflict
                 {
@@ -1323,9 +1325,10 @@ public class GitService
 
         if (baseTask != null)
         {
-            if (source.TaskName != target.TaskName && 
-                (source.TaskName != baseTask.TaskName || 
-                 target.TaskName != baseTask.TaskName))
+            // Only report conflict if BOTH branches changed the field from base AND they differ
+            if (source.TaskName != baseTask.TaskName && 
+                target.TaskName != baseTask.TaskName &&
+                source.TaskName != target.TaskName)
             {
                 conflict.FieldConflicts.Add(new FieldConflict
                 {
@@ -1336,9 +1339,9 @@ public class GitService
                 });
             }
 
-            if (source.AssignedRole != target.AssignedRole && 
-                (source.AssignedRole != baseTask.AssignedRole || 
-                 target.AssignedRole != baseTask.AssignedRole))
+            if (source.AssignedRole != baseTask.AssignedRole && 
+                target.AssignedRole != baseTask.AssignedRole &&
+                source.AssignedRole != target.AssignedRole)
             {
                 conflict.FieldConflicts.Add(new FieldConflict
                 {
