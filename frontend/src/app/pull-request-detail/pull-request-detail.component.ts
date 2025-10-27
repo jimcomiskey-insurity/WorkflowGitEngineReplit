@@ -88,7 +88,14 @@ export class PullRequestDetailComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error merging pull request:', error);
         this.isMerging = false;
-        alert('Failed to merge pull request. Please try again.');
+        
+        if (error.status === 409) {
+          if (confirm('Merge conflicts detected. Would you like to resolve them now?')) {
+            this.router.navigate(['/pull-requests', this.pullRequest!.number, 'resolve-conflicts']);
+          }
+        } else {
+          alert('Failed to merge pull request. Please try again.');
+        }
       }
     });
   }
