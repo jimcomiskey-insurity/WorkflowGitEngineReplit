@@ -468,13 +468,17 @@ public class GitService
 
     private void CompareWorkflow(Workflow current, Workflow previous)
     {
+        _logger.LogInformation($"Comparing workflow {current.WorkflowKey}: current name='{current.WorkflowName}', previous name='{previous.WorkflowName}'");
+        
         if (current.WorkflowName != previous.WorkflowName || 
             current.Description != previous.Description)
         {
+            _logger.LogInformation($"Workflow {current.WorkflowKey} marked as MODIFIED");
             current.GitStatus = "modified";
         }
         else
         {
+            _logger.LogInformation($"Workflow {current.WorkflowKey} unchanged at workflow level");
             current.GitStatus = null;
         }
 
