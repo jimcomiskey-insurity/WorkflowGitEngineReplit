@@ -2,6 +2,7 @@ namespace WorkflowConfig.Api.Models;
 
 public class Workflow
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string WorkflowName { get; set; } = string.Empty;
     public string WorkflowKey { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
