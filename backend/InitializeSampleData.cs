@@ -22,15 +22,52 @@ public static class DataInitializer
             
             using (var repo = new Repository(tempRepoPath))
             {
-                var workflowFilePath = Path.Combine(tempRepoPath, "workflows.json");
+                var workflowListPath = Path.Combine(tempRepoPath, "workflow-list.json");
                 
-                if (File.Exists(workflowFilePath))
+                // Check if already initialized (either new or legacy format)
+                if (File.Exists(workflowListPath) || File.Exists(Path.Combine(tempRepoPath, "workflows.json")))
                 {
                     Console.WriteLine("Sample data already initialized in repository.");
                     return;
                 }
 
-                File.Copy(sampleDataPath, workflowFilePath);
+                // Read sample data
+                var sampleJson = File.ReadAllText(sampleDataPath);
+                var sampleData = JsonSerializer.Deserialize<ProgramWorkflows>(sampleJson);
+                
+                if (sampleData == null || !sampleData.Workflows.Any())
+                {
+                    Console.WriteLine("No workflows found in sample data.");
+                    return;
+                }
+
+                // Ensure all workflows have IDs
+                foreach (var workflow in sampleData.Workflows)
+                {
+                    if (workflow.Id == Guid.Empty)
+                    {
+                        workflow.Id = Guid.NewGuid();
+                    }
+                }
+
+                // Write workflow list
+                var workflowList = new WorkflowList 
+                { 
+                    WorkflowIds = sampleData.Workflows.Select(w => w.Id).ToList() 
+                };
+                var listJson = JsonSerializer.Serialize(workflowList, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(workflowListPath, listJson);
+
+                // Create workflows directory and write individual workflow files
+                var workflowsDir = Path.Combine(tempRepoPath, "workflows");
+                Directory.CreateDirectory(workflowsDir);
+                
+                foreach (var workflow in sampleData.Workflows)
+                {
+                    var workflowPath = Path.Combine(workflowsDir, $"{workflow.Id}.json");
+                    var workflowJson = JsonSerializer.Serialize(workflow, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(workflowPath, workflowJson);
+                }
 
                 Commands.Stage(repo, "*");
 
@@ -42,7 +79,7 @@ public static class DataInitializer
                 
                 repo.Network.Push(remote, @"refs/heads/master", options);
                 
-                Console.WriteLine("Sample data initialized successfully.");
+                Console.WriteLine($"Sample data initialized successfully: {sampleData.Workflows.Count} workflows in split-file format.");
             }
             
             ForceGarbageCollection();
