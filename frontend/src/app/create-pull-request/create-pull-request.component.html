@@ -55,8 +55,28 @@
         <span class="branch-name">{{ targetBranch }}</span>
       </div>
 
+      <!-- Warning messages -->
+      <div class="validation-messages" *ngIf="hasUncommittedChanges || !isBranchPushed">
+        <div class="warning-message" *ngIf="hasUncommittedChanges">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>You have uncommitted changes. Please commit them before creating a pull request.</span>
+        </div>
+        <div class="error-message" *ngIf="!isBranchPushed && !hasUncommittedChanges">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          <span>This branch has not been pushed. Please push your changes before creating a pull request.</span>
+        </div>
+      </div>
+
       <div class="dialog-actions">
-        <button type="submit" class="btn-primary" [disabled]="!title.trim() || isSubmitting">
+        <button type="submit" class="btn-primary" [disabled]="!canSubmit">
           {{ isSubmitting ? 'Creating...' : 'Create Pull Request' }}
         </button>
         <button type="button" class="btn-secondary" (click)="onClose()" [disabled]="isSubmitting">
