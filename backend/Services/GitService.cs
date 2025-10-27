@@ -1798,11 +1798,12 @@ public class GitService
 
         var mergedWorkflows = ApplyConflictResolutions(sourceWorkflows, targetWorkflows, resolutions);
 
-        var workflowsPath = Path.Combine(userRepoPath, WorkflowFileName);
+        // Use WriteWorkflows to properly handle split-file persistence
         var wrapper = new ProgramWorkflows { Workflows = mergedWorkflows };
-        File.WriteAllText(workflowsPath, JsonSerializer.Serialize(wrapper, new JsonSerializerOptions { WriteIndented = true }));
+        WriteWorkflows(userId, wrapper);
 
-        Commands.Stage(repo, WorkflowFileName);
+        // Stage all workflow files (workflow-list.json + all workflow files)
+        Commands.Stage(repo, "*");
 
         // Check if there are any actual changes to commit
         var status = repo.RetrieveStatus();
