@@ -391,7 +391,16 @@ public class GitService
         var options = new JsonSerializerOptions { WriteIndented = true };
         var json = JsonSerializer.Serialize(workflows, options);
         
-        File.WriteAllText(filePath, json);
+        // Write file with explicit flush to ensure changes are committed to disk
+        using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+        using (var streamWriter = new StreamWriter(fileStream))
+        {
+            streamWriter.Write(json);
+            streamWriter.Flush();
+            fileStream.Flush(flushToDisk: true); // Force OS-level flush to disk
+        }
+        
+        _logger.LogInformation($"Workflow file written and flushed for user {userId}");
     }
 
     public ProgramWorkflows ReadWorkflowsWithGitStatus(string userId)
@@ -407,6 +416,10 @@ public class GitService
         var userRepoPath = GetUserRepoPath(userId);
         
         using var repo = new Repository(userRepoPath);
+        
+        // Force Git to refresh the working directory status to detect file changes
+        var repoStatus = repo.RetrieveStatus();
+        _logger.LogInformation($"Git status refreshed for user {userId}, detecting {repoStatus.Count()} status entries");
         
         var headCommit = repo.Head.Tip;
         if (headCommit == null)
