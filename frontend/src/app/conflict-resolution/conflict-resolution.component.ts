@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
 import { UserService } from '../services/user.service';
 
 interface FieldConflict {
@@ -78,7 +77,7 @@ export class ConflictResolutionComponent implements OnInit {
   loadConflicts(): void {
     const userId = this.userService.getCurrentUser();
     this.http
-      .get<MergeConflictInfo>(`${environment.apiUrl}/pull-requests/${this.prNumber}/conflicts?userId=${userId}`)
+      .get<MergeConflictInfo>(`/api/pull-requests/${this.prNumber}/conflicts?userId=${userId}`)
       .subscribe({
         next: (data) => {
           this.conflicts = data;
@@ -170,7 +169,7 @@ export class ConflictResolutionComponent implements OnInit {
     const userId = this.userService.getCurrentUser();
 
     this.http
-      .post(`${environment.apiUrl}/pull-requests/${this.prNumber}/resolve-conflicts?userId=${userId}`, {
+      .post(`/api/pull-requests/${this.prNumber}/resolve-conflicts?userId=${userId}`, {
         resolutions
       })
       .subscribe({
