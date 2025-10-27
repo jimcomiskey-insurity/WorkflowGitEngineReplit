@@ -1038,6 +1038,20 @@ public class GitService
         return json1 == json2;
     }
 
+    private bool PhasesAreEqual(Phase p1, Phase p2)
+    {
+        var json1 = JsonSerializer.Serialize(p1, new JsonSerializerOptions { WriteIndented = false });
+        var json2 = JsonSerializer.Serialize(p2, new JsonSerializerOptions { WriteIndented = false });
+        return json1 == json2;
+    }
+
+    private bool TasksAreEqual(TaskItem t1, TaskItem t2)
+    {
+        var json1 = JsonSerializer.Serialize(t1, new JsonSerializerOptions { WriteIndented = false });
+        var json2 = JsonSerializer.Serialize(t2, new JsonSerializerOptions { WriteIndented = false });
+        return json1 == json2;
+    }
+
     public void MergeBranch(string userId, string sourceBranch, string targetBranch, string message)
     {
         EnsureUserRepository(userId);
@@ -1191,12 +1205,23 @@ public class GitService
             var baseWorkflow = baseWorkflows.FirstOrDefault(w => w.WorkflowKey == sourceWorkflow.WorkflowKey);
             var targetWorkflow = targetWorkflows.FirstOrDefault(w => w.WorkflowKey == sourceWorkflow.WorkflowKey);
 
-            if (targetWorkflow == null) continue;
+            if (targetWorkflow == null)
+            {
+                // Workflow deleted in target, exists in source - check for modify-delete conflict
+                DetectWorkflowDeletionConflict(
+                    sourceWorkflow, 
+                    null, 
+                    baseWorkflow, 
+                    conflictInfo, 
+                    deletedInTarget: true);
+                continue;
+            }
 
             var workflowConflict = CompareWorkflowsForConflicts(
                 sourceWorkflow, 
                 targetWorkflow, 
-                baseWorkflow);
+                baseWorkflow,
+                conflictInfo);
 
             if (workflowConflict != null && 
                 (workflowConflict.FieldConflicts.Any() || workflowConflict.PhaseConflicts.Any()))
@@ -1205,17 +1230,152 @@ public class GitService
             }
         }
 
+        // Check for workflows deleted in source but exist (and possibly modified) in target
+        foreach (var targetWorkflow in targetWorkflows)
+        {
+            var sourceWorkflow = sourceWorkflows.FirstOrDefault(w => w.WorkflowKey == targetWorkflow.WorkflowKey);
+            if (sourceWorkflow == null)
+            {
+                var baseWorkflow = baseWorkflows.FirstOrDefault(w => w.WorkflowKey == targetWorkflow.WorkflowKey);
+                DetectWorkflowDeletionConflict(
+                    null, 
+                    targetWorkflow, 
+                    baseWorkflow, 
+                    conflictInfo, 
+                    deletedInTarget: false);
+            }
+        }
+
         conflictInfo.TotalConflicts = conflictInfo.WorkflowConflicts.Sum(wc => 
             wc.FieldConflicts.Count + 
-            wc.PhaseConflicts.Sum(pc => pc.FieldConflicts.Count + pc.TaskConflicts.Sum(tc => tc.FieldConflicts.Count)));
+            wc.PhaseConflicts.Sum(pc => pc.FieldConflicts.Count + pc.TaskConflicts.Sum(tc => tc.FieldConflicts.Count)))
+            + conflictInfo.DeletionConflicts.Count;
 
         return conflictInfo;
+    }
+
+    private void DetectWorkflowDeletionConflict(
+        Workflow? sourceWorkflow,
+        Workflow? targetWorkflow,
+        Workflow? baseWorkflow,
+        MergeConflictInfo conflictInfo,
+        bool deletedInTarget)
+    {
+        if (baseWorkflow == null)
+        {
+            return;
+        }
+
+        var existingWorkflow = deletedInTarget ? sourceWorkflow : targetWorkflow;
+        if (existingWorkflow == null)
+        {
+            return;
+        }
+
+        var wasModified = !WorkflowsAreEqual(existingWorkflow, baseWorkflow);
+        
+        if (wasModified)
+        {
+            conflictInfo.DeletionConflicts.Add(new DeletionConflict
+            {
+                ObjectType = ConflictObjectType.Workflow,
+                WorkflowKey = baseWorkflow.WorkflowKey,
+                ObjectIdentifier = baseWorkflow.WorkflowKey,
+                ObjectDisplayName = baseWorkflow.WorkflowName,
+                DeletedInSource = !deletedInTarget,
+                ModifiedInSource = !deletedInTarget && wasModified,
+                DeletedInTarget = deletedInTarget,
+                ModifiedInTarget = deletedInTarget && wasModified,
+                ModifiedObjectJson = wasModified ? System.Text.Json.JsonSerializer.Serialize(existingWorkflow) : null
+            });
+        }
+    }
+
+    private void DetectPhaseDeletionConflict(
+        string workflowKey,
+        Phase? sourcePhase,
+        Phase? targetPhase,
+        Phase? basePhase,
+        MergeConflictInfo conflictInfo,
+        bool deletedInTarget)
+    {
+        if (basePhase == null)
+        {
+            return;
+        }
+
+        var existingPhase = deletedInTarget ? sourcePhase : targetPhase;
+        if (existingPhase == null)
+        {
+            return;
+        }
+
+        var wasModified = !PhasesAreEqual(existingPhase, basePhase);
+        
+        if (wasModified)
+        {
+            conflictInfo.DeletionConflicts.Add(new DeletionConflict
+            {
+                ObjectType = ConflictObjectType.Phase,
+                WorkflowKey = workflowKey,
+                PhaseName = basePhase.PhaseName,
+                ObjectIdentifier = basePhase.PhaseName,
+                ObjectDisplayName = basePhase.PhaseName,
+                DeletedInSource = !deletedInTarget,
+                ModifiedInSource = !deletedInTarget && wasModified,
+                DeletedInTarget = deletedInTarget,
+                ModifiedInTarget = deletedInTarget && wasModified,
+                ModifiedObjectJson = wasModified ? System.Text.Json.JsonSerializer.Serialize(existingPhase) : null
+            });
+        }
+    }
+
+    private void DetectTaskDeletionConflict(
+        string workflowKey,
+        string phaseName,
+        TaskItem? sourceTask,
+        TaskItem? targetTask,
+        TaskItem? baseTask,
+        MergeConflictInfo conflictInfo,
+        bool deletedInTarget)
+    {
+        if (baseTask == null)
+        {
+            return;
+        }
+
+        var existingTask = deletedInTarget ? sourceTask : targetTask;
+        if (existingTask == null)
+        {
+            return;
+        }
+
+        var wasModified = !TasksAreEqual(existingTask, baseTask);
+        
+        if (wasModified)
+        {
+            conflictInfo.DeletionConflicts.Add(new DeletionConflict
+            {
+                ObjectType = ConflictObjectType.Task,
+                WorkflowKey = workflowKey,
+                PhaseName = phaseName,
+                TaskId = baseTask.TaskId,
+                ObjectIdentifier = baseTask.TaskId,
+                ObjectDisplayName = baseTask.TaskName,
+                DeletedInSource = !deletedInTarget,
+                ModifiedInSource = !deletedInTarget && wasModified,
+                DeletedInTarget = deletedInTarget,
+                ModifiedInTarget = deletedInTarget && wasModified,
+                ModifiedObjectJson = wasModified ? System.Text.Json.JsonSerializer.Serialize(existingTask) : null
+            });
+        }
     }
 
     private WorkflowConflict? CompareWorkflowsForConflicts(
         Workflow source, 
         Workflow target, 
-        Workflow? baseWorkflow)
+        Workflow? baseWorkflow,
+        MergeConflictInfo conflictInfo)
     {
         var conflict = new WorkflowConflict
         {
@@ -1258,9 +1418,20 @@ public class GitService
             var targetPhase = target.Phases?.FirstOrDefault(p => p.PhaseName == sourcePhase.PhaseName);
             var basePhase = baseWorkflow?.Phases?.FirstOrDefault(p => p.PhaseName == sourcePhase.PhaseName);
 
-            if (targetPhase != null)
+            if (targetPhase == null)
             {
-                var phaseConflict = ComparePhases(sourcePhase, targetPhase, basePhase);
+                // Phase deleted in target, exists in source
+                DetectPhaseDeletionConflict(
+                    source.WorkflowKey,
+                    sourcePhase,
+                    null,
+                    basePhase,
+                    conflictInfo,
+                    deletedInTarget: true);
+            }
+            else
+            {
+                var phaseConflict = ComparePhases(sourcePhase, targetPhase, basePhase, source.WorkflowKey, conflictInfo);
                 if (phaseConflict != null && 
                     (phaseConflict.FieldConflicts.Any() || phaseConflict.TaskConflicts.Any()))
                 {
@@ -1269,10 +1440,32 @@ public class GitService
             }
         }
 
+        // Check for phases deleted in source but exist in target
+        foreach (var targetPhase in target.Phases ?? new List<Phase>())
+        {
+            var sourcePhase = source.Phases?.FirstOrDefault(p => p.PhaseName == targetPhase.PhaseName);
+            if (sourcePhase == null)
+            {
+                var basePhase = baseWorkflow?.Phases?.FirstOrDefault(p => p.PhaseName == targetPhase.PhaseName);
+                DetectPhaseDeletionConflict(
+                    source.WorkflowKey,
+                    null,
+                    targetPhase,
+                    basePhase,
+                    conflictInfo,
+                    deletedInTarget: false);
+            }
+        }
+
         return conflict;
     }
 
-    private PhaseConflict? ComparePhases(Phase source, Phase target, Phase? basePhase)
+    private PhaseConflict? ComparePhases(
+        Phase source, 
+        Phase target, 
+        Phase? basePhase,
+        string workflowKey,
+        MergeConflictInfo conflictInfo)
     {
         var conflict = new PhaseConflict
         {
@@ -1302,13 +1495,43 @@ public class GitService
             var targetTask = target.Tasks?.FirstOrDefault(t => t.TaskId == sourceTask.TaskId);
             var baseTask = basePhase?.Tasks?.FirstOrDefault(t => t.TaskId == sourceTask.TaskId);
 
-            if (targetTask != null)
+            if (targetTask == null)
+            {
+                // Task deleted in target, exists in source
+                DetectTaskDeletionConflict(
+                    workflowKey,
+                    source.PhaseName,
+                    sourceTask,
+                    null,
+                    baseTask,
+                    conflictInfo,
+                    deletedInTarget: true);
+            }
+            else
             {
                 var taskConflict = CompareTasks(sourceTask, targetTask, baseTask);
                 if (taskConflict != null && taskConflict.FieldConflicts.Any())
                 {
                     conflict.TaskConflicts.Add(taskConflict);
                 }
+            }
+        }
+
+        // Check for tasks deleted in source but exist in target
+        foreach (var targetTask in target.Tasks ?? new List<TaskItem>())
+        {
+            var sourceTask = source.Tasks?.FirstOrDefault(t => t.TaskId == targetTask.TaskId);
+            if (sourceTask == null)
+            {
+                var baseTask = basePhase?.Tasks?.FirstOrDefault(t => t.TaskId == targetTask.TaskId);
+                DetectTaskDeletionConflict(
+                    workflowKey,
+                    source.PhaseName,
+                    null,
+                    targetTask,
+                    baseTask,
+                    conflictInfo,
+                    deletedInTarget: false);
             }
         }
 
@@ -1409,13 +1632,36 @@ public class GitService
         List<ConflictResolution> resolutions)
     {
         var result = new List<Workflow>();
+        
+        // Get deletion conflict resolutions
+        var deletionResolutions = resolutions.Where(r => r.IsDeletionConflict).ToList();
 
         foreach (var targetWorkflow in targetWorkflows)
         {
+            // Check if this workflow has a deletion conflict resolution
+            var workflowDeletionResolution = deletionResolutions.FirstOrDefault(r => 
+                r.WorkflowKey == targetWorkflow.WorkflowKey && 
+                r.ObjectType == ConflictObjectType.Workflow);
+            
+            if (workflowDeletionResolution != null && workflowDeletionResolution.Resolution == "delete")
+            {
+                // Skip this workflow - it should be deleted
+                continue;
+            }
+
             var sourceWorkflow = sourceWorkflows.FirstOrDefault(w => w.WorkflowKey == targetWorkflow.WorkflowKey);
             if (sourceWorkflow == null)
             {
-                result.Add(targetWorkflow);
+                // Workflow deleted in source, check for deletion conflict resolution
+                if (workflowDeletionResolution != null && workflowDeletionResolution.Resolution == "keep")
+                {
+                    // Keep the workflow from target
+                    result.Add(targetWorkflow);
+                }
+                else
+                {
+                    result.Add(targetWorkflow);
+                }
                 continue;
             }
 
@@ -1436,6 +1682,18 @@ public class GitService
         {
             if (!result.Any(w => w.WorkflowKey == sourceWorkflow.WorkflowKey))
             {
+                // Workflow exists in source but not in result yet
+                // Check if it has a deletion conflict resolution
+                var workflowDeletionResolution = deletionResolutions.FirstOrDefault(r => 
+                    r.WorkflowKey == sourceWorkflow.WorkflowKey && 
+                    r.ObjectType == ConflictObjectType.Workflow);
+                
+                if (workflowDeletionResolution != null && workflowDeletionResolution.Resolution == "delete")
+                {
+                    // Skip - should be deleted
+                    continue;
+                }
+                
                 result.Add(sourceWorkflow);
             }
         }
@@ -1453,6 +1711,7 @@ public class GitService
         
         var result = new List<Phase>();
         var allPhaseNames = new HashSet<string>();
+        var deletionResolutions = resolutions.Where(r => r.IsDeletionConflict).ToList();
         
         if (targetPhases != null) allPhaseNames.UnionWith(targetPhases.Select(p => p.PhaseName));
         if (sourcePhases != null) allPhaseNames.UnionWith(sourcePhases.Select(p => p.PhaseName));
@@ -1461,6 +1720,18 @@ public class GitService
         {
             var targetPhase = targetPhases?.FirstOrDefault(p => p.PhaseName == phaseName);
             var sourcePhase = sourcePhases?.FirstOrDefault(p => p.PhaseName == phaseName);
+
+            // Check for phase deletion conflict resolution
+            var phaseDeletionResolution = deletionResolutions.FirstOrDefault(r => 
+                r.WorkflowKey == workflowKey && 
+                r.PhaseName == phaseName && 
+                r.ObjectType == ConflictObjectType.Phase);
+
+            if (phaseDeletionResolution != null && phaseDeletionResolution.Resolution == "delete")
+            {
+                // Skip this phase - it should be deleted
+                continue;
+            }
 
             if (targetPhase != null && sourcePhase != null)
             {
@@ -1474,7 +1745,16 @@ public class GitService
             }
             else
             {
-                result.Add(targetPhase ?? sourcePhase!);
+                // Phase exists in only one branch - keep it unless explicitly deleted
+                if (phaseDeletionResolution != null && phaseDeletionResolution.Resolution == "keep")
+                {
+                    result.Add(targetPhase ?? sourcePhase!);
+                }
+                else if (phaseDeletionResolution == null)
+                {
+                    // No deletion conflict, just keep the existing phase
+                    result.Add(targetPhase ?? sourcePhase!);
+                }
             }
         }
 
@@ -1492,6 +1772,7 @@ public class GitService
         
         var result = new List<TaskItem>();
         var allTaskIds = new HashSet<string>();
+        var deletionResolutions = resolutions.Where(r => r.IsDeletionConflict).ToList();
         
         if (targetTasks != null) allTaskIds.UnionWith(targetTasks.Where(t => t.TaskId != null).Select(t => t.TaskId!));
         if (sourceTasks != null) allTaskIds.UnionWith(sourceTasks.Where(t => t.TaskId != null).Select(t => t.TaskId!));
@@ -1500,6 +1781,19 @@ public class GitService
         {
             var targetTask = targetTasks?.FirstOrDefault(t => t.TaskId == taskId);
             var sourceTask = sourceTasks?.FirstOrDefault(t => t.TaskId == taskId);
+
+            // Check for task deletion conflict resolution
+            var taskDeletionResolution = deletionResolutions.FirstOrDefault(r => 
+                r.WorkflowKey == workflowKey && 
+                r.PhaseName == phaseName && 
+                r.TaskId == taskId && 
+                r.ObjectType == ConflictObjectType.Task);
+
+            if (taskDeletionResolution != null && taskDeletionResolution.Resolution == "delete")
+            {
+                // Skip this task - it should be deleted
+                continue;
+            }
 
             if (targetTask != null && sourceTask != null)
             {
@@ -1518,7 +1812,16 @@ public class GitService
             }
             else
             {
-                result.Add(targetTask ?? sourceTask!);
+                // Task exists in only one branch - keep it unless explicitly deleted
+                if (taskDeletionResolution != null && taskDeletionResolution.Resolution == "keep")
+                {
+                    result.Add(targetTask ?? sourceTask!);
+                }
+                else if (taskDeletionResolution == null)
+                {
+                    // No deletion conflict, just keep the existing task
+                    result.Add(targetTask ?? sourceTask!);
+                }
             }
         }
 

@@ -266,8 +266,71 @@
   background: var(--accent-blue-hover);
 }
 
+/* Deletion Conflicts */
+.deletion-conflicts {
+  margin-top: 2rem;
+}
+
+.section-title {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.deletion-conflict-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.deletion-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.deletion-icon {
+  font-size: 1.5rem;
+}
+
+.deletion-info {
+  flex: 1;
+}
+
+.deletion-description {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.deletion-location {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-family: monospace;
+}
+
+.deletion-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.choice-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
 @media (max-width: 768px) {
-  .conflict-choices {
+  .conflict-choices,
+  .deletion-choices {
     grid-template-columns: 1fr;
   }
   

@@ -3,9 +3,37 @@ namespace WorkflowConfig.Api.Models;
 public class MergeConflictInfo
 {
     public List<WorkflowConflict> WorkflowConflicts { get; set; } = new();
+    public List<DeletionConflict> DeletionConflicts { get; set; } = new();
     public string SourceBranch { get; set; } = string.Empty;
     public string TargetBranch { get; set; } = string.Empty;
     public int TotalConflicts { get; set; }
+}
+
+public enum ConflictObjectType
+{
+    Workflow,
+    Phase,
+    Task
+}
+
+public class DeletionConflict
+{
+    public ConflictObjectType ObjectType { get; set; }
+    public string WorkflowKey { get; set; } = string.Empty;
+    public string? PhaseName { get; set; }
+    public string? TaskId { get; set; }
+    
+    public string ObjectIdentifier { get; set; } = string.Empty;
+    public string ObjectDisplayName { get; set; } = string.Empty;
+    
+    public bool DeletedInSource { get; set; }
+    public bool ModifiedInSource { get; set; }
+    public bool DeletedInTarget { get; set; }
+    public bool ModifiedInTarget { get; set; }
+    
+    public string? ModifiedObjectJson { get; set; }
+    
+    public string? Resolution { get; set; }
 }
 
 public class WorkflowConflict
@@ -47,6 +75,9 @@ public class ConflictResolution
     public string? TaskId { get; set; }
     public string FieldName { get; set; } = string.Empty;
     public string Resolution { get; set; } = string.Empty;
+    
+    public bool IsDeletionConflict { get; set; }
+    public ConflictObjectType? ObjectType { get; set; }
 }
 
 public class ResolveConflictsRequest

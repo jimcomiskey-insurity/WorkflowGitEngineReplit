@@ -162,6 +162,62 @@
       </div>
     </div>
 
+    <!-- Deletion Conflicts -->
+    <div *ngIf="conflicts.deletionConflicts && conflicts.deletionConflicts.length > 0" class="deletion-conflicts">
+      <h3 class="section-title">Deletion Conflicts</h3>
+      <div *ngFor="let deletionConflict of conflicts.deletionConflicts" class="deletion-conflict-card">
+        <div class="deletion-header">
+          <span class="deletion-icon">🗑️</span>
+          <div class="deletion-info">
+            <div class="deletion-description">{{ getDeletionConflictDescription(deletionConflict) }}</div>
+            <div class="deletion-location">
+              <span *ngIf="deletionConflict.objectType !== 0">Workflow: {{ deletionConflict.workflowKey }}</span>
+              <span *ngIf="deletionConflict.objectType === 1 || deletionConflict.objectType === 2"> • Phase: {{ deletionConflict.phaseName }}</span>
+              <span *ngIf="deletionConflict.objectType === 2"> • Task ID: {{ deletionConflict.taskId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="deletion-choices">
+          <label class="choice" [class.selected]="deletionConflict.resolution === 'keep'">
+            <input 
+              type="radio" 
+              [name]="'deletion-' + deletionConflict.objectType + '-' + deletionConflict.objectIdentifier"
+              value="keep"
+              [(ngModel)]="deletionConflict.resolution">
+            <div class="choice-content">
+              <div class="choice-header">
+                <span class="choice-label">✓ Keep {{ getObjectTypeName(deletionConflict.objectType) }}</span>
+              </div>
+              <div class="choice-description">
+                Restore the {{ getObjectTypeName(deletionConflict.objectType).toLowerCase() }} with the modifications from 
+                <strong *ngIf="deletionConflict.modifiedInSource">{{ conflicts.sourceBranch }}</strong>
+                <strong *ngIf="deletionConflict.modifiedInTarget">{{ conflicts.targetBranch }}</strong>
+              </div>
+            </div>
+          </label>
+
+          <label class="choice" [class.selected]="deletionConflict.resolution === 'delete'">
+            <input 
+              type="radio" 
+              [name]="'deletion-' + deletionConflict.objectType + '-' + deletionConflict.objectIdentifier"
+              value="delete"
+              [(ngModel)]="deletionConflict.resolution">
+            <div class="choice-content">
+              <div class="choice-header">
+                <span class="choice-label">✗ Delete {{ getObjectTypeName(deletionConflict.objectType) }}</span>
+              </div>
+              <div class="choice-description">
+                Permanently remove the {{ getObjectTypeName(deletionConflict.objectType).toLowerCase() }} as done in 
+                <strong *ngIf="deletionConflict.deletedInSource">{{ conflicts.sourceBranch }}</strong>
+                <strong *ngIf="deletionConflict.deletedInTarget">{{ conflicts.targetBranch }}</strong>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn btn-secondary" (click)="cancel()" [disabled]="resolving">
         Cancel

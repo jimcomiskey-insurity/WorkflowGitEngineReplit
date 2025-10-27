@@ -33,8 +33,30 @@ interface WorkflowConflict {
   phaseConflicts: PhaseConflict[];
 }
 
+enum ConflictObjectType {
+  Workflow = 0,
+  Phase = 1,
+  Task = 2
+}
+
+interface DeletionConflict {
+  objectType: ConflictObjectType;
+  workflowKey: string;
+  phaseName?: string;
+  taskId?: string;
+  objectIdentifier: string;
+  objectDisplayName: string;
+  deletedInSource: boolean;
+  modifiedInSource: boolean;
+  deletedInTarget: boolean;
+  modifiedInTarget: boolean;
+  modifiedObjectJson?: string;
+  resolution?: string;
+}
+
 interface MergeConflictInfo {
   workflowConflicts: WorkflowConflict[];
+  deletionConflicts: DeletionConflict[];
   sourceBranch: string;
   targetBranch: string;
   totalConflicts: number;
@@ -46,6 +68,8 @@ interface ConflictResolution {
   taskId?: string;
   fieldName: string;
   resolution: string;
+  isDeletionConflict?: boolean;
+  objectType?: ConflictObjectType;
 }
 
 @Component({
@@ -104,6 +128,11 @@ export class ConflictResolutionComponent implements OnInit {
         });
       });
     });
+
+    // Initialize deletion conflict resolutions to 'keep' (prefer keeping modified objects)
+    this.conflicts.deletionConflicts?.forEach(dc => {
+      dc.resolution = 'keep';
+    });
   }
 
   isAllResolved(): boolean {
@@ -118,6 +147,12 @@ export class ConflictResolutionComponent implements OnInit {
         }
       }
     }
+
+    // Check deletion conflicts are resolved
+    if (this.conflicts.deletionConflicts?.some(dc => !dc.resolution)) {
+      return false;
+    }
+
     return true;
   }
 
@@ -165,6 +200,21 @@ export class ConflictResolutionComponent implements OnInit {
       });
     });
 
+    // Add deletion conflict resolutions
+    this.conflicts.deletionConflicts?.forEach(dc => {
+      if (dc.resolution) {
+        resolutions.push({
+          workflowKey: dc.workflowKey,
+          phaseName: dc.phaseName,
+          taskId: dc.taskId,
+          fieldName: '_deletion',
+          resolution: dc.resolution,
+          isDeletionConflict: true,
+          objectType: dc.objectType
+        });
+      }
+    });
+
     this.resolving = true;
     const userId = this.userService.getCurrentUser();
 
@@ -197,5 +247,24 @@ export class ConflictResolutionComponent implements OnInit {
       });
     });
     return count;
+  }
+
+  getObjectTypeName(type: ConflictObjectType): string {
+    switch (type) {
+      case ConflictObjectType.Workflow: return 'Workflow';
+      case ConflictObjectType.Phase: return 'Phase';
+      case ConflictObjectType.Task: return 'Task';
+      default: return 'Object';
+    }
+  }
+
+  getDeletionConflictDescription(dc: DeletionConflict): string {
+    const objectType = this.getObjectTypeName(dc.objectType);
+    if (dc.deletedInSource && dc.modifiedInTarget) {
+      return `${objectType} "${dc.objectDisplayName}" was deleted in ${this.conflicts?.sourceBranch} but modified in ${this.conflicts?.targetBranch}`;
+    } else if (dc.deletedInTarget && dc.modifiedInSource) {
+      return `${objectType} "${dc.objectDisplayName}" was deleted in ${this.conflicts?.targetBranch} but modified in ${this.conflicts?.sourceBranch}`;
+    }
+    return `${objectType} "${dc.objectDisplayName}" has a deletion conflict`;
   }
 }
