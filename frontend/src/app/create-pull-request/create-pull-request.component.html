@@ -39,7 +39,8 @@
         <select 
           id="targetBranch" 
           [(ngModel)]="targetBranch"
-          name="targetBranch">
+          name="targetBranch"
+          (change)="onTargetBranchChange()">
           <option *ngFor="let branch of availableBranches" [value]="branch">
             {{ branch }}
           </option>

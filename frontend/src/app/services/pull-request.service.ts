@@ -22,6 +22,12 @@ export interface CreatePullRequestRequest {
   targetBranch: string;
 }
 
+export interface PullRequestSuggestion {
+  title: string;
+  description: string;
+  commitCount: number;
+}
+
 export interface WorkflowChange {
   workflowKey: string;
   workflowName: string;
@@ -61,6 +67,13 @@ export class PullRequestService {
   getBranchComparison(userId: string, number: number): Observable<BranchComparison> {
     const params = new HttpParams().set('userId', userId);
     return this.http.get<BranchComparison>(`${this.apiUrl}/${number}/comparison`, { params });
+  }
+
+  getPullRequestSuggestion(sourceBranch: string, targetBranch: string): Observable<PullRequestSuggestion> {
+    const params = new HttpParams()
+      .set('sourceBranch', sourceBranch)
+      .set('targetBranch', targetBranch);
+    return this.http.get<PullRequestSuggestion>(`${this.apiUrl}/suggestion`, { params });
   }
 
   createPullRequest(userId: string, request: CreatePullRequestRequest): Observable<PullRequest> {

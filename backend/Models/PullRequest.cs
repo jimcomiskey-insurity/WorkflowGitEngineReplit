@@ -23,6 +23,13 @@ public class CreatePullRequestRequest
     public string TargetBranch { get; set; } = string.Empty;
 }
 
+public class PullRequestSuggestion
+{
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int CommitCount { get; set; }
+}
+
 public class BranchComparison
 {
     public string SourceBranch { get; set; } = string.Empty;

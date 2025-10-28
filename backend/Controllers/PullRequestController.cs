@@ -96,6 +96,50 @@ public class PullRequestController : ControllerBase
         }
     }
 
+    [HttpGet("suggestion")]
+    public ActionResult<PullRequestSuggestion> GetPullRequestSuggestion(
+        [FromQuery] string sourceBranch,
+        [FromQuery] string targetBranch)
+    {
+        try
+        {
+            // Compare branches in the central repository to get commits
+            var comparison = _gitService.CompareBranchesInCentral(sourceBranch, targetBranch);
+            
+            string suggestedTitle = "";
+            string suggestedDescription = "";
+            
+            if (comparison.Commits.Count == 1)
+            {
+                // Single commit: use commit message for both title and description
+                var commit = comparison.Commits[0];
+                suggestedTitle = commit.Message;
+                suggestedDescription = commit.Message;
+            }
+            else if (comparison.Commits.Count > 1)
+            {
+                // Multiple commits: leave title blank, list all commits in description
+                suggestedTitle = "";
+                var commitList = comparison.Commits
+                    .Select(c => $"- {c.Message} ({c.Sha.Substring(0, 7)})")
+                    .ToList();
+                suggestedDescription = string.Join("\n", commitList);
+            }
+            
+            return Ok(new PullRequestSuggestion
+            {
+                Title = suggestedTitle,
+                Description = suggestedDescription,
+                CommitCount = comparison.Commits.Count
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting PR suggestion for {Source} -> {Target}", sourceBranch, targetBranch);
+            return StatusCode(500, new { message = "Error getting PR suggestion" });
+        }
+    }
+
     [HttpPost]
     public ActionResult<PullRequest> CreatePullRequest(
         [FromQuery] string userId,

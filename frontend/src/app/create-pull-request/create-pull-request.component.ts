@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime } from 'rxjs/operators';
 import { PullRequestService, CreatePullRequestRequest } from '../services/pull-request.service';
 import { GitStateService } from '../services/git-state.service';
 import { GitStatus } from '../services/git.service';
@@ -14,7 +14,7 @@ import { GitStatus } from '../services/git.service';
   templateUrl: './create-pull-request.component.html',
   styleUrls: ['./create-pull-request.component.css']
 })
-export class CreatePullRequestComponent implements OnInit, OnDestroy {
+export class CreatePullRequestComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() userId: string = 'userA';
   @Output() close = new EventEmitter<void>();
   @Output() created = new EventEmitter<void>();
@@ -26,7 +26,9 @@ export class CreatePullRequestComponent implements OnInit, OnDestroy {
   availableBranches: string[] = [];
   isSubmitting = false;
   gitStatus: GitStatus | null = null;
+  isLoadingSuggestion = false;
   private destroy$ = new Subject<void>();
+  private branchChange$ = new Subject<void>();
 
   constructor(
     private pullRequestService: PullRequestService,
@@ -72,6 +74,53 @@ export class CreatePullRequestComponent implements OnInit, OnDestroy {
         console.error('Error loading branches:', error);
       }
     });
+
+    // Subscribe to branch changes to fetch PR suggestions
+    this.branchChange$.pipe(
+      debounceTime(300),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadPullRequestSuggestion();
+    });
+  }
+
+  ngAfterViewInit() {
+    // Trigger initial suggestion load after view is initialized
+    setTimeout(() => {
+      if (this.sourceBranch && this.targetBranch && this.sourceBranch !== this.targetBranch) {
+        this.loadPullRequestSuggestion();
+      }
+    }, 500);
+  }
+
+  onTargetBranchChange() {
+    // Trigger suggestion reload when target branch changes
+    if (this.sourceBranch && this.targetBranch && this.sourceBranch !== this.targetBranch) {
+      this.branchChange$.next();
+    }
+  }
+
+  private loadPullRequestSuggestion() {
+    if (!this.sourceBranch || !this.targetBranch || this.sourceBranch === this.targetBranch) {
+      return;
+    }
+
+    this.isLoadingSuggestion = true;
+    this.pullRequestService.getPullRequestSuggestion(this.sourceBranch, this.targetBranch)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (suggestion) => {
+          // Auto-populate title and description from suggestion
+          this.title = suggestion.title;
+          this.description = suggestion.description;
+          this.isLoadingSuggestion = false;
+        },
+        error: (error) => {
+          console.error('Error loading PR suggestion:', error);
+          this.isLoadingSuggestion = false;
+          // Don't show error to user, just leave fields empty
+        }
+      });
   }
 
   ngOnDestroy() {

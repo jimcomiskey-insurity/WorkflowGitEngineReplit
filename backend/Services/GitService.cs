@@ -915,7 +915,7 @@ public class GitService
         return branch.Tip.Sha;
     }
 
-    public BranchComparison CompareBranchesInCentral(string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
+    public virtual BranchComparison CompareBranchesInCentral(string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
     {
         // For pull requests: work directly with the central repository
         // This ensures we're comparing branches as they exist in the central repo (what was pushed)
