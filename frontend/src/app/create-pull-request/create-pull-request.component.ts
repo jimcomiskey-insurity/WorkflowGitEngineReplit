@@ -21,9 +21,9 @@ export class CreatePullRequestComponent implements OnInit, AfterViewInit, OnDest
 
   title = '';
   description = '';
-  targetBranch = 'main';
+  targetBranch = '';
   sourceBranch = '';
-  availableBranches: string[] = [];
+  allBranches: string[] = [];
   isSubmitting = false;
   gitStatus: GitStatus | null = null;
   isLoadingSuggestion = false;
@@ -42,7 +42,8 @@ export class CreatePullRequestComponent implements OnInit, AfterViewInit, OnDest
     ).subscribe({
       next: (status) => {
         this.gitStatus = status;
-        if (status) {
+        if (status && !this.sourceBranch) {
+          // Default source to current branch if not already set
           this.sourceBranch = status.currentBranch;
         }
       },
@@ -56,18 +57,23 @@ export class CreatePullRequestComponent implements OnInit, AfterViewInit, OnDest
       takeUntil(this.destroy$)
     ).subscribe({
       next: (branches) => {
-        // Filter out remote tracking branches and current branch
-        this.availableBranches = branches
-          .filter(b => !b.startsWith('origin/'))
-          .filter(b => b !== this.sourceBranch);
+        // Keep all local branches (filter out remote tracking branches)
+        this.allBranches = branches.filter(b => !b.startsWith('origin/'));
         
-        // Set default target branch: prefer main/master, otherwise first available
-        if (this.availableBranches.includes('main')) {
-          this.targetBranch = 'main';
-        } else if (this.availableBranches.includes('master')) {
-          this.targetBranch = 'master';
-        } else {
-          this.targetBranch = this.availableBranches[0] || this.sourceBranch;
+        // Set default source branch to current branch if available
+        if (!this.sourceBranch && this.gitStatus) {
+          this.sourceBranch = this.gitStatus.currentBranch;
+        }
+        
+        // Set default target branch: prefer master/main, otherwise first available branch that's not the source
+        if (!this.targetBranch) {
+          if (this.allBranches.includes('master') && this.sourceBranch !== 'master') {
+            this.targetBranch = 'master';
+          } else if (this.allBranches.includes('main') && this.sourceBranch !== 'main') {
+            this.targetBranch = 'main';
+          } else {
+            this.targetBranch = this.allBranches.find(b => b !== this.sourceBranch) || '';
+          }
         }
       },
       error: (error) => {
@@ -91,6 +97,13 @@ export class CreatePullRequestComponent implements OnInit, AfterViewInit, OnDest
         this.loadPullRequestSuggestion();
       }
     }, 500);
+  }
+
+  onSourceBranchChange() {
+    // Trigger suggestion reload when source branch changes
+    if (this.sourceBranch && this.targetBranch && this.sourceBranch !== this.targetBranch) {
+      this.branchChange$.next();
+    }
   }
 
   onTargetBranchChange() {
@@ -194,7 +207,14 @@ export class CreatePullRequestComponent implements OnInit, AfterViewInit, OnDest
     return this.title.trim().length > 0 && 
            !this.hasUncommittedChanges && 
            this.isBranchPushed && 
-           !this.isSubmitting;
+           !this.isSubmitting &&
+           this.sourceBranch !== this.targetBranch &&
+           this.sourceBranch.length > 0 &&
+           this.targetBranch.length > 0;
+  }
+
+  get sameBranchError(): boolean {
+    return this.sourceBranch === this.targetBranch && this.sourceBranch.length > 0;
   }
 
   onBackgroundClick(event: MouseEvent) {

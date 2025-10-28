@@ -10,9 +10,35 @@
       </button>
     </div>
 
-    <p class="dialog-subtitle">Propose changes from {{ sourceBranch }}</p>
+    <p class="dialog-subtitle">Propose changes between branches</p>
 
     <form (ngSubmit)="onSubmit()" class="dialog-form">
+      <div class="form-group">
+        <label for="sourceBranch">Source Branch</label>
+        <select 
+          id="sourceBranch" 
+          [(ngModel)]="sourceBranch"
+          name="sourceBranch"
+          (change)="onSourceBranchChange()">
+          <option *ngFor="let branch of allBranches" [value]="branch">
+            {{ branch }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="targetBranch">Target Branch</label>
+        <select 
+          id="targetBranch" 
+          [(ngModel)]="targetBranch"
+          name="targetBranch"
+          (change)="onTargetBranchChange()">
+          <option *ngFor="let branch of allBranches" [value]="branch">
+            {{ branch }}
+          </option>
+        </select>
+      </div>
+
       <div class="form-group">
         <label for="title">Title</label>
         <input 
@@ -34,19 +60,6 @@
           rows="6"></textarea>
       </div>
 
-      <div class="form-group">
-        <label for="targetBranch">Target Branch</label>
-        <select 
-          id="targetBranch" 
-          [(ngModel)]="targetBranch"
-          name="targetBranch"
-          (change)="onTargetBranchChange()">
-          <option *ngFor="let branch of availableBranches" [value]="branch">
-            {{ branch }}
-          </option>
-        </select>
-      </div>
-
       <div class="branch-preview">
         <span class="branch-name">{{ sourceBranch }}</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -57,8 +70,16 @@
       </div>
 
       <!-- Warning messages -->
-      <div class="validation-messages" *ngIf="hasUncommittedChanges || !isBranchPushed">
-        <div class="warning-message" *ngIf="hasUncommittedChanges">
+      <div class="validation-messages" *ngIf="hasUncommittedChanges || !isBranchPushed || sameBranchError">
+        <div class="error-message" *ngIf="sameBranchError">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          <span>Source and target branches must be different.</span>
+        </div>
+        <div class="warning-message" *ngIf="hasUncommittedChanges && !sameBranchError">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -66,7 +87,7 @@
           </svg>
           <span>You have uncommitted changes. Please commit them before creating a pull request.</span>
         </div>
-        <div class="error-message" *ngIf="!isBranchPushed && !hasUncommittedChanges">
+        <div class="error-message" *ngIf="!isBranchPushed && !hasUncommittedChanges && !sameBranchError">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="15" y1="9" x2="9" y2="15"></line>

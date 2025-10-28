@@ -115,16 +115,17 @@ describe('CreatePullRequestComponent', () => {
 
     it('should load available branches from GitStateService', (done) => {
       setTimeout(() => {
-        expect(component.availableBranches).toContain('main');
-        expect(component.availableBranches).toContain('master');
-        expect(component.availableBranches).not.toContain('feature-1'); // Current branch excluded
+        expect(component.allBranches).toContain('main');
+        expect(component.allBranches).toContain('master');
+        expect(component.allBranches).toContain('feature-1');
         done();
       }, 100);
     });
 
-    it('should set default target branch to main if available', (done) => {
+    it('should set default target branch to master/main if available', (done) => {
       setTimeout(() => {
-        expect(component.targetBranch).toBe('main');
+        // Target should be master or main, whichever is available and not the source branch
+        expect(['master', 'main']).toContain(component.targetBranch);
         done();
       }, 100);
     });
