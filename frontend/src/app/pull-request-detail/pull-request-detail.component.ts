@@ -4,11 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PullRequestService, PullRequest, BranchComparison } from '../services/pull-request.service';
 import { UserService } from '../services/user.service';
+import { ComparisonViewerComponent } from '../comparison-viewer/comparison-viewer.component';
 
 @Component({
   selector: 'app-pull-request-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ComparisonViewerComponent],
   templateUrl: './pull-request-detail.component.html',
   styleUrls: ['./pull-request-detail.component.css']
 })
@@ -18,6 +19,7 @@ export class PullRequestDetailComponent implements OnInit, OnDestroy {
   userId: string = '';
   isLoading = true;
   isMerging = false;
+  currentTab: 'all' | 'commits' = 'all';
   private prNumber: number = 0;
   private userSubscription?: Subscription;
 
@@ -123,6 +125,10 @@ export class PullRequestDetailComponent implements OnInit, OnDestroy {
 
   goBack() {
     this.router.navigate(['/pull-requests']);
+  }
+
+  switchTab(tab: 'all' | 'commits') {
+    this.currentTab = tab;
   }
 
   formatDate(date: string): string {

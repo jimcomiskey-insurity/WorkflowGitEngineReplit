@@ -36,11 +36,21 @@ export interface WorkflowChange {
   targetWorkflow?: Workflow;
 }
 
+export interface CommitInfo {
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
+  changes: WorkflowChange[];
+}
+
 export interface BranchComparison {
   sourceBranch: string;
   targetBranch: string;
   commitsAhead: number;
+  commitsBehind: number;
   changes: WorkflowChange[];
+  commits: CommitInfo[];
 }
 
 @Injectable({

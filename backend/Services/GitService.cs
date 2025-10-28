@@ -915,6 +915,71 @@ public class GitService
         return branch.Tip.Sha;
     }
 
+    private List<WorkflowChange> GetCommitChanges(Repository repo, Commit commit)
+    {
+        // Get workflows from this commit
+        var commitWorkflows = GetWorkflowsFromCommit(repo, commit);
+        
+        // Get workflows from parent commit (or empty list if this is the first commit)
+        var parentWorkflows = new List<Workflow>();
+        if (commit.Parents.Any())
+        {
+            var parentCommit = commit.Parents.First();
+            parentWorkflows = GetWorkflowsFromCommit(repo, parentCommit);
+        }
+        
+        var changes = new List<WorkflowChange>();
+        
+        // Find added and modified workflows
+        foreach (var workflow in commitWorkflows)
+        {
+            var parentWorkflow = parentWorkflows.FirstOrDefault(w => w.WorkflowKey == workflow.WorkflowKey);
+            
+            if (parentWorkflow == null)
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = workflow.WorkflowKey,
+                    WorkflowName = workflow.WorkflowName,
+                    ChangeType = "added",
+                    SourceWorkflow = workflow,
+                    TargetWorkflow = null
+                });
+            }
+            else if (!WorkflowsAreEqual(workflow, parentWorkflow))
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = workflow.WorkflowKey,
+                    WorkflowName = workflow.WorkflowName,
+                    ChangeType = "modified",
+                    SourceWorkflow = workflow,
+                    TargetWorkflow = parentWorkflow
+                });
+            }
+        }
+        
+        // Find deleted workflows
+        foreach (var parentWorkflow in parentWorkflows)
+        {
+            var workflow = commitWorkflows.FirstOrDefault(w => w.WorkflowKey == parentWorkflow.WorkflowKey);
+            
+            if (workflow == null)
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = parentWorkflow.WorkflowKey,
+                    WorkflowName = parentWorkflow.WorkflowName,
+                    ChangeType = "deleted",
+                    SourceWorkflow = null,
+                    TargetWorkflow = parentWorkflow
+                });
+            }
+        }
+        
+        return changes;
+    }
+
     public virtual BranchComparison CompareBranchesInCentral(string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
     {
         // For pull requests: work directly with the central repository
@@ -980,14 +1045,16 @@ public class GitService
         };
         var commitsBehind = repo.Commits.QueryBy(behindFilter).Count();
         
-        // Get the actual commit objects for the ahead commits
-        var aheadCommits = repo.Commits.QueryBy(aheadFilter)
+        // Get the actual commit objects for the ahead commits with their individual changes
+        var aheadCommitObjects = repo.Commits.QueryBy(aheadFilter).ToList();
+        var aheadCommits = aheadCommitObjects
             .Select(c => new Models.CommitInfo
             {
                 Sha = c.Sha,
                 Message = c.Message,
                 Author = c.Author.Name,
-                Date = c.Author.When
+                Date = c.Author.When,
+                Changes = GetCommitChanges(repo, c)
             })
             .ToList();
         

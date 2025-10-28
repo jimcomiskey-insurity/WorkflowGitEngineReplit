@@ -19,4 +19,5 @@ public class CommitInfo
     public string Message { get; set; } = string.Empty;
     public string Author { get; set; } = string.Empty;
     public DateTimeOffset Date { get; set; }
+    public List<WorkflowChange> Changes { get; set; } = new();
 }
