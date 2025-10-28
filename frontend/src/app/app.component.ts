@@ -79,6 +79,17 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
               </svg>
               <span>Pull Requests</span>
             </a>
+            <a routerLink="/branch-comparison" routerLinkActive="active" class="nav-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 3h5v5"></path>
+                <path d="M8 3H3v5"></path>
+                <path d="M12 22v-7"></path>
+                <path d="M16 8l-4 4-4-4"></path>
+                <path d="M3 3l5 5"></path>
+                <path d="M16 3l5 5"></path>
+              </svg>
+              <span>Branch Comparison</span>
+            </a>
           </nav>
         </aside>
         

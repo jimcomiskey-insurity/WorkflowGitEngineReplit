@@ -37,5 +37,9 @@ export const routes: Routes = [
   {
     path: 'pull-requests/:number/resolve-conflicts',
     loadComponent: () => import('./conflict-resolution/conflict-resolution.component').then(m => m.ConflictResolutionComponent)
+  },
+  {
+    path: 'branch-comparison',
+    loadComponent: () => import('./branch-comparison/branch-comparison.component').then(m => m.BranchComparisonComponent)
   }
 ];

@@ -100,4 +100,12 @@ export class PullRequestService {
     const params = new HttpParams().set('userId', userId);
     return this.http.post<PullRequest>(`${this.apiUrl}/${number}/close`, {}, { params });
   }
+
+  compareBranches(userId: string, sourceBranch: string, targetBranch: string): Observable<BranchComparison> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('sourceBranch', sourceBranch)
+      .set('targetBranch', targetBranch);
+    return this.http.get<BranchComparison>('/api/git/compare-branches', { params });
+  }
 }

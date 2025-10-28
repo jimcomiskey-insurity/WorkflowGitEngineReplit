@@ -1,0 +1,105 @@
+<div class="comparison-container">
+  <div class="header">
+    <h1>Branch Comparison</h1>
+    <p class="subtitle">Compare workflow changes between branches</p>
+  </div>
+
+  <div class="comparison-controls">
+    <div class="branch-selector">
+      <label for="source-branch">Source Branch</label>
+      <select 
+        id="source-branch" 
+        [formControl]="sourceBranchControl"
+        class="branch-dropdown">
+        <option value="">Select branch...</option>
+        <option *ngFor="let branch of branches" [value]="branch">{{ branch }}</option>
+      </select>
+    </div>
+
+    <div class="arrow-icon">→</div>
+
+    <div class="branch-selector">
+      <label for="target-branch">Target Branch</label>
+      <select 
+        id="target-branch" 
+        [formControl]="targetBranchControl"
+        class="branch-dropdown">
+        <option value="">Select branch...</option>
+        <option *ngFor="let branch of branches" [value]="branch">{{ branch }}</option>
+      </select>
+    </div>
+
+    <button 
+      class="btn-compare" 
+      (click)="compareBranches()"
+      [disabled]="loading">
+      {{ loading ? 'Comparing...' : 'Compare Branches' }}
+    </button>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="comparison" class="comparison-results">
+    <div class="results-header">
+      <h2>Comparison Results</h2>
+      <div class="commit-stats">
+        <span class="stat-item">
+          <strong>{{ comparison.commitsAhead }}</strong> commits ahead
+        </span>
+        <span class="stat-item" *ngIf="comparison.commitsBehind > 0">
+          <strong>{{ comparison.commitsBehind }}</strong> commits behind
+        </span>
+      </div>
+    </div>
+
+    <div class="tabs-header">
+      <button 
+        class="tab-button" 
+        [class.active]="selectedTab === 'all-changes'"
+        (click)="switchTab('all-changes')">
+        All Changes
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="selectedTab === 'commits'"
+        (click)="switchTab('commits')">
+        Commits ({{ comparison.commits?.length || 0 }})
+      </button>
+    </div>
+
+    <div class="tab-content" *ngIf="selectedTab === 'all-changes'">
+      <app-comparison-viewer 
+        [changes]="comparison.changes">
+      </app-comparison-viewer>
+    </div>
+
+    <div class="tab-content" *ngIf="selectedTab === 'commits'">
+      <div *ngIf="comparison.commits && comparison.commits.length > 0" class="commits-list">
+        <div *ngFor="let commit of comparison.commits" class="commit-item">
+          <div class="commit-header">
+            <div class="commit-info">
+              <h4>{{ commit.message }}</h4>
+              <div class="commit-meta">
+                <span class="commit-author">{{ commit.author }}</span>
+                <span class="commit-sha">{{ commit.sha.substring(0, 7) }}</span>
+                <span class="commit-date">{{ commit.date | date:'medium' }}</span>
+              </div>
+            </div>
+          </div>
+          <app-comparison-viewer 
+            [changes]="commit.changes">
+          </app-comparison-viewer>
+        </div>
+      </div>
+      <div *ngIf="!comparison.commits || comparison.commits.length === 0" class="empty-commits">
+        <p>No commits in this comparison</p>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!comparison && !loading && !error" class="empty-state">
+    <p>Select branches above and click "Compare Branches" to see workflow differences</p>
+  </div>
+</div>

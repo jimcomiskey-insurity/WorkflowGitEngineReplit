@@ -125,6 +125,23 @@ public class GitController : ControllerBase
         }
     }
 
+    [HttpGet("compare-branches")]
+    public IActionResult CompareBranches(
+        [FromQuery] string userId,
+        [FromQuery] string sourceBranch,
+        [FromQuery] string targetBranch)
+    {
+        try
+        {
+            var comparison = _gitService.CompareBranchesInCentral(userId, sourceBranch, targetBranch);
+            return Ok(comparison);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpPost("reset")]
     public IActionResult ResetRepositories()
     {
