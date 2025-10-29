@@ -19,6 +19,18 @@ export const routes: Routes = [
     loadComponent: () => import('./workflow-editor/workflow-editor.component').then(m => m.WorkflowEditorComponent)
   },
   {
+    path: 'assets',
+    loadComponent: () => import('./asset-list/asset-list.component').then(m => m.AssetListComponent)
+  },
+  {
+    path: 'assets/new',
+    loadComponent: () => import('./asset-editor/asset-editor.component').then(m => m.AssetEditorComponent)
+  },
+  {
+    path: 'assets/edit/:id',
+    loadComponent: () => import('./asset-editor/asset-editor.component').then(m => m.AssetEditorComponent)
+  },
+  {
     path: 'version-control',
     loadComponent: () => import('./version-control/version-control.component').then(m => m.VersionControlComponent)
   },

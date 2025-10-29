@@ -13,6 +13,9 @@ public class GitService
     private const string WorkflowFileName = "workflows.json"; // Legacy format
     private const string WorkflowListFileName = "workflow-list.json";
     private const string WorkflowsDirectory = "workflows";
+    private const string AssetListFileName = "asset-list.json";
+    private const string AssetsDirectory = "assets";
+    private const string AssetFilesDirectory = "asset-files";
 
     public GitService(IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
     {
@@ -584,6 +587,382 @@ public class GitService
         return Directory.GetFiles(workflowsDir, "*.json")
             .Select(f => Path.Combine(WorkflowsDirectory, Path.GetFileName(f)))
             .ToList();
+    }
+
+    public ProgramAssets ReadAssets(string userId)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        var assetList = ReadAssetListIfExists(userRepoPath);
+        if (assetList != null)
+        {
+            var assets = new List<Asset>();
+            foreach (var assetId in assetList.AssetIds)
+            {
+                var asset = ReadAssetFileIfExists(userRepoPath, assetId);
+                if (asset != null)
+                {
+                    assets.Add(asset);
+                }
+                else
+                {
+                    _logger.LogWarning($"Asset file not found for ID {assetId}, skipping");
+                }
+            }
+
+            var result = new ProgramAssets { Assets = assets };
+            EnsureAssetIds(result);
+            return result;
+        }
+
+        return new ProgramAssets { Assets = new List<Asset>() };
+    }
+
+    public void WriteAssets(string userId, ProgramAssets assets)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        EnsureAssetIds(assets);
+
+        var existingAssetList = ReadAssetListIfExists(userRepoPath);
+        var existingIds = existingAssetList?.AssetIds ?? new List<Guid>();
+        var newIds = assets.Assets.Select(a => a.Id).ToList();
+
+        var deletedIds = existingIds.Except(newIds).ToList();
+        foreach (var deletedId in deletedIds)
+        {
+            DeleteAssetFile(userRepoPath, deletedId);
+            _logger.LogInformation($"Deleted orphaned asset file for ID {deletedId}");
+        }
+
+        var assetList = new AssetList { AssetIds = newIds };
+        WriteAssetListFile(userRepoPath, assetList);
+
+        foreach (var asset in assets.Assets)
+        {
+            WriteAssetFile(userRepoPath, asset);
+        }
+
+        _logger.LogInformation($"Written {assets.Assets.Count} assets in split-file format for user {userId}");
+    }
+
+    private void EnsureAssetIds(ProgramAssets assets)
+    {
+        foreach (var asset in assets.Assets)
+        {
+            if (asset.Id == Guid.Empty)
+            {
+                asset.Id = Guid.NewGuid();
+            }
+        }
+    }
+
+    private string GetAssetsDirectoryPath(string userRepoPath)
+    {
+        return Path.Combine(userRepoPath, AssetsDirectory);
+    }
+
+    private string GetAssetFilesDirectoryPath(string userRepoPath)
+    {
+        return Path.Combine(userRepoPath, AssetFilesDirectory);
+    }
+
+    private string GetAssetFilePath(string userRepoPath, Guid assetId)
+    {
+        return Path.Combine(GetAssetsDirectoryPath(userRepoPath), $"{assetId}.json");
+    }
+
+    private string GetAssetFileStoragePath(string userRepoPath, Guid assetId, string fileName)
+    {
+        var assetDir = Path.Combine(GetAssetFilesDirectoryPath(userRepoPath), assetId.ToString());
+        Directory.CreateDirectory(assetDir);
+        return Path.Combine(assetDir, fileName);
+    }
+    
+    private string GetAssetFileDirectoryPath(string userRepoPath, Guid assetId)
+    {
+        return Path.Combine(GetAssetFilesDirectoryPath(userRepoPath), assetId.ToString());
+    }
+
+    private string GetAssetListFilePath(string userRepoPath)
+    {
+        return Path.Combine(userRepoPath, AssetListFileName);
+    }
+
+    private AssetList? ReadAssetListIfExists(string userRepoPath)
+    {
+        var listFilePath = GetAssetListFilePath(userRepoPath);
+        if (!File.Exists(listFilePath))
+        {
+            return null;
+        }
+
+        var json = File.ReadAllText(listFilePath);
+        return JsonSerializer.Deserialize<AssetList>(json);
+    }
+
+    private Asset? ReadAssetFileIfExists(string userRepoPath, Guid assetId)
+    {
+        var assetFilePath = GetAssetFilePath(userRepoPath, assetId);
+        if (!File.Exists(assetFilePath))
+        {
+            return null;
+        }
+
+        var json = File.ReadAllText(assetFilePath);
+        return JsonSerializer.Deserialize<Asset>(json);
+    }
+
+    private void WriteAssetListFile(string userRepoPath, AssetList assetList)
+    {
+        var listFilePath = GetAssetListFilePath(userRepoPath);
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var json = JsonSerializer.Serialize(assetList, options);
+        
+        if (File.Exists(listFilePath))
+        {
+            var existingContent = File.ReadAllText(listFilePath);
+            if (existingContent == json)
+            {
+                return;
+            }
+        }
+        
+        using var fileStream = new FileStream(listFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        using var streamWriter = new StreamWriter(fileStream);
+        streamWriter.Write(json);
+        streamWriter.Flush();
+        fileStream.Flush(flushToDisk: true);
+    }
+
+    private void WriteAssetFile(string userRepoPath, Asset asset)
+    {
+        var assetsDir = GetAssetsDirectoryPath(userRepoPath);
+        Directory.CreateDirectory(assetsDir);
+        
+        var assetFilePath = GetAssetFilePath(userRepoPath, asset.Id);
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var json = JsonSerializer.Serialize(asset, options);
+        
+        if (File.Exists(assetFilePath))
+        {
+            var existingContent = File.ReadAllText(assetFilePath);
+            if (existingContent == json)
+            {
+                return;
+            }
+        }
+        
+        using var fileStream = new FileStream(assetFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        using var streamWriter = new StreamWriter(fileStream);
+        streamWriter.Write(json);
+        streamWriter.Flush();
+        fileStream.Flush(flushToDisk: true);
+    }
+
+    private void DeleteAssetFile(string userRepoPath, Guid assetId)
+    {
+        var assetFilePath = GetAssetFilePath(userRepoPath, assetId);
+        if (File.Exists(assetFilePath))
+        {
+            File.Delete(assetFilePath);
+        }
+        
+        var assetFileDir = GetAssetFileDirectoryPath(userRepoPath, assetId);
+        if (Directory.Exists(assetFileDir))
+        {
+            Directory.Delete(assetFileDir, true);
+        }
+    }
+
+    public void SaveAssetFileContent(string userId, Guid assetId, string fileName, Stream fileStream)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        var assetFileDir = GetAssetFileDirectoryPath(userRepoPath, assetId);
+        if (Directory.Exists(assetFileDir))
+        {
+            Directory.Delete(assetFileDir, true);
+        }
+        Directory.CreateDirectory(assetFileDir);
+
+        var filePath = GetAssetFileStoragePath(userRepoPath, assetId, fileName);
+        using var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        fileStream.CopyTo(outputStream);
+        outputStream.Flush(flushToDisk: true);
+    }
+
+    public byte[]? GetAssetFileContent(string userId, Guid assetId, string fileName)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        var filePath = GetAssetFileStoragePath(userRepoPath, assetId, fileName);
+        
+        if (!File.Exists(filePath))
+        {
+            return null;
+        }
+
+        return File.ReadAllBytes(filePath);
+    }
+
+    public void DeleteAssetFileContent(string userId, Guid assetId, string fileName)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        var assetFileDir = GetAssetFileDirectoryPath(userRepoPath, assetId);
+        if (Directory.Exists(assetFileDir))
+        {
+            Directory.Delete(assetFileDir, true);
+        }
+    }
+
+    public ProgramAssets ReadAssetsWithGitStatus(string userId)
+    {
+        var assets = ReadAssets(userId);
+        EnrichAssetsWithGitStatus(userId, assets);
+        return assets;
+    }
+
+    private void EnrichAssetsWithGitStatus(string userId, ProgramAssets programAssets)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        using var repo = new Repository(userRepoPath);
+        
+        var repoStatus = repo.RetrieveStatus();
+        _logger.LogInformation($"Git status refreshed for assets, detecting {repoStatus.Count()} status entries");
+        
+        var headCommit = repo.Head.Tip;
+        if (headCommit == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var previousAssets = GetAssetsFromCommit(repo, headCommit);
+            var previousVersion = new ProgramAssets { Assets = previousAssets };
+
+            foreach (var asset in programAssets.Assets)
+            {
+                var previousAsset = previousVersion.Assets.FirstOrDefault(a => a.Id == asset.Id);
+                
+                if (previousAsset == null)
+                {
+                    asset.GitStatus = "added";
+                }
+                else
+                {
+                    CompareAsset(asset, previousAsset, userRepoPath, repoStatus);
+                }
+            }
+
+            foreach (var previousAsset in previousVersion.Assets)
+            {
+                if (!programAssets.Assets.Any(a => a.Id == previousAsset.Id))
+                {
+                    previousAsset.GitStatus = "deleted";
+                    programAssets.Assets.Add(previousAsset);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"Error enriching assets with Git status: {ex.Message}");
+            return;
+        }
+    }
+
+    private List<Asset> GetAssetsFromCommit(Repository repo, Commit commit)
+    {
+        var assetListEntry = commit[AssetListFileName];
+        if (assetListEntry == null)
+        {
+            return new List<Asset>();
+        }
+
+        var listBlob = (Blob)assetListEntry.Target;
+        var listJson = listBlob.GetContentText();
+        var assetList = JsonSerializer.Deserialize<AssetList>(listJson);
+        
+        if (assetList == null || !assetList.AssetIds.Any())
+        {
+            return new List<Asset>();
+        }
+
+        var assets = new List<Asset>();
+        foreach (var assetId in assetList.AssetIds)
+        {
+            var assetPath = $"{AssetsDirectory}/{assetId}.json";
+            var assetEntry = commit[assetPath];
+            
+            if (assetEntry != null)
+            {
+                var assetBlob = (Blob)assetEntry.Target;
+                var assetJson = assetBlob.GetContentText();
+                var asset = JsonSerializer.Deserialize<Asset>(assetJson);
+                
+                if (asset != null)
+                {
+                    assets.Add(asset);
+                }
+            }
+        }
+        
+        return assets;
+    }
+
+    private void CompareAsset(Asset current, Asset previous, string userRepoPath, RepositoryStatus repoStatus)
+    {
+        bool hasMetadataChanges = 
+            current.Name != previous.Name || 
+            current.Description != previous.Description ||
+            !current.Tags.SequenceEqual(previous.Tags) ||
+            current.FileName != previous.FileName ||
+            current.FileType != previous.FileType;
+
+        bool hasFileContentChanges = false;
+        if (current.FileName != null)
+        {
+            var assetFileRelativePath = $"{AssetFilesDirectory}/{current.Id}/{current.FileName}";
+            var normalizedPath = assetFileRelativePath.Replace("\\", "/");
+            
+            var gitFileStatus = repoStatus.FirstOrDefault(s => 
+            {
+                var statusPath = s.FilePath.Replace("\\", "/");
+                return statusPath == normalizedPath;
+            });
+            
+            if (gitFileStatus != null)
+            {
+                hasFileContentChanges = 
+                    gitFileStatus.State.HasFlag(FileStatus.ModifiedInWorkdir) ||
+                    gitFileStatus.State.HasFlag(FileStatus.NewInWorkdir) ||
+                    gitFileStatus.State.HasFlag(FileStatus.DeletedFromWorkdir);
+                    
+                _logger.LogInformation($"Git file status for {normalizedPath}: {gitFileStatus.State}");
+            }
+            else
+            {
+                _logger.LogInformation($"No Git status found for asset file: {normalizedPath}");
+            }
+        }
+
+        if (hasMetadataChanges || hasFileContentChanges)
+        {
+            current.GitStatus = "modified";
+            _logger.LogInformation($"Asset {current.Name} (ID: {current.Id}) marked as MODIFIED (metadata: {hasMetadataChanges}, file: {hasFileContentChanges})");
+        }
+        else
+        {
+            current.GitStatus = null;
+        }
     }
 
     public ProgramWorkflows ReadWorkflowsWithGitStatus(string userId)

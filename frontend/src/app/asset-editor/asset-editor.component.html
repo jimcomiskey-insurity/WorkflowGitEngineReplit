@@ -1,0 +1,127 @@
+<div class="editor-container">
+  <div class="header">
+    <h2>{{ isNewAsset ? 'Create Asset' : 'Edit Asset' }}</h2>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveAsset()">Save Asset</button>
+    </div>
+  </div>
+
+  <div class="content" *ngIf="!isLoading">
+    <div class="form-section">
+      <h3>Asset Information</h3>
+      
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input 
+          type="text" 
+          id="name" 
+          [(ngModel)]="asset.name" 
+          placeholder="Asset name"
+          class="form-control"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          id="description" 
+          [(ngModel)]="asset.description" 
+          placeholder="Asset description"
+          rows="3"
+          class="form-control"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Tags</label>
+        <div class="tags-container">
+          <div class="tag-chips">
+            <span *ngFor="let tag of asset.tags; let i = index" class="tag-chip">
+              {{ tag }}
+              <button class="tag-remove" (click)="removeTag(i)">&times;</button>
+            </span>
+          </div>
+          <div class="tag-input-group">
+            <input 
+              type="text" 
+              [(ngModel)]="newTag" 
+              (keyup.enter)="addTag()"
+              placeholder="Add tags (comma-separated)"
+              class="form-control"
+            />
+            <button class="btn btn-secondary" (click)="addTag()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>File Management</h3>
+      
+      <div class="file-upload-section">
+        <div class="file-info" *ngIf="asset.fileName">
+          <div class="file-details">
+            <div class="file-detail-row">
+              <span class="label">File Name:</span>
+              <span class="value">{{ asset.fileName }}</span>
+            </div>
+            <div class="file-detail-row">
+              <span class="label">File Type:</span>
+              <span class="value">{{ asset.fileType }}</span>
+            </div>
+            <div class="file-detail-row">
+              <span class="label">File Size:</span>
+              <span class="value">{{ formatFileSize(asset.fileSizeBytes) }}</span>
+            </div>
+            <div class="file-detail-row" *ngIf="asset.fileUploadedDate">
+              <span class="label">Uploaded:</span>
+              <span class="value">{{ asset.fileUploadedDate | date:'short' }}</span>
+            </div>
+          </div>
+          
+          <div class="file-actions">
+            <button 
+              class="btn btn-secondary" 
+              (click)="downloadFile()"
+              *ngIf="!isEditableFileType()"
+            >
+              Download File
+            </button>
+            <button class="btn btn-danger" (click)="deleteFile()">Delete File</button>
+          </div>
+        </div>
+
+        <div class="upload-control">
+          <label for="file-input" class="file-label">
+            {{ asset.fileName ? 'Replace File' : 'Upload File' }}
+          </label>
+          <input 
+            type="file" 
+            id="file-input" 
+            (change)="onFileSelected($event)"
+            style="display: none"
+          />
+          <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+            Choose File
+          </button>
+          <span class="selected-file-name" *ngIf="selectedFile">
+            {{ selectedFile.name }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-section" *ngIf="isEditorVisible && isEditableFileType()">
+      <div class="editor-header">
+        <h3>File Editor</h3>
+        <button class="btn btn-primary" (click)="saveFileContent()">Save File Content</button>
+      </div>
+      <div id="monaco-editor" class="monaco-container"></div>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <p>Loading asset...</p>
+  </div>
+</div>

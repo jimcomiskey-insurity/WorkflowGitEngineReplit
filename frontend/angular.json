@@ -22,12 +22,20 @@
               "zone.js"
             ],
             "tsConfig": "tsconfig.json",
-            "assets": [],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "assets/monaco-editor"
+              }
+            ],
             "styles": [
               "src/styles.css"
             ],
             "scripts": [],
-            "allowedCommonJsDependencies": []
+            "allowedCommonJsDependencies": [
+              "monaco-editor"
+            ]
           }
         },
         "serve": {

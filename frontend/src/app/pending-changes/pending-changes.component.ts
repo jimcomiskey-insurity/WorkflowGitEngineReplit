@@ -4,6 +4,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Workflow, Phase, TaskItem } from '../services/workflow.service';
 import { WorkflowStateService } from '../services/workflow-state.service';
+import { AssetStateService } from '../services/asset-state.service';
+import { Asset } from '../services/asset.service';
 
 interface ExtendedPhase extends Phase {
   collapsed: boolean;
@@ -25,16 +27,18 @@ interface ExtendedWorkflow extends Workflow {
 export class PendingChangesComponent implements OnInit, OnDestroy {
   workflows: ExtendedWorkflow[] = [];
   filteredWorkflows: ExtendedWorkflow[] = [];
+  assets: Asset[] = [];
+  filteredAssets: Asset[] = [];
   selectedFilter: 'all' | 'added' | 'modified' | 'deleted' = 'all';
   totalChanges = 0;
   private destroy$ = new Subject<void>();
 
   constructor(
-    private workflowStateService: WorkflowStateService
+    private workflowStateService: WorkflowStateService,
+    private assetStateService: AssetStateService
   ) {}
 
   ngOnInit() {
-    // Subscribe to workflows - automatically updates when state changes
     this.workflowStateService.workflows$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -48,6 +52,20 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading workflows:', error);
+      }
+    });
+
+    this.assetStateService.assets$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (assets) => {
+        this.assets = assets.filter(a => this.hasAssetChanges(a));
+        
+        this.calculateTotalChanges();
+        this.applyFilter();
+      },
+      error: (error) => {
+        console.error('Error loading assets:', error);
       }
     });
   }
@@ -87,6 +105,12 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
     });
   }
 
+  hasAssetChanges(asset: Asset): boolean {
+    return asset.gitStatus !== undefined && 
+           asset.gitStatus !== null && 
+           asset.gitStatus !== 'none';
+  }
+
   countChanges(workflow: Workflow): number {
     let count = 0;
     
@@ -109,16 +133,22 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
   }
 
   calculateTotalChanges() {
-    this.totalChanges = this.workflows.reduce((sum, w) => sum + w.changeCount, 0);
+    const workflowChanges = this.workflows.reduce((sum, w) => sum + w.changeCount, 0);
+    const assetChanges = this.assets.filter(a => this.hasAssetChanges(a)).length;
+    this.totalChanges = workflowChanges + assetChanges;
   }
 
   applyFilter() {
     if (this.selectedFilter === 'all') {
       this.filteredWorkflows = this.workflows;
+      this.filteredAssets = this.assets;
     } else {
       this.filteredWorkflows = this.workflows
         .map(w => this.filterWorkflowByStatus(w, this.selectedFilter))
         .filter(w => w.hasChanges);
+      
+      this.filteredAssets = this.assets
+        .filter(a => a.gitStatus === this.selectedFilter);
     }
   }
 
@@ -193,5 +223,15 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       return '';
     }
     return count === 1 ? '1 change' : `${count} changes`;
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes) return '';
+    const kb = bytes / 1024;
+    if (kb < 1024) {
+      return `${kb.toFixed(1)} KB`;
+    }
+    const mb = kb / 1024;
+    return `${mb.toFixed(1)} MB`;
   }
 }
