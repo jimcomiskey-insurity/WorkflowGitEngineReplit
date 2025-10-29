@@ -272,3 +272,34 @@ textarea.form-control {
   font-size: 1.2rem;
   color: #cccccc;
 }
+
+.auto-save-indicator {
+  font-size: 0.9rem;
+  color: #f0ad4e;
+  font-weight: 500;
+  padding: 0.3rem 0.8rem;
+  background: rgba(240, 173, 78, 0.1);
+  border-radius: 3px;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.auto-save-indicator.saved {
+  color: #5cb85c;
+  background: rgba(92, 184, 92, 0.1);
+  animation: none;
+}
+
+.auto-save-indicator.error {
+  color: #d14343;
+  background: rgba(209, 67, 67, 0.1);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

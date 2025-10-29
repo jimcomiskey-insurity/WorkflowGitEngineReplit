@@ -115,7 +115,9 @@
     <div class="editor-section" *ngIf="isEditorVisible && isEditableFileType()">
       <div class="editor-header">
         <h3>File Editor</h3>
-        <button class="btn btn-primary" (click)="saveFileContent()">Save File Content</button>
+        <span class="auto-save-indicator" *ngIf="isSaving">Saving...</span>
+        <span class="auto-save-indicator error" *ngIf="!isSaving && saveError">Save failed, retrying...</span>
+        <span class="auto-save-indicator saved" *ngIf="!isSaving && !saveError && editorInitialized">Changes auto-saved</span>
       </div>
       <div id="monaco-editor" class="monaco-container"></div>
     </div>

@@ -7,7 +7,7 @@ import { GitStateService } from '../services/git-state.service';
 import { GitEventService } from '../services/git-event.service';
 import { Asset } from '../services/asset.service';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import loader from '@monaco-editor/loader';
 
 type Monaco = typeof import('monaco-editor');
@@ -34,10 +34,18 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   fileContent = '';
   isEditorVisible = false;
   isLoading = false;
+  isSaving = false;
+  saveError = false;
   private destroy$ = new Subject<void>();
   private editor: any = null;
   private editorInitialized = false;
   private monaco: Monaco | null = null;
+  private contentChange$ = new Subject<string>();
+  private currentBranch: string = '';
+  private pendingSaveContent: string | null = null;
+  private lastSavedContent: string = '';
+  private latestDesiredContent: string = '';
+  private retryTimeoutId: any = null;
 
   constructor(
     private assetStateService: AssetStateService,
@@ -55,6 +63,32 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loadAsset();
       }
     });
+
+    // Subscribe to branch changes to reload content
+    this.gitStateService.gitStatus$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(status => {
+      if (status && status.currentBranch && status.currentBranch !== this.currentBranch) {
+        const previousBranch = this.currentBranch;
+        this.currentBranch = status.currentBranch;
+        
+        // Reload asset content when branch changes (but not on initial load)
+        if (previousBranch && !this.isNewAsset) {
+          console.log(`Branch changed from ${previousBranch} to ${this.currentBranch}, reloading asset...`);
+          this.loadAsset();
+        }
+      }
+    });
+
+    // Set up auto-save with debouncing (save 1 second after user stops typing)
+    this.contentChange$.pipe(
+      debounceTime(1000),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(content => {
+      this.latestDesiredContent = content; // Always track the latest content
+      this.autoSaveFileContent(content);
+    });
   }
 
   ngAfterViewInit() {
@@ -70,6 +104,9 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.destroy$.complete();
     if (this.editor) {
       this.editor.dispose();
+    }
+    if (this.retryTimeoutId) {
+      clearTimeout(this.retryTimeoutId);
     }
   }
 
@@ -103,6 +140,8 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.assetStateService.getFileContent(this.asset.id).subscribe({
       next: (response) => {
         this.fileContent = response.content;
+        this.lastSavedContent = response.content; // Track what's saved
+        this.latestDesiredContent = response.content; // Initialize desired content
         this.isEditorVisible = true;
         
         setTimeout(() => {
@@ -140,6 +179,12 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         lineNumbers: 'on',
         renderWhitespace: 'selection',
         tabSize: 2
+      });
+
+      // Listen for content changes and trigger auto-save
+      this.editor.onDidChangeModelContent(() => {
+        const content = this.editor.getValue();
+        this.contentChange$.next(content);
       });
 
       this.editorInitialized = true;
@@ -214,21 +259,76 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  saveFileContent() {
-    if (!this.editor || !this.asset.id) {
+  private autoSaveFileContent(content: string) {
+    if (!this.asset.id) {
       return;
     }
 
-    const content = this.editor.getValue();
+    // Skip if content hasn't changed from last saved version
+    if (content === this.lastSavedContent) {
+      this.saveError = false; // Clear error if content is now saved
+      return;
+    }
+
+    // If save is in progress, queue this content for later
+    if (this.isSaving) {
+      this.pendingSaveContent = content;
+      this.latestDesiredContent = content; // Update latest desired
+      return;
+    }
+
+    this.isSaving = true;
+    this.saveError = false;
+    console.log('Auto-saving file content...');
     
     this.assetStateService.updateFileContent(this.asset.id, content).subscribe({
       next: () => {
-        alert('File content saved successfully');
+        console.log('File content auto-saved successfully');
+        this.lastSavedContent = content;
+        this.isSaving = false;
+        this.saveError = false;
         this.gitEventService.emitCommit();
+
+        // Clear any pending retry
+        if (this.retryTimeoutId) {
+          clearTimeout(this.retryTimeoutId);
+          this.retryTimeoutId = null;
+        }
+
+        // If there's pending content that's different, save it now
+        if (this.pendingSaveContent && this.pendingSaveContent !== this.lastSavedContent) {
+          const pending = this.pendingSaveContent;
+          this.pendingSaveContent = null;
+          this.autoSaveFileContent(pending);
+        } else {
+          this.pendingSaveContent = null;
+        }
       },
       error: (error) => {
-        console.error('Error saving file content:', error);
-        alert('Failed to save file content');
+        console.error('Error auto-saving file content:', error);
+        this.isSaving = false;
+        this.saveError = true;
+        
+        // Update latest desired with most recent content
+        if (this.pendingSaveContent) {
+          this.latestDesiredContent = this.pendingSaveContent;
+        }
+        this.pendingSaveContent = null;
+        
+        // Clear any existing retry timeout
+        if (this.retryTimeoutId) {
+          clearTimeout(this.retryTimeoutId);
+        }
+        
+        // Retry after 2 seconds using the latest desired content
+        this.retryTimeoutId = setTimeout(() => {
+          this.retryTimeoutId = null;
+          console.log('Retrying auto-save after error...');
+          // Use the latest desired content, not the snapshot
+          if (this.latestDesiredContent !== this.lastSavedContent) {
+            this.autoSaveFileContent(this.latestDesiredContent);
+          }
+        }, 2000);
       }
     });
   }
