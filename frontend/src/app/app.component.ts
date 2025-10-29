@@ -3,9 +3,10 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, map } from 'rxjs/operators';
 import { WorkflowStateService } from './services/workflow-state.service';
 import { UserService } from './services/user.service';
+import { GitStateService } from './services/git-state.service';
 import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
 
 @Component({
@@ -337,7 +338,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     private workflowStateService: WorkflowStateService,
-    private userService: UserService
+    private userService: UserService,
+    private gitStateService: GitStateService
   ) {
     this.currentUser = this.userService.getCurrentUser();
     this.availableUsers = this.userService.getAvailableUsers();
@@ -348,10 +350,20 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Subscribe to pending changes count from WorkflowStateService
-    // This automatically updates when workflows change
-    this.workflowStateService.pendingChangesCount$
-      .pipe(takeUntil(this.destroy$))
+    // Subscribe to Git status to count all pending changes (workflows + assets + other files)
+    // This automatically updates when any file changes
+    this.gitStateService.gitStatus$
+      .pipe(
+        takeUntil(this.destroy$),
+        map(status => {
+          if (!status) return 0;
+          // Count all changed files: added + modified + removed + untracked
+          return (status.added?.length || 0) + 
+                 (status.modified?.length || 0) + 
+                 (status.removed?.length || 0) + 
+                 (status.untracked?.length || 0);
+        })
+      )
       .subscribe({
         next: (count) => {
           this.pendingChangesCount = count;

@@ -117,7 +117,7 @@
         <h3>File Editor</h3>
         <span class="auto-save-indicator" *ngIf="isSaving">Saving...</span>
         <span class="auto-save-indicator error" *ngIf="!isSaving && saveError">Save failed, retrying...</span>
-        <span class="auto-save-indicator saved" *ngIf="!isSaving && !saveError && editorInitialized">Changes auto-saved</span>
+        <span class="auto-save-indicator saved" *ngIf="!isSaving && !saveError && hasUserEdited">Changes auto-saved</span>
       </div>
       <div id="monaco-editor" class="monaco-container"></div>
     </div>

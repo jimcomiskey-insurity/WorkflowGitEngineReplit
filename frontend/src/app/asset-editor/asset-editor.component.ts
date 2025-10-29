@@ -36,6 +36,7 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   isLoading = false;
   isSaving = false;
   saveError = false;
+  hasUserEdited = false;
   private destroy$ = new Subject<void>();
   private editor: any = null;
   private editorInitialized = false;
@@ -87,6 +88,13 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       takeUntil(this.destroy$)
     ).subscribe(content => {
       this.latestDesiredContent = content; // Always track the latest content
+      
+      // Only mark as edited if content is different from last saved version
+      // (This prevents marking as edited during initial load when editor value is set programmatically)
+      if (content !== this.lastSavedContent) {
+        this.hasUserEdited = true;
+      }
+      
       this.autoSaveFileContent(content);
     });
   }
@@ -142,6 +150,7 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         this.fileContent = response.content;
         this.lastSavedContent = response.content; // Track what's saved
         this.latestDesiredContent = response.content; // Initialize desired content
+        this.hasUserEdited = false; // Reset edit flag when loading new content
         this.isEditorVisible = true;
         
         setTimeout(() => {
