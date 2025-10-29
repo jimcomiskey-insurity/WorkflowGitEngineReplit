@@ -44,12 +44,22 @@ export interface CommitInfo {
   changes: WorkflowChange[];
 }
 
+export interface AssetChange {
+  assetId: string;
+  assetName: string;
+  changeType: string;
+  sourceAsset?: any;
+  targetAsset?: any;
+  fileContentChanged: boolean;
+}
+
 export interface BranchComparison {
   sourceBranch: string;
   targetBranch: string;
   commitsAhead: number;
   commitsBehind: number;
   changes: WorkflowChange[];
+  assetChanges: AssetChange[];
   commits: CommitInfo[];
 }
 

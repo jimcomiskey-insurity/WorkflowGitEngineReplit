@@ -9,6 +9,15 @@ export interface WorkflowChange {
   targetWorkflow?: any;
 }
 
+export interface AssetChange {
+  assetId: string;
+  assetName: string;
+  changeType: string;
+  sourceAsset?: any;
+  targetAsset?: any;
+  fileContentChanged: boolean;
+}
+
 @Component({
   selector: 'app-comparison-viewer',
   standalone: true,
@@ -18,10 +27,12 @@ export interface WorkflowChange {
 })
 export class ComparisonViewerComponent {
   @Input() changes: WorkflowChange[] = [];
+  @Input() assetChanges: AssetChange[] = [];
   @Input() title: string = 'Changes';
-  @Input() emptyMessage: string = 'No workflow changes';
+  @Input() emptyMessage: string = 'No changes';
   
   expandedChanges: Set<string> = new Set();
+  expandedAssets: Set<string> = new Set();
 
   toggleChangeDetails(workflowKey: string) {
     if (this.expandedChanges.has(workflowKey)) {
@@ -33,6 +44,46 @@ export class ComparisonViewerComponent {
 
   isExpanded(workflowKey: string): boolean {
     return this.expandedChanges.has(workflowKey);
+  }
+
+  toggleAssetDetails(assetId: string) {
+    if (this.expandedAssets.has(assetId)) {
+      this.expandedAssets.delete(assetId);
+    } else {
+      this.expandedAssets.add(assetId);
+    }
+  }
+
+  isAssetExpanded(assetId: string): boolean {
+    return this.expandedAssets.has(assetId);
+  }
+
+  getAssetFieldChanges(sourceAsset: any, targetAsset: any): any[] {
+    const changes: any[] = [];
+
+    if (sourceAsset.name !== targetAsset.name) {
+      changes.push({ field: 'Name', oldValue: targetAsset.name, newValue: sourceAsset.name });
+    }
+
+    if (sourceAsset.description !== targetAsset.description) {
+      changes.push({ field: 'Description', oldValue: targetAsset.description || '(empty)', newValue: sourceAsset.description || '(empty)' });
+    }
+
+    const oldTags = (targetAsset.tags || []).join(', ');
+    const newTags = (sourceAsset.tags || []).join(', ');
+    if (oldTags !== newTags) {
+      changes.push({ field: 'Tags', oldValue: oldTags || '(none)', newValue: newTags || '(none)' });
+    }
+
+    if (sourceAsset.fileName !== targetAsset.fileName) {
+      changes.push({ field: 'File Name', oldValue: targetAsset.fileName || '(none)', newValue: sourceAsset.fileName || '(none)' });
+    }
+
+    if (sourceAsset.fileType !== targetAsset.fileType) {
+      changes.push({ field: 'File Type', oldValue: targetAsset.fileType || '(none)', newValue: sourceAsset.fileType || '(none)' });
+    }
+
+    return changes;
   }
 
   getTotalTasks(workflow: any): number {

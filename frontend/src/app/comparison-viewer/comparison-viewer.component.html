@@ -1,6 +1,11 @@
 <div class="comparison-section">
   <h3>{{ title }}</h3>
   
+  <!-- Workflow Changes -->
+  <div class="section-header" *ngIf="changes.length > 0 || assetChanges.length > 0">
+    <h4>Workflow Changes ({{ changes.length }})</h4>
+  </div>
+  
   <div class="changes-list" *ngIf="changes.length > 0">
     <div class="change-item" *ngFor="let change of changes" [attr.data-change-type]="change.changeType">
       <div class="change-header" (click)="toggleChangeDetails(change.workflowKey)">
@@ -218,7 +223,114 @@
     </div>
   </div>
 
-  <div class="empty-changes" *ngIf="changes.length === 0">
+  <!-- Asset Changes -->
+  <div class="section-header" *ngIf="assetChanges.length > 0">
+    <h4>Asset Changes ({{ assetChanges.length }})</h4>
+  </div>
+  
+  <div class="changes-list" *ngIf="assetChanges.length > 0">
+    <div class="change-item asset-change" *ngFor="let change of assetChanges" [attr.data-change-type]="change.changeType">
+      <div class="change-header" (click)="toggleAssetDetails(change.assetId)">
+        <div class="change-info">
+          <span class="expand-icon">{{ isAssetExpanded(change.assetId) ? '▼' : '▶' }}</span>
+          <span class="change-badge" [ngClass]="change.changeType">{{ change.changeType | titlecase }}</span>
+          <h4>{{ change.assetName }}</h4>
+          <span class="asset-type" *ngIf="change.sourceAsset || change.targetAsset">
+            {{ (change.sourceAsset || change.targetAsset)?.fileType || 'Asset' }}
+          </span>
+          <span class="file-content-indicator" *ngIf="change.fileContentChanged">
+            📝 File content changed
+          </span>
+        </div>
+      </div>
+
+      <!-- Detailed asset comparison view -->
+      <div class="change-details-expanded" *ngIf="isAssetExpanded(change.assetId)">
+        
+        <!-- ADDED ASSET -->
+        <div *ngIf="change.changeType === 'added' && change.sourceAsset" class="added-asset-details">
+          <div class="detail-section">
+            <h5>New Asset Details</h5>
+            <div class="asset-info">
+              <div class="info-row">
+                <strong>Description:</strong> {{ change.sourceAsset.description || '(none)' }}
+              </div>
+              <div class="info-row" *ngIf="change.sourceAsset.tags && change.sourceAsset.tags.length > 0">
+                <strong>Tags:</strong> {{ change.sourceAsset.tags.join(', ') }}
+              </div>
+              <div class="info-row" *ngIf="change.sourceAsset.fileName">
+                <strong>File:</strong> {{ change.sourceAsset.fileName }} ({{ change.sourceAsset.fileType }})
+              </div>
+              <div class="info-row" *ngIf="change.sourceAsset.fileSizeBytes">
+                <strong>Size:</strong> {{ change.sourceAsset.fileSizeBytes }} bytes
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DELETED ASSET -->
+        <div *ngIf="change.changeType === 'deleted' && change.targetAsset" class="deleted-asset-details">
+          <div class="detail-section">
+            <h5>Removed Asset Details</h5>
+            <div class="asset-info">
+              <div class="info-row">
+                <strong>Description:</strong> {{ change.targetAsset.description || '(none)' }}
+              </div>
+              <div class="info-row" *ngIf="change.targetAsset.tags && change.targetAsset.tags.length > 0">
+                <strong>Tags:</strong> {{ change.targetAsset.tags.join(', ') }}
+              </div>
+              <div class="info-row" *ngIf="change.targetAsset.fileName">
+                <strong>File:</strong> {{ change.targetAsset.fileName }} ({{ change.targetAsset.fileType }})
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODIFIED ASSET -->
+        <div *ngIf="change.changeType === 'modified'" class="modified-asset-details">
+          
+          <!-- Asset metadata changes -->
+          <div class="detail-section" *ngIf="getAssetFieldChanges(change.sourceAsset, change.targetAsset).length > 0">
+            <h5>Metadata Changes</h5>
+            <div class="field-comparison" *ngFor="let fieldChange of getAssetFieldChanges(change.sourceAsset, change.targetAsset)">
+              <div class="comparison-row">
+                <div class="field-name">{{ fieldChange.field }}</div>
+                <div class="value-comparison">
+                  <div class="old-value">
+                    <span class="label">Before:</span>
+                    <span class="value">{{ fieldChange.oldValue }}</span>
+                  </div>
+                  <div class="arrow">→</div>
+                  <div class="new-value">
+                    <span class="label">After:</span>
+                    <span class="value">{{ fieldChange.newValue }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- File content changes indicator -->
+          <div class="detail-section" *ngIf="change.fileContentChanged">
+            <h5>File Content</h5>
+            <div class="file-content-change-notice">
+              <span class="notice-icon">📝</span>
+              <p>The file content has been modified. The actual file changes can be viewed in the Pending Changes view or using a diff viewer.</p>
+            </div>
+          </div>
+
+          <!-- No changes notice (should not happen, but defensive) -->
+          <div class="detail-section" *ngIf="getAssetFieldChanges(change.sourceAsset, change.targetAsset).length === 0 && !change.fileContentChanged">
+            <p class="no-changes-notice">No detectable changes (metadata and file content appear identical)</p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-changes" *ngIf="changes.length === 0 && assetChanges.length === 0">
     <p>{{ emptyMessage }}</p>
   </div>
 </div>
