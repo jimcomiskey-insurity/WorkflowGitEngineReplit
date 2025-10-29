@@ -1787,6 +1787,107 @@ public class GitService
         return json1 == json2;
     }
 
+    private void DetectAssetFileContentConflicts(Repository repo, Branch sourceBranch, Branch targetBranch, MergeConflictInfo conflictInfo)
+    {
+        // Store current HEAD for cleanup
+        var originalHead = repo.Head;
+        
+        try
+        {
+            // Checkout target branch
+            Commands.Checkout(repo, targetBranch);
+            
+            // Attempt merge without committing
+            var signature = new Signature("System", "system@workflow.local", DateTimeOffset.Now);
+            var mergeResult = repo.Merge(sourceBranch.Tip, signature, new MergeOptions
+            {
+                FailOnConflict = false,
+                CommitOnSuccess = false,
+                FileConflictStrategy = CheckoutFileConflictStrategy.Merge
+            });
+            
+            // Check for conflicts in asset files
+            if (mergeResult.Status == MergeStatus.Conflicts)
+            {
+                var userRepoPath = repo.Info.WorkingDirectory;
+                var assetFilesDir = Path.Combine(userRepoPath, AssetFilesDirectory);
+                
+                foreach (var conflict in repo.Index.Conflicts)
+                {
+                    var conflictPath = conflict.Ancestor?.Path ?? conflict.Ours?.Path ?? conflict.Theirs?.Path;
+                    
+                    if (conflictPath == null || !conflictPath.StartsWith(AssetFilesDirectory + "/"))
+                    {
+                        continue;
+                    }
+                    
+                    // Extract asset ID from path: asset-files/{assetId}/{filename}
+                    var pathParts = conflictPath.Split('/');
+                    if (pathParts.Length < 3)
+                    {
+                        continue;
+                    }
+                    
+                    if (!Guid.TryParse(pathParts[1], out var assetId))
+                    {
+                        continue;
+                    }
+                    
+                    var fileName = pathParts[2];
+                    var fileExtension = Path.GetExtension(fileName).TrimStart('.').ToLower();
+                    
+                    // Only include editable file types
+                    if (!new[] { "json", "xml", "xslt", "txt" }.Contains(fileExtension))
+                    {
+                        continue;
+                    }
+                    
+                    // Read the conflicted content from the working directory
+                    var filePath = Path.Combine(userRepoPath, conflictPath);
+                    if (!File.Exists(filePath))
+                    {
+                        continue;
+                    }
+                    
+                    var conflictedContent = File.ReadAllText(filePath);
+                    
+                    // Check if file has Git conflict markers
+                    var hasConflictMarkers = conflictedContent.Contains("<<<<<<<") && 
+                                            conflictedContent.Contains("=======") && 
+                                            conflictedContent.Contains(">>>>>>>");
+                    
+                    // Get asset name from metadata
+                    var assets = ReadAssets(GetUserIdFromPath(userRepoPath));
+                    var asset = assets.Assets.FirstOrDefault(a => a.Id == assetId);
+                    var assetName = asset?.Name ?? $"Asset {assetId}";
+                    
+                    conflictInfo.AssetFileContentConflicts.Add(new AssetFileContentConflict
+                    {
+                        AssetId = assetId,
+                        AssetName = assetName,
+                        FileName = fileName,
+                        FileType = fileExtension,
+                        ConflictedContent = conflictedContent,
+                        HasConflictMarkers = hasConflictMarkers
+                    });
+                }
+            }
+        }
+        finally
+        {
+            // Reset to clean state - abort the merge
+            repo.Reset(ResetMode.Hard, originalHead.Tip);
+            Commands.Checkout(repo, originalHead);
+        }
+    }
+    
+    private string GetUserIdFromPath(string repoPath)
+    {
+        // Extract user ID from repository path: /path/to/user-repos/{userId}
+        var parts = repoPath.TrimEnd(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar);
+        return parts[^1];
+    }
+
     public void MergeBranch(string userId, string sourceBranch, string targetBranch, string message)
     {
         EnsureUserRepository(userId);
@@ -1981,10 +2082,14 @@ public class GitService
             }
         }
 
+        // Detect asset file content conflicts
+        DetectAssetFileContentConflicts(repo, sourceBranchRef, targetBranchRef, conflictInfo);
+
         conflictInfo.TotalConflicts = conflictInfo.WorkflowConflicts.Sum(wc => 
             wc.FieldConflicts.Count + 
             wc.PhaseConflicts.Sum(pc => pc.FieldConflicts.Count + pc.TaskConflicts.Sum(tc => tc.FieldConflicts.Count)))
-            + conflictInfo.DeletionConflicts.Count;
+            + conflictInfo.DeletionConflicts.Count
+            + conflictInfo.AssetFileContentConflicts.Count;
 
         return conflictInfo;
     }

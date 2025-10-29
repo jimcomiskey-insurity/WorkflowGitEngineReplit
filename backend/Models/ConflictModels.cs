@@ -4,6 +4,8 @@ public class MergeConflictInfo
 {
     public List<WorkflowConflict> WorkflowConflicts { get; set; } = new();
     public List<DeletionConflict> DeletionConflicts { get; set; } = new();
+    public List<AssetConflict> AssetConflicts { get; set; } = new();
+    public List<AssetFileContentConflict> AssetFileContentConflicts { get; set; } = new();
     public string SourceBranch { get; set; } = string.Empty;
     public string TargetBranch { get; set; } = string.Empty;
     public int TotalConflicts { get; set; }
@@ -80,7 +82,32 @@ public class ConflictResolution
     public ConflictObjectType? ObjectType { get; set; }
 }
 
+public class AssetConflict
+{
+    public Guid AssetId { get; set; }
+    public string AssetName { get; set; } = string.Empty;
+    public List<FieldConflict> FieldConflicts { get; set; } = new();
+}
+
+public class AssetFileContentConflict
+{
+    public Guid AssetId { get; set; }
+    public string AssetName { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public string FileType { get; set; } = string.Empty;
+    public string ConflictedContent { get; set; } = string.Empty;
+    public bool HasConflictMarkers { get; set; }
+    public string? Resolution { get; set; }
+}
+
 public class ResolveConflictsRequest
 {
     public List<ConflictResolution> Resolutions { get; set; } = new();
+    public List<AssetFileContentResolution> AssetFileResolutions { get; set; } = new();
+}
+
+public class AssetFileContentResolution
+{
+    public Guid AssetId { get; set; }
+    public string ResolvedContent { get; set; } = string.Empty;
 }
