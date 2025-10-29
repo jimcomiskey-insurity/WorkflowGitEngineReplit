@@ -182,7 +182,10 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     if (this.isNewAsset) {
-      this.assetStateService.createAsset(this.asset).subscribe({
+      const assetToCreate = { ...this.asset };
+      delete (assetToCreate as any).id;
+      
+      this.assetStateService.createAsset(assetToCreate).subscribe({
         next: (createdAsset) => {
           if (this.selectedFile) {
             this.uploadFile(createdAsset.id);
