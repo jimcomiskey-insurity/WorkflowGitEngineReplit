@@ -716,25 +716,38 @@ public class GitService
             phaseModified = true;
         }
 
+        // If task count changed, the phase is modified
+        if (current.Tasks.Count != previous.Tasks.Count)
+        {
+            phaseModified = true;
+        }
         // Check if tasks have been reordered by comparing their positions
-        bool tasksReordered = false;
-        if (current.Tasks.Count == previous.Tasks.Count)
+        else if (current.Tasks.Count > 0)
         {
             for (int i = 0; i < current.Tasks.Count; i++)
             {
                 var currentTaskId = current.Tasks[i].TaskId;
                 var previousTaskId = previous.Tasks[i].TaskId;
                 
-                if (!string.IsNullOrEmpty(currentTaskId) && !string.IsNullOrEmpty(previousTaskId) && 
-                    currentTaskId != previousTaskId)
+                // Compare TaskIds if both are available
+                if (!string.IsNullOrEmpty(currentTaskId) && !string.IsNullOrEmpty(previousTaskId))
                 {
-                    tasksReordered = true;
+                    if (currentTaskId != previousTaskId)
+                    {
+                        phaseModified = true;
+                        break;
+                    }
+                }
+                // Fall back to TaskName if TaskIds are missing (legacy data)
+                else if (current.Tasks[i].TaskName != previous.Tasks[i].TaskName)
+                {
+                    phaseModified = true;
                     break;
                 }
             }
         }
 
-        if (phaseModified || tasksReordered)
+        if (phaseModified)
         {
             current.GitStatus = "modified";
         }
