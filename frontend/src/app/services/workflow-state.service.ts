@@ -78,21 +78,21 @@ export class WorkflowStateService {
   }
 
   /**
-   * Count workflows with pending changes (added, modified, or removed)
+   * Count workflows with pending changes (added, modified, or deleted)
    */
   private countPendingChanges(workflows: Workflow[]): number {
     return workflows.filter(w => 
       w.gitStatus === 'added' || 
       w.gitStatus === 'modified' || 
-      w.gitStatus === 'removed' ||
+      w.gitStatus === 'deleted' ||
       (w.phases && w.phases.some(p => 
         p.gitStatus === 'added' || 
         p.gitStatus === 'modified' || 
-        p.gitStatus === 'removed' ||
+        p.gitStatus === 'deleted' ||
         (p.tasks && p.tasks.some(t =>
           t.gitStatus === 'added' ||
           t.gitStatus === 'modified' ||
-          t.gitStatus === 'removed'
+          t.gitStatus === 'deleted'
         ))
       ))
     ).length;
