@@ -81,7 +81,7 @@ TestBed.configureTestingModule({
 
 ### UI/UX Decisions
 
-The frontend features a modern dark theme with a redesigned layout, including a persistent top header, sidebar navigation, a card-grid for workflows, and dedicated views for Version Control and Pending Changes. Key elements include workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes.
+The frontend features a modern dark theme with a redesigned layout, including a persistent top header, sidebar navigation, a card-grid for workflows, and dedicated views for Version Control and Pending Changes. Key elements include workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes. The header includes an "API Docs" link that provides quick access to the backend's Swagger UI documentation in a new tab.
 
 ### Technical Implementations
 
