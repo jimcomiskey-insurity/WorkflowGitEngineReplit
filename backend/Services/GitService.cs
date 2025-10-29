@@ -709,7 +709,32 @@ public class GitService
 
     private void ComparePhase(Phase current, Phase previous)
     {
+        bool phaseModified = false;
+
         if (current.PhaseName != previous.PhaseName || current.PhaseOrder != previous.PhaseOrder)
+        {
+            phaseModified = true;
+        }
+
+        // Check if tasks have been reordered by comparing their positions
+        bool tasksReordered = false;
+        if (current.Tasks.Count == previous.Tasks.Count)
+        {
+            for (int i = 0; i < current.Tasks.Count; i++)
+            {
+                var currentTaskId = current.Tasks[i].TaskId;
+                var previousTaskId = previous.Tasks[i].TaskId;
+                
+                if (!string.IsNullOrEmpty(currentTaskId) && !string.IsNullOrEmpty(previousTaskId) && 
+                    currentTaskId != previousTaskId)
+                {
+                    tasksReordered = true;
+                    break;
+                }
+            }
+        }
+
+        if (phaseModified || tasksReordered)
         {
             current.GitStatus = "modified";
         }
