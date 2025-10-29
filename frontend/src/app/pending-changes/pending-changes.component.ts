@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Workflow, Phase, TaskItem } from '../services/workflow.service';
@@ -35,7 +36,8 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
 
   constructor(
     private workflowStateService: WorkflowStateService,
-    private assetStateService: AssetStateService
+    private assetStateService: AssetStateService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -233,5 +235,19 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
     }
     const mb = kb / 1024;
     return `${mb.toFixed(1)} MB`;
+  }
+
+  isEditableAssetFile(asset: Asset): boolean {
+    if (!asset.fileName) return false;
+    const extension = asset.fileName.split('.').pop()?.toLowerCase();
+    return ['xml', 'json', 'xslt', 'txt'].includes(extension || '');
+  }
+
+  canViewDiff(asset: Asset): boolean {
+    return asset.gitStatus === 'modified' && this.isEditableAssetFile(asset);
+  }
+
+  viewAssetDiff(assetId: string) {
+    this.router.navigate(['/assets/diff', assetId]);
   }
 }

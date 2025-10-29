@@ -127,6 +127,11 @@ export class AssetStateService {
     return this.http.get<{ content: string }>(`${this.apiUrl}/${id}/file/content?userId=${userId}`);
   }
 
+  public getCommittedFileContent(id: string): Observable<{ content: string }> {
+    const userId = this.userService.getCurrentUser();
+    return this.http.get<{ content: string }>(`${this.apiUrl}/${id}/file/content/committed?userId=${userId}`);
+  }
+
   public updateFileContent(id: string, content: string): Observable<Asset> {
     console.log('[AssetStateService] Updating file content for asset:', id);
     const userId = this.userService.getCurrentUser();

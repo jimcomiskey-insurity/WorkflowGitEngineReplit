@@ -1,0 +1,27 @@
+<div class="diff-viewer-container">
+  <div class="header">
+    <h2>Compare Changes: {{ asset?.name }}</h2>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="close()">Close</button>
+    </div>
+  </div>
+
+  <div class="legend" *ngIf="!isLoading">
+    <div class="legend-item">
+      <span class="legend-label">Left:</span>
+      <span class="legend-value">Last Committed Version</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-label">Right:</span>
+      <span class="legend-value">Current Working Version</span>
+    </div>
+  </div>
+
+  <div class="content" *ngIf="!isLoading">
+    <div id="monaco-diff-editor" class="diff-editor-container"></div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <p>Loading file comparison...</p>
+  </div>
+</div>

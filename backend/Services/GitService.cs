@@ -817,6 +817,33 @@ public class GitService
         return File.ReadAllBytes(filePath);
     }
 
+    public byte[]? GetAssetFileContentFromCommit(string userId, Guid assetId, string fileName)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        using var repo = new Repository(userRepoPath);
+        var headCommit = repo.Head.Tip;
+        
+        if (headCommit == null)
+        {
+            return null;
+        }
+
+        var assetFilePath = $"{AssetFilesDirectory}/{assetId}/{fileName}";
+        var fileEntry = headCommit[assetFilePath];
+        
+        if (fileEntry == null)
+        {
+            return null;
+        }
+
+        var blob = (Blob)fileEntry.Target;
+        using var memoryStream = new MemoryStream();
+        blob.GetContentStream().CopyTo(memoryStream);
+        return memoryStream.ToArray();
+    }
+
     public void DeleteAssetFileContent(string userId, Guid assetId, string fileName)
     {
         EnsureUserRepository(userId);

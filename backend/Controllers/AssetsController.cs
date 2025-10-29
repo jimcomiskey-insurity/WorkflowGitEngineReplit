@@ -172,6 +172,28 @@ public class AssetsController : ControllerBase
         return Ok(new { content = contentAsString });
     }
 
+    [HttpGet("{id}/file/content/committed")]
+    public IActionResult GetCommittedFileContent(Guid id, [FromQuery] string userId = "default")
+    {
+        var assets = _gitService.ReadAssets(userId);
+        var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
+        
+        if (asset == null || asset.FileName == null)
+        {
+            return NotFound();
+        }
+
+        var fileContent = _gitService.GetAssetFileContentFromCommit(userId, id, asset.FileName);
+        
+        if (fileContent == null)
+        {
+            return NotFound("Committed file not found");
+        }
+
+        var contentAsString = System.Text.Encoding.UTF8.GetString(fileContent);
+        return Ok(new { content = contentAsString });
+    }
+
     [HttpPut("{id}/file/content")]
     public IActionResult UpdateFileContent(Guid id, [FromBody] FileContentUpdate update, [FromQuery] string userId = "default")
     {

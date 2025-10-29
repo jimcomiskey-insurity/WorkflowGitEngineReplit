@@ -31,6 +31,10 @@ export const routes: Routes = [
     loadComponent: () => import('./asset-editor/asset-editor.component').then(m => m.AssetEditorComponent)
   },
   {
+    path: 'assets/diff/:id',
+    loadComponent: () => import('./asset-diff-viewer/asset-diff-viewer.component').then(m => m.AssetDiffViewerComponent)
+  },
+  {
     path: 'version-control',
     loadComponent: () => import('./version-control/version-control.component').then(m => m.VersionControlComponent)
   },
