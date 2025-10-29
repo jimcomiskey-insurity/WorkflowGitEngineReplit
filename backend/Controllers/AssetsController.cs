@@ -41,7 +41,7 @@ public class AssetsController : ControllerBase
     {
         var assets = _gitService.ReadAssets(userId);
         
-        if (asset.Id == Guid.Empty)
+        if (asset.Id == null || asset.Id == Guid.Empty)
         {
             asset.Id = Guid.NewGuid();
         }

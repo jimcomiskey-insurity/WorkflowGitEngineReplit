@@ -628,7 +628,7 @@ public class GitService
 
         var existingAssetList = ReadAssetListIfExists(userRepoPath);
         var existingIds = existingAssetList?.AssetIds ?? new List<Guid>();
-        var newIds = assets.Assets.Select(a => a.Id).ToList();
+        var newIds = assets.Assets.Where(a => a.Id.HasValue).Select(a => a.Id!.Value).ToList();
 
         var deletedIds = existingIds.Except(newIds).ToList();
         foreach (var deletedId in deletedIds)
@@ -642,7 +642,10 @@ public class GitService
 
         foreach (var asset in assets.Assets)
         {
-            WriteAssetFile(userRepoPath, asset);
+            if (asset.Id.HasValue)
+            {
+                WriteAssetFile(userRepoPath, asset);
+            }
         }
 
         _logger.LogInformation($"Written {assets.Assets.Count} assets in split-file format for user {userId}");
@@ -652,7 +655,7 @@ public class GitService
     {
         foreach (var asset in assets.Assets)
         {
-            if (asset.Id == Guid.Empty)
+            if (!asset.Id.HasValue || asset.Id == Guid.Empty)
             {
                 asset.Id = Guid.NewGuid();
             }
@@ -739,10 +742,15 @@ public class GitService
 
     private void WriteAssetFile(string userRepoPath, Asset asset)
     {
+        if (!asset.Id.HasValue)
+        {
+            throw new InvalidOperationException("Asset must have an Id before writing");
+        }
+        
         var assetsDir = GetAssetsDirectoryPath(userRepoPath);
         Directory.CreateDirectory(assetsDir);
         
-        var assetFilePath = GetAssetFilePath(userRepoPath, asset.Id);
+        var assetFilePath = GetAssetFilePath(userRepoPath, asset.Id.Value);
         var options = new JsonSerializerOptions { WriteIndented = true };
         var json = JsonSerializer.Serialize(asset, options);
         
