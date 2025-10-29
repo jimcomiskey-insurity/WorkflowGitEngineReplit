@@ -105,11 +105,13 @@ export class AssetEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         this.fileContent = response.content;
         this.isEditorVisible = true;
         
-        if (!this.editorInitialized) {
-          this.initializeEditor();
-        } else if (this.editor) {
-          this.editor.setValue(this.fileContent);
-        }
+        setTimeout(() => {
+          if (!this.editorInitialized) {
+            this.initializeEditor();
+          } else if (this.editor) {
+            this.editor.setValue(this.fileContent);
+          }
+        }, 100);
       },
       error: (error) => {
         console.error('Error loading file content:', error);
