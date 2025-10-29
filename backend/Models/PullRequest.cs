@@ -39,6 +39,8 @@ public class BranchComparison
     public List<WorkflowChange> Changes { get; set; } = new();
     public List<AssetChange> AssetChanges { get; set; } = new();
     public List<CommitInfo> Commits { get; set; } = new();
+    public string? SourceCommitSha { get; set; }
+    public string? TargetCommitSha { get; set; }
 }
 
 public class WorkflowChange

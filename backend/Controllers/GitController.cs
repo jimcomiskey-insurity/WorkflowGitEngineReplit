@@ -142,6 +142,27 @@ public class GitController : ControllerBase
         }
     }
 
+    [HttpGet("file-at-commit")]
+    public IActionResult GetFileAtCommit(
+        [FromQuery] string userId,
+        [FromQuery] string commitSha,
+        [FromQuery] string filePath)
+    {
+        try
+        {
+            var content = _gitService.GetFileContentAtCommit(userId, commitSha, filePath);
+            if (content == null)
+            {
+                return NotFound(new { error = "File not found at the specified commit" });
+            }
+            return Ok(new { content });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpPost("reset")]
     public IActionResult ResetRepositories()
     {

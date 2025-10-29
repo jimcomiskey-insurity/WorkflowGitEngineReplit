@@ -313,9 +313,37 @@
           <!-- File content changes indicator -->
           <div class="detail-section" *ngIf="change.fileContentChanged">
             <h5>File Content</h5>
-            <div class="file-content-change-notice">
+            
+            <!-- View Diff button for editable file types -->
+            <div *ngIf="isEditableFileType(change.sourceAsset?.fileType)" class="diff-controls">
+              <button 
+                class="btn-view-diff" 
+                (click)="toggleAssetDiff(change)"
+                [disabled]="loadingDiffs.has(change.assetId)">
+                {{ isAssetDiffExpanded(change.assetId) ? 'Hide Diff' : 'View Diff' }}
+                <span *ngIf="loadingDiffs.has(change.assetId)"> (Loading...)</span>
+              </button>
+              <span class="diff-hint" *ngIf="!isAssetDiffExpanded(change.assetId)">
+                Compare file versions side-by-side
+              </span>
+            </div>
+
+            <!-- Inline Monaco Diff Viewer -->
+            <div 
+              *ngIf="isAssetDiffExpanded(change.assetId)" 
+              class="inline-diff-container"
+              [id]="'asset-diff-' + change.assetId">
+            </div>
+
+            <!-- Error message -->
+            <div *ngIf="diffErrors.has(change.assetId)" class="diff-error">
+              ⚠️ {{ diffErrors.get(change.assetId) }}
+            </div>
+
+            <!-- Notice for non-editable types -->
+            <div *ngIf="!isEditableFileType(change.sourceAsset?.fileType)" class="file-content-change-notice">
               <span class="notice-icon">📝</span>
-              <p>The file content has been modified. The actual file changes can be viewed in the Pending Changes view or using a diff viewer.</p>
+              <p>The file content has been modified. This file type cannot be displayed inline.</p>
             </div>
           </div>
 

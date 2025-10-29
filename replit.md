@@ -96,7 +96,12 @@ The frontend features a modern dark theme with a redesigned layout, including a 
   - Ensures automatic synchronization - all UI components stay in sync with backend state changes
 - Components use subscription-based architecture for automatic data updates without manual refresh calls
 - State services use `shareReplay(1)` to provide cached, consistent data to all subscribers
-- **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting and vs-dark theme
+- **Monaco Editor Integration**: 
+  - Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting and vs-dark theme
+  - Loaded dynamically via CDN using @monaco-editor/loader for reliable asset delivery
+  - Monaco Diff Editor for inline comparison of asset file versions in Branch Comparison and Pull Request views
+  - Automatic retry logic (up to 5 seconds) ensures editor loads reliably before creating diff views
+  - Proper disposal of editor instances on component destroy prevents memory leaks
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API, providing RESTful endpoints.
@@ -115,12 +120,14 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 - Tasks have unique `TaskId` for stable tracking, with legacy tasks receiving deterministic IDs.
 - **PR Comparison Fix**: Pull requests now correctly compare against remote branches (origin/master) rather than local branches, ensuring accurate commit counts even when local master has unpushed changes. The `GetBranchCommitSha` method with `preferRemote=true` strictly uses remote tracking branches with branch name normalization to handle both "master" and "origin/master" inputs.
 - **Task Reordering Detection**: Git status enrichment properly detects when tasks are reordered within a phase by comparing TaskIds at each position, with TaskName fallback for legacy data. Phases are automatically marked as "modified" when task count changes or tasks are reordered, ensuring accurate tracking in Pending Changes view.
+- **Commit SHA Tracking**: BranchComparison model includes `SourceCommitSha` and `TargetCommitSha` properties to precisely identify which commits are being compared. These SHAs are propagated to the frontend ComparisonViewerComponent, enabling accurate file content retrieval at specific commits for Monaco diff viewers.
+- **Asset Diff Viewer Enhancements**: The asset diff viewer correctly handles renamed assets by using the appropriate filename for each commit (target commit uses targetAsset.fileName, source commit uses sourceAsset.fileName). Supports added assets (only source), deleted assets (only target), and renamed assets (different filenames per commit).
 
 ### Feature Specifications
 
 -   **Workflow Management**: CRUD operations for workflows, including nested phases and tasks with dependencies, role assignments, duration estimates, and automation flags.
 -   **Asset Management**: CRUD operations for assets with metadata (Name, Description, Tags array) and file upload capabilities. Supports rich text editing with Monaco Editor for XML, JSON, XSLT, and TXT files with syntax highlighting. Other file types can be uploaded and downloaded but not edited in-browser. All asset changes are tracked in Git and appear in Pending Changes view.
--   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are stored in a shared global JSON file, are collaborative, and track both source and target branch commit SHAs at creation.
+-   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are stored in a shared global JSON file, are collaborative, and track both source and target branch commit SHAs at creation. Asset file diffs are displayed inline using Monaco Diff Editor for editable file types (JSON, XML, XSLT, TXT), with commit-specific file path resolution to handle renamed assets.
 -   **Git Version Control**: Tracks changes, commits, and synchronizes with a central repository. Displays Git status, commit history, branch management (create, switch, push), and counts of commits ahead/behind the remote. Includes visual change indicators for added, modified, and deleted items at all levels (workflows, phases, tasks, and assets) and a dedicated Pending Changes View for reviewing uncommitted modifications. **Master branch protection**: Direct pushes to 'master' or 'main' branches are blocked - users must create feature branches and use pull requests for changes. **Commit Reset**: Allows users to reset to the last pushed commit (remote tracking branch tip) with safety checks, using mixed reset mode to preserve working directory changes while undoing commits.
 -   **Repository Reset**: A testing utility to reset the entire system to its initial state, deleting all user and central repositories and reinitializing with sample data.
 -   **User Management**: Global user selector with session-based persistence, isolated Git repository clones per user, and real-time data refresh across components.

@@ -1,5 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import loader from '@monaco-editor/loader';
+import { of } from 'rxjs';
+import { PullRequestService } from '../services/pull-request.service';
+
+type Monaco = typeof import('monaco-editor');
 
 export interface WorkflowChange {
   workflowKey: string;
@@ -25,14 +30,40 @@ export interface AssetChange {
   templateUrl: './comparison-viewer.component.html',
   styleUrls: ['./comparison-viewer.component.css']
 })
-export class ComparisonViewerComponent {
+export class ComparisonViewerComponent implements OnDestroy {
   @Input() changes: WorkflowChange[] = [];
   @Input() assetChanges: AssetChange[] = [];
   @Input() title: string = 'Changes';
   @Input() emptyMessage: string = 'No changes';
+  @Input() userId: string = '';
+  @Input() sourceCommitSha?: string;
+  @Input() targetCommitSha?: string;
   
   expandedChanges: Set<string> = new Set();
   expandedAssets: Set<string> = new Set();
+  assetDiffViewers: Map<string, any> = new Map();
+  expandedAssetDiffs: Set<string> = new Set();
+  loadingDiffs: Set<string> = new Set();
+  diffErrors: Map<string, string> = new Map();
+  private monaco: Monaco | null = null;
+
+  constructor(private pullRequestService: PullRequestService) {
+    // Configure Monaco Editor loader to use CDN
+    loader.config({ 
+      paths: { 
+        vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs'
+      } 
+    });
+    loader.init().then((monacoInstance) => {
+      this.monaco = monacoInstance;
+    });
+  }
+
+  ngOnDestroy() {
+    // Clean up Monaco editors
+    this.assetDiffViewers.forEach(editor => editor.dispose());
+    this.assetDiffViewers.clear();
+  }
 
   toggleChangeDetails(workflowKey: string) {
     if (this.expandedChanges.has(workflowKey)) {
@@ -203,5 +234,159 @@ export class ComparisonViewerComponent {
     }
 
     return changes;
+  }
+
+  isEditableFileType(fileType: string | undefined): boolean {
+    if (!fileType) return false;
+    const editableTypes = ['json', 'xml', 'xslt', 'txt'];
+    return editableTypes.includes(fileType.toLowerCase());
+  }
+
+  isAssetDiffExpanded(assetId: string): boolean {
+    return this.expandedAssetDiffs.has(assetId);
+  }
+
+  toggleAssetDiff(asset: AssetChange) {
+    if (!this.userId || !this.sourceCommitSha || !this.targetCommitSha) {
+      this.diffErrors.set(asset.assetId, 'Missing commit information for comparison');
+      return;
+    }
+
+    if (!asset.sourceAsset?.fileName && !asset.targetAsset?.fileName) {
+      this.diffErrors.set(asset.assetId, 'Missing file information');
+      return;
+    }
+
+    const assetId = asset.assetId;
+
+    if (this.expandedAssetDiffs.has(assetId)) {
+      // Collapse and dispose editor
+      this.expandedAssetDiffs.delete(assetId);
+      const editor = this.assetDiffViewers.get(assetId);
+      if (editor) {
+        editor.dispose();
+        this.assetDiffViewers.delete(assetId);
+      }
+    } else {
+      // Expand and load diff
+      this.expandedAssetDiffs.add(assetId);
+      this.loadAssetDiff(asset);
+    }
+  }
+
+  private loadAssetDiff(asset: AssetChange) {
+    if (!this.userId || !this.sourceCommitSha || !this.targetCommitSha) {
+      return;
+    }
+
+    const assetId = asset.assetId;
+    
+    // Use the correct filename for each commit to handle renamed assets
+    const targetFileName = asset.targetAsset?.fileName;
+    const sourceFileName = asset.sourceAsset?.fileName;
+    
+    if (!targetFileName && !sourceFileName) {
+      this.diffErrors.set(assetId, 'Missing file information');
+      return;
+    }
+
+    this.loadingDiffs.add(assetId);
+    this.diffErrors.delete(assetId);
+
+    // Build file paths using the correct filename for each commit
+    const targetFilePath = targetFileName ? `asset-files/${assetId}/${targetFileName}` : null;
+    const sourceFilePath = sourceFileName ? `asset-files/${assetId}/${sourceFileName}` : null;
+
+    // Fetch both versions of the file using the appropriate path for each commit
+    const targetFile$ = targetFilePath 
+      ? this.pullRequestService.getFileAtCommit(this.userId, this.targetCommitSha, targetFilePath)
+      : of({ content: '' });
+    const sourceFile$ = sourceFilePath
+      ? this.pullRequestService.getFileAtCommit(this.userId, this.sourceCommitSha, sourceFilePath)
+      : of({ content: '' });
+
+    // Use setTimeout to allow DOM to render the container first
+    setTimeout(() => {
+      Promise.all([
+        targetFile$.toPromise(),
+        sourceFile$.toPromise()
+      ]).then(([targetResponse, sourceResponse]) => {
+        const targetContent = targetResponse?.content || '';
+        const sourceContent = sourceResponse?.content || '';
+
+        // Use the source filename for display (or target if source is missing)
+        const displayFileName = sourceFileName || targetFileName || 'unknown';
+        this.waitForMonacoAndCreateEditor(assetId, displayFileName, targetContent, sourceContent);
+        this.loadingDiffs.delete(assetId);
+      }).catch(error => {
+        console.error('Error loading asset diff:', error);
+        this.diffErrors.set(assetId, 'Failed to load file content');
+        this.loadingDiffs.delete(assetId);
+      });
+    }, 100);
+  }
+
+  private waitForMonacoAndCreateEditor(assetId: string, fileName: string, originalContent: string, modifiedContent: string, attempt: number = 0) {
+    if (this.monaco) {
+      setTimeout(() => {
+        this.createDiffEditor(assetId, fileName, originalContent, modifiedContent);
+      }, 100);
+    } else if (attempt < 50) {
+      setTimeout(() => {
+        this.waitForMonacoAndCreateEditor(assetId, fileName, originalContent, modifiedContent, attempt + 1);
+      }, 100);
+    } else {
+      this.diffErrors.set(assetId, 'Monaco Editor failed to load. Please refresh the page and try again.');
+    }
+  }
+
+  private createDiffEditor(assetId: string, fileName: string, originalContent: string, modifiedContent: string) {
+    if (!this.monaco) {
+      console.error('Monaco Editor not loaded yet');
+      return;
+    }
+
+    const container = document.getElementById(`asset-diff-${assetId}`);
+    if (!container) {
+      console.error(`Container for asset diff ${assetId} not found`);
+      return;
+    }
+
+    // Dispose existing editor if any
+    const existingEditor = this.assetDiffViewers.get(assetId);
+    if (existingEditor) {
+      existingEditor.dispose();
+    }
+
+    // Determine language from file extension
+    const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'txt';
+    const languageMap: { [key: string]: string } = {
+      'json': 'json',
+      'xml': 'xml',
+      'xslt': 'xml',
+      'txt': 'plaintext'
+    };
+    const language = languageMap[fileExtension] || 'plaintext';
+
+    // Create diff editor
+    const diffEditor = this.monaco.editor.createDiffEditor(container, {
+      theme: 'vs-dark',
+      readOnly: true,
+      automaticLayout: true,
+      minimap: { enabled: false },
+      renderSideBySide: true,
+      scrollBeyondLastLine: false,
+      fontSize: 13
+    });
+
+    const originalModel = this.monaco.editor.createModel(originalContent, language);
+    const modifiedModel = this.monaco.editor.createModel(modifiedContent, language);
+
+    diffEditor.setModel({
+      original: originalModel,
+      modified: modifiedModel
+    });
+
+    this.assetDiffViewers.set(assetId, diffEditor);
   }
 }

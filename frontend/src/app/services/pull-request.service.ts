@@ -61,6 +61,8 @@ export interface BranchComparison {
   changes: WorkflowChange[];
   assetChanges: AssetChange[];
   commits: CommitInfo[];
+  sourceCommitSha?: string;
+  targetCommitSha?: string;
 }
 
 @Injectable({
@@ -117,5 +119,13 @@ export class PullRequestService {
       .set('sourceBranch', sourceBranch)
       .set('targetBranch', targetBranch);
     return this.http.get<BranchComparison>('/api/git/compare-branches', { params });
+  }
+
+  getFileAtCommit(userId: string, commitSha: string, filePath: string): Observable<{ content: string }> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('commitSha', commitSha)
+      .set('filePath', filePath);
+    return this.http.get<{ content: string }>('/api/git/file-at-commit', { params });
   }
 }

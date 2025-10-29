@@ -72,7 +72,10 @@
     <div class="tab-content" *ngIf="selectedTab === 'all-changes'">
       <app-comparison-viewer 
         [changes]="comparison.changes"
-        [assetChanges]="comparison.assetChanges || []">
+        [assetChanges]="comparison.assetChanges || []"
+        [userId]="userId"
+        [sourceCommitSha]="comparison.sourceCommitSha"
+        [targetCommitSha]="comparison.targetCommitSha">
       </app-comparison-viewer>
     </div>
 

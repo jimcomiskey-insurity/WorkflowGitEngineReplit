@@ -58,7 +58,10 @@
         [changes]="comparison.changes"
         [assetChanges]="comparison.assetChanges || []"
         [title]="'All Changes (' + comparison.commitsAhead + ' ' + (comparison.commitsAhead === 1 ? 'commit' : 'commits') + ')'"
-        emptyMessage="No changes in this pull request">
+        emptyMessage="No changes in this pull request"
+        [userId]="userId"
+        [sourceCommitSha]="pullRequest.sourceCommitSha"
+        [targetCommitSha]="pullRequest.targetCommitSha">
       </app-comparison-viewer>
     </div>
 

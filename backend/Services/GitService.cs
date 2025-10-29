@@ -1643,7 +1643,9 @@ public class GitService
             CommitsBehind = commitsBehind,
             Changes = changes,
             AssetChanges = assetChanges,
-            Commits = aheadCommits
+            Commits = aheadCommits,
+            SourceCommitSha = sourceCommit.Sha,
+            TargetCommitSha = targetCommit.Sha
         };
     }
 
@@ -2826,6 +2828,31 @@ public class GitService
         }
 
         return currentValue == incomingValue ? currentValue : currentValue;
+    }
+
+    public string? GetFileContentAtCommit(string userId, string commitSha, string filePath)
+    {
+        using var centralRepo = new Repository(_centralRepoPath);
+        
+        // Find the commit by SHA
+        var commit = centralRepo.Lookup<Commit>(commitSha);
+        if (commit == null)
+        {
+            _logger.LogWarning($"Commit {commitSha} not found in central repository");
+            return null;
+        }
+        
+        // Get the file from the commit
+        var entry = commit[filePath];
+        if (entry == null)
+        {
+            _logger.LogWarning($"File {filePath} not found in commit {commitSha}");
+            return null;
+        }
+        
+        // Read the blob content
+        var blob = (Blob)entry.Target;
+        return blob.GetContentText();
     }
 
     public void ResetAllRepositories(string sampleDataPath)
