@@ -110,6 +110,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 - Includes Git status enrichment to identify changes at workflow, phase, and task levels.
 - Tasks have unique `TaskId` for stable tracking, with legacy tasks receiving deterministic IDs.
 - **PR Comparison Fix**: Pull requests now correctly compare against remote branches (origin/master) rather than local branches, ensuring accurate commit counts even when local master has unpushed changes. The `GetBranchCommitSha` method with `preferRemote=true` strictly uses remote tracking branches with branch name normalization to handle both "master" and "origin/master" inputs.
+- **Task Reordering Detection**: Git status enrichment properly detects when tasks are reordered within a phase by comparing TaskIds at each position, with TaskName fallback for legacy data. Phases are automatically marked as "modified" when task count changes or tasks are reordered, ensuring accurate tracking in Pending Changes view.
 
 ### Feature Specifications
 
