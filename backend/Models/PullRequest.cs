@@ -37,6 +37,7 @@ public class BranchComparison
     public int CommitsAhead { get; set; }
     public int CommitsBehind { get; set; }
     public List<WorkflowChange> Changes { get; set; } = new();
+    public List<AssetChange> AssetChanges { get; set; } = new();
     public List<CommitInfo> Commits { get; set; } = new();
 }
 
@@ -47,4 +48,14 @@ public class WorkflowChange
     public string ChangeType { get; set; } = string.Empty;
     public Workflow? SourceWorkflow { get; set; }
     public Workflow? TargetWorkflow { get; set; }
+}
+
+public class AssetChange
+{
+    public Guid? AssetId { get; set; }
+    public string AssetName { get; set; } = string.Empty;
+    public string ChangeType { get; set; } = string.Empty;
+    public Asset? SourceAsset { get; set; }
+    public Asset? TargetAsset { get; set; }
+    public bool FileContentChanged { get; set; }
 }

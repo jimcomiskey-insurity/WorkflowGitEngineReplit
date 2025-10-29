@@ -1562,6 +1562,78 @@ public class GitService
                 });
             }
         }
+
+        // Get assets from both branches for change detection
+        var sourceAssets = GetAssetsFromCommit(repo, sourceCommit);
+        var targetAssets = GetAssetsFromCommit(repo, targetCommit);
+        var assetChanges = new List<AssetChange>();
+
+        // Find added and modified assets
+        foreach (var sourceAsset in sourceAssets)
+        {
+            var targetAsset = targetAssets.FirstOrDefault(a => a.Id == sourceAsset.Id);
+            
+            if (targetAsset == null)
+            {
+                assetChanges.Add(new AssetChange
+                {
+                    AssetId = sourceAsset.Id,
+                    AssetName = sourceAsset.Name,
+                    ChangeType = "added",
+                    SourceAsset = sourceAsset,
+                    TargetAsset = null,
+                    FileContentChanged = false
+                });
+            }
+            else if (!AssetsAreEqual(sourceAsset, targetAsset))
+            {
+                var fileContentChanged = sourceAsset.FileName != null && 
+                                        AssetFileContentChanged(repo, sourceCommit, targetCommit, sourceAsset.Id, sourceAsset.FileName);
+                
+                assetChanges.Add(new AssetChange
+                {
+                    AssetId = sourceAsset.Id,
+                    AssetName = sourceAsset.Name,
+                    ChangeType = "modified",
+                    SourceAsset = sourceAsset,
+                    TargetAsset = targetAsset,
+                    FileContentChanged = fileContentChanged
+                });
+            }
+            else if (sourceAsset.FileName != null && 
+                    AssetFileContentChanged(repo, sourceCommit, targetCommit, sourceAsset.Id, sourceAsset.FileName))
+            {
+                // Metadata unchanged but file content changed
+                assetChanges.Add(new AssetChange
+                {
+                    AssetId = sourceAsset.Id,
+                    AssetName = sourceAsset.Name,
+                    ChangeType = "modified",
+                    SourceAsset = sourceAsset,
+                    TargetAsset = targetAsset,
+                    FileContentChanged = true
+                });
+            }
+        }
+
+        // Find deleted assets
+        foreach (var targetAsset in targetAssets)
+        {
+            var sourceAsset = sourceAssets.FirstOrDefault(a => a.Id == targetAsset.Id);
+            
+            if (sourceAsset == null)
+            {
+                assetChanges.Add(new AssetChange
+                {
+                    AssetId = targetAsset.Id,
+                    AssetName = targetAsset.Name,
+                    ChangeType = "deleted",
+                    SourceAsset = null,
+                    TargetAsset = targetAsset,
+                    FileContentChanged = false
+                });
+            }
+        }
         
         return new BranchComparison
         {
@@ -1570,6 +1642,7 @@ public class GitService
             CommitsAhead = commitsAhead,
             CommitsBehind = commitsBehind,
             Changes = changes,
+            AssetChanges = assetChanges,
             Commits = aheadCommits
         };
     }
@@ -1785,6 +1858,60 @@ public class GitService
         var json1 = JsonSerializer.Serialize(t1, new JsonSerializerOptions { WriteIndented = false });
         var json2 = JsonSerializer.Serialize(t2, new JsonSerializerOptions { WriteIndented = false });
         return json1 == json2;
+    }
+
+    private bool AssetsAreEqual(Asset a1, Asset a2)
+    {
+        var json1 = JsonSerializer.Serialize(new {
+            a1.Id,
+            a1.Name,
+            a1.Description,
+            a1.Tags,
+            a1.FileName,
+            a1.FileType,
+            a1.FileSizeBytes
+        }, new JsonSerializerOptions { WriteIndented = false });
+        
+        var json2 = JsonSerializer.Serialize(new {
+            a2.Id,
+            a2.Name,
+            a2.Description,
+            a2.Tags,
+            a2.FileName,
+            a2.FileType,
+            a2.FileSizeBytes
+        }, new JsonSerializerOptions { WriteIndented = false });
+        
+        return json1 == json2;
+    }
+
+    private bool AssetFileContentChanged(Repository repo, Commit sourceCommit, Commit targetCommit, Guid? assetId, string fileName)
+    {
+        if (assetId == null || string.IsNullOrEmpty(fileName))
+        {
+            return false;
+        }
+        
+        var sourceFilePath = $"{AssetFilesDirectory}/{assetId}/{fileName}";
+        var targetFilePath = $"{AssetFilesDirectory}/{assetId}/{fileName}";
+        
+        var sourceEntry = sourceCommit[sourceFilePath];
+        var targetEntry = targetCommit[targetFilePath];
+        
+        if ((sourceEntry == null) != (targetEntry == null))
+        {
+            return true;
+        }
+        
+        if (sourceEntry == null && targetEntry == null)
+        {
+            return false;
+        }
+        
+        var sourceBlob = (Blob)sourceEntry!.Target;
+        var targetBlob = (Blob)targetEntry!.Target;
+        
+        return sourceBlob.Sha != targetBlob.Sha;
     }
 
     private void DetectAssetFileContentConflicts(Repository repo, Branch sourceBranch, Branch targetBranch, MergeConflictInfo conflictInfo)
