@@ -20,11 +20,23 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
             <div class="header-title">Insurance Workflow Configuration</div>
             <app-git-toolbar></app-git-toolbar>
           </div>
-          <div class="user-selector">
-            <label for="user-select">User:</label>
-            <select id="user-select" [(ngModel)]="currentUser" (change)="onUserChange()">
-              <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
-            </select>
+          <div class="header-right">
+            <a [href]="swaggerUrl" target="_blank" class="swagger-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <span>API Docs</span>
+            </a>
+            <div class="user-selector">
+              <label for="user-select">User:</label>
+              <select id="user-select" [(ngModel)]="currentUser" (change)="onUserChange()">
+                <option *ngFor="let user of availableUsers" [value]="user">{{ user }}</option>
+              </select>
+            </div>
           </div>
         </div>
       </header>
@@ -173,6 +185,37 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .swagger-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .swagger-link:hover {
+      background-color: var(--bg-hover);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    .swagger-link svg {
+      flex-shrink: 0;
+    }
+
     .content-wrapper {
       display: flex;
       flex: 1;
@@ -280,6 +323,7 @@ export class AppComponent implements OnInit, OnDestroy {
   pendingChangesCount = 0;
   currentUser: string;
   availableUsers: string[];
+  swaggerUrl: string;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -288,6 +332,10 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {
     this.currentUser = this.userService.getCurrentUser();
     this.availableUsers = this.userService.getAvailableUsers();
+    
+    // Use relative URL - the Angular dev proxy will route to the backend
+    // In production/Replit, this will be handled by the infrastructure
+    this.swaggerUrl = '/swagger';
   }
 
   ngOnInit() {

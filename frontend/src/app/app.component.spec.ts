@@ -114,4 +114,10 @@ describe('AppComponent', () => {
       expect(userService.setCurrentUser).toHaveBeenCalledWith('userB');
     });
   });
+
+  describe('Swagger Link', () => {
+    it('should use relative URL for swagger that will be proxied to backend', () => {
+      expect(component.swaggerUrl).toBe('/swagger');
+    });
+  });
 });
