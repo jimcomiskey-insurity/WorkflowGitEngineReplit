@@ -611,3 +611,87 @@ button:disabled {
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* Drag and Drop Styles */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: grab;
+  color: var(--text-muted);
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.drag-handle:hover {
+  color: var(--text-secondary);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle.disabled {
+  opacity: 0.3;
+  cursor: not-allowed !important;
+}
+
+/* CDK Drag Drop Classes */
+.cdk-drag-preview {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
+  border-radius: 8px;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.4;
+  background: var(--bg-tertiary);
+  border: 2px dashed var(--border-color);
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Phase drag preview */
+.phase-item.cdk-drag-preview {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* Task drag preview */
+.task-item.cdk-drag-preview {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-color);
+}
+
+/* Update phase-header to accommodate drag handle */
+.phase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  gap: 12px;
+}
+
+/* Update task-item to accommodate drag handle */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}

@@ -2,8 +2,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { Workflow, Phase, TaskItem } from '../services/workflow.service';
 import { WorkflowStateService } from '../services/workflow-state.service';
+import { GitStateService } from '../services/git-state.service';
 import { GitEventService } from '../services/git-event.service';
 import { Subject } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
@@ -15,7 +17,7 @@ interface ExtendedPhase extends Phase {
 @Component({
   selector: 'app-workflow-editor',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DragDropModule],
   templateUrl: './workflow-editor.component.html',
   styleUrls: ['./workflow-editor.component.css']
 })
@@ -40,6 +42,7 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
 
   constructor(
     private workflowStateService: WorkflowStateService,
+    private gitStateService: GitStateService,
     private gitEventService: GitEventService,
     private router: Router,
     private route: ActivatedRoute
@@ -255,13 +258,31 @@ export class WorkflowEditorComponent implements OnInit, OnDestroy {
 
     this.workflowStateService.updateWorkflow(this.originalKey, workflowToSave).subscribe({
       next: () => {
-        // State automatically refreshes - workflow will update via subscription
-        // No need to emit events here - the WorkflowStateService handles refresh automatically
+        this.gitStateService.refresh();
       },
       error: (error) => {
         console.error('Error persisting workflow:', error);
         alert('Failed to save changes');
       }
     });
+  }
+
+  dropPhase(event: CdkDragDrop<ExtendedPhase[]>) {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    moveItemInArray(this.workflow.phases, event.previousIndex, event.currentIndex);
+    this.reorderPhases();
+    this.persistWorkflow();
+  }
+
+  dropTask(phaseIndex: number, event: CdkDragDrop<TaskItem[]>) {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    moveItemInArray(this.workflow.phases[phaseIndex].tasks, event.previousIndex, event.currentIndex);
+    this.persistWorkflow();
   }
 }

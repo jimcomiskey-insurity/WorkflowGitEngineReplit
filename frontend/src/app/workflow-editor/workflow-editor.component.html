@@ -56,11 +56,22 @@
   <div class="phases-container">
     <h2 class="section-title">Phases ({{ workflow.phases.length }})</h2>
 
-    <div class="phase-item" *ngFor="let phase of workflow.phases; let i = index" [attr.data-git-status]="phase.gitStatus">
-      <div class="phase-header" (click)="togglePhase(i)">
-        <div class="phase-info">
-          <span class="phase-number" [class.deleted-text]="phase.gitStatus === 'deleted'">{{ phase.phaseOrder }}</span>
-          <span class="phase-name" [class.deleted-text]="phase.gitStatus === 'deleted'">{{ phase.phaseName }}</span>
+    <div cdkDropList (cdkDropListDropped)="dropPhase($event)" [cdkDropListDisabled]="workflow.gitStatus === 'deleted'">
+      <div class="phase-item" *ngFor="let phase of workflow.phases; let i = index" [attr.data-git-status]="phase.gitStatus" cdkDrag>
+        <div class="phase-header" (click)="togglePhase(i)">
+          <div class="drag-handle" cdkDragHandle [class.disabled]="workflow.gitStatus === 'deleted'" title="Drag to reorder" (click)="$event.stopPropagation()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="9" cy="5" r="1.5"></circle>
+              <circle cx="9" cy="12" r="1.5"></circle>
+              <circle cx="9" cy="19" r="1.5"></circle>
+              <circle cx="15" cy="5" r="1.5"></circle>
+              <circle cx="15" cy="12" r="1.5"></circle>
+              <circle cx="15" cy="19" r="1.5"></circle>
+            </svg>
+          </div>
+          <div class="phase-info">
+            <span class="phase-number" [class.deleted-text]="phase.gitStatus === 'deleted'">{{ phase.phaseOrder }}</span>
+            <span class="phase-name" [class.deleted-text]="phase.gitStatus === 'deleted'">{{ phase.phaseName }}</span>
           <span class="git-badge modified" *ngIf="phase.gitStatus === 'modified'">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -117,8 +128,18 @@
           </div>
         </div>
 
-        <div class="tasks-list">
-          <div class="task-item" *ngFor="let task of phase.tasks; let j = index" [attr.data-git-status]="task.gitStatus">
+        <div class="tasks-list" cdkDropList (cdkDropListDropped)="dropTask(i, $event)" [cdkDropListDisabled]="phase.gitStatus === 'deleted'">
+          <div class="task-item" *ngFor="let task of phase.tasks; let j = index" [attr.data-git-status]="task.gitStatus" cdkDrag>
+            <div class="drag-handle" cdkDragHandle [class.disabled]="phase.gitStatus === 'deleted'" title="Drag to reorder" (click)="$event.stopPropagation()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="9" cy="5" r="1"></circle>
+                <circle cx="9" cy="12" r="1"></circle>
+                <circle cx="9" cy="19" r="1"></circle>
+                <circle cx="15" cy="5" r="1"></circle>
+                <circle cx="15" cy="12" r="1"></circle>
+                <circle cx="15" cy="19" r="1"></circle>
+              </svg>
+            </div>
             <div class="task-main">
               <span class="task-name" [class.deleted-text]="task.gitStatus === 'deleted'">{{ task.taskName }}</span>
               <div class="task-badges">
@@ -194,6 +215,7 @@
             <p>No tasks in this phase</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
