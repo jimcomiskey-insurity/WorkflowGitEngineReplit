@@ -45,7 +45,9 @@ export class ComparisonViewerComponent implements OnDestroy {
   expandedAssetDiffs: Set<string> = new Set();
   loadingDiffs: Set<string> = new Set();
   diffErrors: Map<string, string> = new Map();
+  monacoLoading: Set<string> = new Set();
   private monaco: Monaco | null = null;
+  private readonly MAX_MONACO_LOAD_ATTEMPTS = 100;
 
   constructor(private pullRequestService: PullRequestService) {
     // Configure Monaco Editor loader to use CDN
@@ -56,6 +58,9 @@ export class ComparisonViewerComponent implements OnDestroy {
     });
     loader.init().then((monacoInstance) => {
       this.monaco = monacoInstance;
+      console.log('Monaco Editor loaded successfully');
+    }).catch((error) => {
+      console.error('Failed to load Monaco Editor:', error);
     });
   }
 
@@ -328,16 +333,27 @@ export class ComparisonViewerComponent implements OnDestroy {
 
   private waitForMonacoAndCreateEditor(assetId: string, fileName: string, originalContent: string, modifiedContent: string, attempt: number = 0) {
     if (this.monaco) {
+      this.monacoLoading.delete(assetId);
       setTimeout(() => {
         this.createDiffEditor(assetId, fileName, originalContent, modifiedContent);
       }, 100);
-    } else if (attempt < 50) {
+    } else if (attempt < this.MAX_MONACO_LOAD_ATTEMPTS) {
+      // Show loading indicator on first attempt
+      if (attempt === 0) {
+        this.monacoLoading.add(assetId);
+      }
+      
       setTimeout(() => {
         this.waitForMonacoAndCreateEditor(assetId, fileName, originalContent, modifiedContent, attempt + 1);
       }, 100);
     } else {
-      this.diffErrors.set(assetId, 'Monaco Editor failed to load. Please refresh the page and try again.');
+      this.monacoLoading.delete(assetId);
+      this.diffErrors.set(assetId, 'Monaco Editor failed to load after 10 seconds. Please refresh the page and try again.');
     }
+  }
+  
+  isMonacoLoading(assetId: string): boolean {
+    return this.monacoLoading.has(assetId);
   }
 
   private createDiffEditor(assetId: string, fileName: string, originalContent: string, modifiedContent: string) {

@@ -537,3 +537,32 @@
   color: #EF4444;
   font-size: 14px;
 }
+
+.monaco-loading-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  margin-top: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid #3B82F6;
+  border-radius: 8px;
+  color: #3B82F6;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(59, 130, 246, 0.3);
+  border-top-color: #3B82F6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -328,6 +328,12 @@
               </span>
             </div>
 
+            <!-- Monaco Loading Indicator -->
+            <div *ngIf="isMonacoLoading(change.assetId)" class="monaco-loading-message">
+              <div class="loading-spinner"></div>
+              <span>Loading Monaco Editor...</span>
+            </div>
+
             <!-- Inline Monaco Diff Viewer -->
             <div 
               *ngIf="isAssetDiffExpanded(change.assetId)" 
