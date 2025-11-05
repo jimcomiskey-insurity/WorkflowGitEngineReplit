@@ -44,8 +44,10 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
     this.parseConflicts();
   }
 
-  async ngAfterViewInit(): Promise<void> {
-    await this.loadMonaco();
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.loadMonaco();
+    }, 0);
   }
 
   ngOnDestroy(): void {
