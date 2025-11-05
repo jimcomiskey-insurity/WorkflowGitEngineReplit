@@ -88,7 +88,8 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 **Frontend**:
 - Built with Angular 20.3.6 (Standalone Components) using client-side routing and lazy-loaded components.
 - **Centralized State Management**: Implements reactive state management using RxJS BehaviorSubjects via dedicated state services (`GitStateService`, `WorkflowStateService`, `AssetStateService`) for automatic refresh and UI synchronization.
-- **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting and vs-dark theme, loaded dynamically. Includes Monaco Diff Editor for comparisons, continuous auto-save with retry logic, and branch-aware editing.
+- **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting and vs-dark theme, loaded dynamically via `MonacoService` singleton to prevent duplicate initialization across components. Includes Monaco Diff Editor for comparisons, continuous auto-save with retry logic, and branch-aware editing.
+- **Monaco Conflict Resolution**: Visual Git conflict editor with syntax highlighting, color-coded conflict blocks (red for current, blue for incoming), and inline action buttons (Accept Current/Incoming/Both) using Monaco Code Lens API. Supports multiple simultaneous conflict editors with proper resource cleanup.
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API, providing RESTful endpoints.
@@ -109,6 +110,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 -   **Asset Management**: CRUD operations for assets with metadata and file upload capabilities. Supports rich text editing with Monaco Editor for various file types, continuous auto-save, and branch-aware content reloading.
 -   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are collaborative, stored in a shared global JSON file, and track commit SHAs. Asset file diffs are displayed using Monaco Diff Editor.
 -   **Git Version Control**: Tracks changes, commits, and synchronizes with a central repository. Displays Git status, commit history, branch management (create, switch, push), and counts of commits ahead/behind. Includes visual change indicators, a Pending Changes View, master branch protection, and a commit reset feature.
+-   **Conflict Resolution**: Monaco-based visual conflict resolution for asset file merge conflicts. Detects Git conflict markers, provides syntax highlighting with color-coded blocks, and offers one-click resolution via inline action buttons. Supports multiple simultaneous conflict editors.
 -   **Repository Reset**: A testing utility to reset the entire system to its initial state.
 -   **User Management**: Global user selector with session-based persistence, isolated Git repository clones per user, and real-time data refresh.
 

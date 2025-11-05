@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import loader, { Monaco } from '@monaco-editor/loader';
+import type { Monaco } from '@monaco-editor/loader';
+import { MonacoService } from '../services/monaco.service';
 
 interface ConflictBlock {
   startLine: number;
@@ -36,6 +37,8 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   private decorations: string[] = [];
   private conflictBlocks: ConflictBlock[] = [];
   private codeLensDisposable: any = null;
+
+  constructor(private monacoService: MonacoService) {}
   
   editorLoading = true;
   editorLoadError = false;
@@ -77,22 +80,8 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
         return;
       }
 
-      // Configure Monaco loader only if not already configured
-      loader.config({
-        paths: {
-          vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs'
-        }
-      });
-
-      // Use __getMonacoInstance to check if already loaded, otherwise initialize
-      this.monaco = await loader.__getMonacoInstance();
-      
-      if (!this.monaco) {
-        // Monaco not loaded yet, initialize it
-        console.log('Initializing Monaco Editor from CDN...');
-        this.monaco = await loader.init();
-        console.log('Monaco Editor loaded successfully');
-      }
+      // Get Monaco instance from shared service (handles singleton pattern)
+      this.monaco = await this.monacoService.getMonaco();
 
       const language = this.getMonacoLanguage(this.fileType);
 
