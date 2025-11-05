@@ -89,7 +89,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 - Built with Angular 20.3.6 (Standalone Components) using client-side routing and lazy-loaded components.
 - **Centralized State Management**: Implements reactive state management using RxJS BehaviorSubjects via dedicated state services (`GitStateService`, `WorkflowStateService`, `AssetStateService`) for automatic refresh and UI synchronization.
 - **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting and vs-dark theme, loaded dynamically via `MonacoService` singleton to prevent duplicate initialization across components. Includes Monaco Diff Editor for comparisons, continuous auto-save with retry logic, and branch-aware editing.
-- **Monaco Conflict Resolution**: Visual Git conflict editor with syntax highlighting, color-coded conflict blocks (red for current, blue for incoming), and inline action buttons (Accept Current/Incoming/Both) using Monaco Code Lens API. Supports multiple simultaneous conflict editors with proper resource cleanup.
+- **Monaco Conflict Resolution**: Visual Git conflict editor with syntax highlighting, color-coded conflict blocks (red for current, blue for incoming). Provides "Accept All Current" and "Accept All Incoming" header buttons for quick resolution, plus manual editing capability. Supports multiple simultaneous conflict editors with proper resource cleanup.
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API, providing RESTful endpoints.

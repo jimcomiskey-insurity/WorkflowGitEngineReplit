@@ -241,75 +241,9 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   }
 
   private addActionButtons(): void {
-    if (!this.monaco || !this.editor) return;
-
-    // Register global commands that CodeLens can trigger
-    const commandDisposables: any[] = [];
-    
-    this.conflictBlocks.forEach((conflict, index) => {
-      // Register Accept Current command
-      const currentCmdId = `conflict.acceptCurrent.${index}`;
-      commandDisposables.push(
-        this.editor.addCommand(0, () => {
-          console.log(`Accept Current clicked for conflict ${index}`);
-          this.resolveConflict(index, 'current');
-        }, currentCmdId)
-      );
-
-      // Register Accept Incoming command
-      const incomingCmdId = `conflict.acceptIncoming.${index}`;
-      commandDisposables.push(
-        this.editor.addCommand(0, () => {
-          console.log(`Accept Incoming clicked for conflict ${index}`);
-          this.resolveConflict(index, 'incoming');
-        }, incomingCmdId)
-      );
-
-      // Register Accept Both command
-      const bothCmdId = `conflict.acceptBoth.${index}`;
-      commandDisposables.push(
-        this.editor.addCommand(0, () => {
-          console.log(`Accept Both clicked for conflict ${index}`);
-          this.resolveConflict(index, 'both');
-        }, bothCmdId)
-      );
-    });
-
-    // Create CodeLens provider that references the registered commands
-    this.codeLensDisposable = this.monaco.languages.registerCodeLensProvider('*', {
-      provideCodeLenses: (model) => {
-        const lenses: any[] = [];
-
-        this.conflictBlocks.forEach((conflict, index) => {
-          lenses.push({
-            range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
-            command: {
-              id: `conflict.acceptCurrent.${index}`,
-              title: '✓ Accept Current Change'
-            }
-          });
-
-          lenses.push({
-            range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
-            command: {
-              id: `conflict.acceptIncoming.${index}`,
-              title: '✓ Accept Incoming Change'
-            }
-          });
-
-          lenses.push({
-            range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
-            command: {
-              id: `conflict.acceptBoth.${index}`,
-              title: '✓ Accept Both Changes'
-            }
-          });
-        });
-
-        return { lenses, dispose: () => {} };
-      },
-      resolveCodeLens: (model, codeLens) => codeLens
-    });
+    // Inline action buttons via CodeLens are not currently supported
+    // Users can use the "Accept All Current" or "Accept All Incoming" buttons in the header
+    // or manually edit the content to resolve conflicts
   }
 
   resolveConflict(index: number, resolution: 'current' | 'incoming' | 'both'): void {
