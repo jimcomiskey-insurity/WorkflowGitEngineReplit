@@ -218,6 +218,45 @@
       </div>
     </div>
 
+    <!-- Asset File Content Conflicts -->
+    <div *ngIf="conflicts.assetFileContentConflicts && conflicts.assetFileContentConflicts.length > 0" class="asset-file-conflicts">
+      <h3 class="section-title">Asset File Conflicts</h3>
+      <p class="section-description">
+        The following asset files have merge conflicts. Use the Monaco editor below to resolve them visually or manually edit the content.
+      </p>
+      
+      <div *ngFor="let assetConflict of conflicts.assetFileContentConflicts" class="asset-file-conflict-card">
+        <div class="asset-conflict-header">
+          <div class="asset-info">
+            <span class="asset-icon">📄</span>
+            <div>
+              <h4>{{ assetConflict.assetName }}</h4>
+              <div class="asset-meta">
+                <span class="file-name">{{ assetConflict.fileName }}</span>
+                <span class="file-type-badge">{{ assetConflict.fileType.toUpperCase() }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="resolution-status">
+            <span 
+              class="status-badge" 
+              [class.resolved]="assetFileResolutions.has(assetConflict.assetId)"
+              [class.pending]="!assetFileResolutions.has(assetConflict.assetId)">
+              {{ assetFileResolutions.has(assetConflict.assetId) ? '✓ Resolved' : '⚠ Pending' }}
+            </span>
+          </div>
+        </div>
+        
+        <app-monaco-conflict-editor
+          [conflictedContent]="assetConflict.conflictedContent"
+          [fileName]="assetConflict.fileName"
+          [fileType]="assetConflict.fileType"
+          (resolved)="onAssetFileResolved(assetConflict.assetId, $event)"
+          (cancel)="cancel()">
+        </app-monaco-conflict-editor>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn btn-secondary" (click)="cancel()" [disabled]="resolving">
         Cancel

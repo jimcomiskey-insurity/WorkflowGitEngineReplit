@@ -54,9 +54,20 @@ interface DeletionConflict {
   resolution?: string;
 }
 
+interface AssetFileContentConflict {
+  assetId: string;
+  assetName: string;
+  fileName: string;
+  fileType: string;
+  conflictedContent: string;
+  hasConflictMarkers: boolean;
+  resolution?: string;
+}
+
 interface MergeConflictInfo {
   workflowConflicts: WorkflowConflict[];
   deletionConflicts: DeletionConflict[];
+  assetFileContentConflicts: AssetFileContentConflict[];
   sourceBranch: string;
   targetBranch: string;
   totalConflicts: number;
@@ -72,10 +83,17 @@ interface ConflictResolution {
   objectType?: ConflictObjectType;
 }
 
+interface AssetFileContentResolution {
+  assetId: string;
+  resolvedContent: string;
+}
+
+import { MonacoConflictEditorComponent } from '../monaco-conflict-editor/monaco-conflict-editor.component';
+
 @Component({
   selector: 'app-conflict-resolution',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MonacoConflictEditorComponent],
   templateUrl: './conflict-resolution.component.html',
   styleUrls: ['./conflict-resolution.component.css']
 })
@@ -85,6 +103,7 @@ export class ConflictResolutionComponent implements OnInit {
   loading = true;
   error: string | null = null;
   resolving = false;
+  assetFileResolutions: Map<string, string> = new Map();
 
   constructor(
     private route: ActivatedRoute,
@@ -133,6 +152,9 @@ export class ConflictResolutionComponent implements OnInit {
     this.conflicts.deletionConflicts?.forEach(dc => {
       dc.resolution = 'keep';
     });
+    
+    // Initialize asset file conflict resolutions map
+    this.assetFileResolutions.clear();
   }
 
   isAllResolved(): boolean {
@@ -151,6 +173,15 @@ export class ConflictResolutionComponent implements OnInit {
     // Check deletion conflicts are resolved
     if (this.conflicts.deletionConflicts?.some(dc => !dc.resolution)) {
       return false;
+    }
+    
+    // Check asset file conflicts are resolved
+    if (this.conflicts.assetFileContentConflicts && this.conflicts.assetFileContentConflicts.length > 0) {
+      for (const afc of this.conflicts.assetFileContentConflicts) {
+        if (!this.assetFileResolutions.has(afc.assetId)) {
+          return false;
+        }
+      }
     }
 
     return true;
@@ -214,13 +245,23 @@ export class ConflictResolutionComponent implements OnInit {
         });
       }
     });
+    
+    // Add asset file conflict resolutions
+    const assetFileResolutions: AssetFileContentResolution[] = [];
+    this.assetFileResolutions.forEach((resolvedContent, assetId) => {
+      assetFileResolutions.push({
+        assetId: assetId,
+        resolvedContent: resolvedContent
+      });
+    });
 
     this.resolving = true;
     const userId = this.userService.getCurrentUser();
 
     this.http
       .post(`/api/pull-requests/${this.prNumber}/resolve-conflicts?userId=${userId}`, {
-        resolutions
+        resolutions,
+        assetFileResolutions
       })
       .subscribe({
         next: () => {
@@ -266,5 +307,10 @@ export class ConflictResolutionComponent implements OnInit {
       return `${objectType} "${dc.objectDisplayName}" was deleted in ${this.conflicts?.targetBranch} but modified in ${this.conflicts?.sourceBranch}`;
     }
     return `${objectType} "${dc.objectDisplayName}" has a deletion conflict`;
+  }
+  
+  onAssetFileResolved(assetId: string, resolvedContent: string): void {
+    this.assetFileResolutions.set(assetId, resolvedContent);
+    console.log(`Asset file ${assetId} resolved, ${this.assetFileResolutions.size} / ${this.conflicts?.assetFileContentConflicts.length} resolved`);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import loader, { Monaco } from '@monaco-editor/loader';
 
@@ -29,6 +29,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   @Input() fileType: string = 'txt';
   @Output() resolved = new EventEmitter<string>();
   @Output() cancel = new EventEmitter<void>();
+  @ViewChild('monacoContainer', { static: false }) monacoContainer!: ElementRef;
 
   private editor: any = null;
   private monaco: Monaco | null = null;
@@ -55,11 +56,11 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
 
   private async loadMonaco(): Promise<void> {
     try {
-      const container = document.getElementById('monaco-conflict-editor');
-      if (!container) {
+      if (!this.monacoContainer) {
         console.error('Monaco container not found');
         return;
       }
+      const container = this.monacoContainer.nativeElement;
 
       loader.config({
         paths: {
