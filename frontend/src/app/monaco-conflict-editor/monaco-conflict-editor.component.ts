@@ -243,28 +243,36 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   private addActionButtons(): void {
     if (!this.monaco || !this.editor) return;
 
-    // Register command handlers for CodeLens actions
+    // Register global commands that CodeLens can trigger
+    const commandDisposables: any[] = [];
+    
     this.conflictBlocks.forEach((conflict, index) => {
-      // Register command for Accept Current
-      this.editor.addAction({
-        id: `acceptCurrent_${index}`,
-        label: 'Accept Current Change',
-        run: () => this.resolveConflict(index, 'current')
-      });
+      // Register Accept Current command
+      const currentCmdId = `conflict.acceptCurrent.${index}`;
+      commandDisposables.push(
+        this.editor.addCommand(0, () => {
+          console.log(`Accept Current clicked for conflict ${index}`);
+          this.resolveConflict(index, 'current');
+        }, currentCmdId)
+      );
 
-      // Register command for Accept Incoming
-      this.editor.addAction({
-        id: `acceptIncoming_${index}`,
-        label: 'Accept Incoming Change',
-        run: () => this.resolveConflict(index, 'incoming')
-      });
+      // Register Accept Incoming command
+      const incomingCmdId = `conflict.acceptIncoming.${index}`;
+      commandDisposables.push(
+        this.editor.addCommand(0, () => {
+          console.log(`Accept Incoming clicked for conflict ${index}`);
+          this.resolveConflict(index, 'incoming');
+        }, incomingCmdId)
+      );
 
-      // Register command for Accept Both
-      this.editor.addAction({
-        id: `acceptBoth_${index}`,
-        label: 'Accept Both Changes',
-        run: () => this.resolveConflict(index, 'both')
-      });
+      // Register Accept Both command
+      const bothCmdId = `conflict.acceptBoth.${index}`;
+      commandDisposables.push(
+        this.editor.addCommand(0, () => {
+          console.log(`Accept Both clicked for conflict ${index}`);
+          this.resolveConflict(index, 'both');
+        }, bothCmdId)
+      );
     });
 
     // Create CodeLens provider that references the registered commands
@@ -276,7 +284,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
           lenses.push({
             range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
             command: {
-              id: `acceptCurrent_${index}`,
+              id: `conflict.acceptCurrent.${index}`,
               title: '✓ Accept Current Change'
             }
           });
@@ -284,7 +292,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
           lenses.push({
             range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
             command: {
-              id: `acceptIncoming_${index}`,
+              id: `conflict.acceptIncoming.${index}`,
               title: '✓ Accept Incoming Change'
             }
           });
@@ -292,7 +300,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
           lenses.push({
             range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
             command: {
-              id: `acceptBoth_${index}`,
+              id: `conflict.acceptBoth.${index}`,
               title: '✓ Accept Both Changes'
             }
           });
