@@ -35,6 +35,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   private monaco: Monaco | null = null;
   private decorations: string[] = [];
   private conflictBlocks: ConflictBlock[] = [];
+  private codeLensDisposable: any = null;
   
   editorLoading = true;
   editorLoadError = false;
@@ -47,10 +48,13 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.loadMonaco();
-    }, 0);
+    }, 100);
   }
 
   ngOnDestroy(): void {
+    if (this.codeLensDisposable) {
+      this.codeLensDisposable.dispose();
+    }
     if (this.editor) {
       this.editor.dispose();
     }
@@ -59,35 +63,35 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   private async loadMonaco(): Promise<void> {
     try {
       if (!this.monacoContainer) {
-        console.error('Monaco container not found');
+        console.error('Monaco container ViewChild not found');
+        this.editorLoading = false;
+        this.editorLoadError = true;
         return;
       }
       const container = this.monacoContainer.nativeElement;
+      
+      if (!container) {
+        console.error('Monaco container element not found');
+        this.editorLoading = false;
+        this.editorLoadError = true;
+        return;
+      }
 
+      // Configure Monaco loader only if not already configured
       loader.config({
         paths: {
           vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs'
         }
       });
 
-      let attempts = 0;
-      const maxAttempts = 100;
-
-      while (!this.monaco && attempts < maxAttempts) {
-        try {
-          this.monaco = await loader.init();
-          break;
-        } catch (e) {
-          attempts++;
-          if (attempts >= maxAttempts) {
-            throw e;
-          }
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
-
+      // Use __getMonacoInstance to check if already loaded, otherwise initialize
+      this.monaco = await loader.__getMonacoInstance();
+      
       if (!this.monaco) {
-        throw new Error('Failed to load Monaco Editor');
+        // Monaco not loaded yet, initialize it
+        console.log('Initializing Monaco Editor from CDN...');
+        this.monaco = await loader.init();
+        console.log('Monaco Editor loaded successfully');
       }
 
       const language = this.getMonacoLanguage(this.fileType);
@@ -110,6 +114,10 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
 
     } catch (error) {
       console.error('Error loading Monaco Editor:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       this.editorLoading = false;
       this.editorLoadError = true;
     }
@@ -246,7 +254,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   private addActionButtons(): void {
     if (!this.monaco) return;
 
-    this.monaco.languages.registerCodeLensProvider('*', {
+    this.codeLensDisposable = this.monaco.languages.registerCodeLensProvider('*', {
       provideCodeLenses: (model) => {
         const lenses: any[] = [];
 
