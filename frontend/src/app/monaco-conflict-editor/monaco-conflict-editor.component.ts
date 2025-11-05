@@ -241,8 +241,33 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
   }
 
   private addActionButtons(): void {
-    if (!this.monaco) return;
+    if (!this.monaco || !this.editor) return;
 
+    // Register command handlers for CodeLens actions
+    this.conflictBlocks.forEach((conflict, index) => {
+      // Register command for Accept Current
+      this.editor.addAction({
+        id: `acceptCurrent_${index}`,
+        label: 'Accept Current Change',
+        run: () => this.resolveConflict(index, 'current')
+      });
+
+      // Register command for Accept Incoming
+      this.editor.addAction({
+        id: `acceptIncoming_${index}`,
+        label: 'Accept Incoming Change',
+        run: () => this.resolveConflict(index, 'incoming')
+      });
+
+      // Register command for Accept Both
+      this.editor.addAction({
+        id: `acceptBoth_${index}`,
+        label: 'Accept Both Changes',
+        run: () => this.resolveConflict(index, 'both')
+      });
+    });
+
+    // Create CodeLens provider that references the registered commands
     this.codeLensDisposable = this.monaco.languages.registerCodeLensProvider('*', {
       provideCodeLenses: (model) => {
         const lenses: any[] = [];
@@ -252,8 +277,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
             range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
             command: {
               id: `acceptCurrent_${index}`,
-              title: '✓ Accept Current Change',
-              arguments: [index, 'current']
+              title: '✓ Accept Current Change'
             }
           });
 
@@ -261,8 +285,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
             range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
             command: {
               id: `acceptIncoming_${index}`,
-              title: '✓ Accept Incoming Change',
-              arguments: [index, 'incoming']
+              title: '✓ Accept Incoming Change'
             }
           });
 
@@ -270,8 +293,7 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
             range: new this.monaco!.Range(conflict.startLine, 1, conflict.startLine, 1),
             command: {
               id: `acceptBoth_${index}`,
-              title: '✓ Accept Both Changes',
-              arguments: [index, 'both']
+              title: '✓ Accept Both Changes'
             }
           });
         });
@@ -279,26 +301,6 @@ export class MonacoConflictEditorComponent implements OnInit, OnDestroy, AfterVi
         return { lenses, dispose: () => {} };
       },
       resolveCodeLens: (model, codeLens) => codeLens
-    });
-
-    this.conflictBlocks.forEach((conflict, index) => {
-      this.editor.addCommand(
-        this.monaco!.KeyMod.CtrlCmd | this.monaco!.KeyCode.Digit1,
-        () => this.resolveConflict(index, 'current'),
-        `acceptCurrent_${index}`
-      );
-
-      this.editor.addCommand(
-        this.monaco!.KeyMod.CtrlCmd | this.monaco!.KeyCode.Digit2,
-        () => this.resolveConflict(index, 'incoming'),
-        `acceptIncoming_${index}`
-      );
-
-      this.editor.addCommand(
-        this.monaco!.KeyMod.CtrlCmd | this.monaco!.KeyCode.Digit3,
-        () => this.resolveConflict(index, 'both'),
-        `acceptBoth_${index}`
-      );
     });
   }
 
