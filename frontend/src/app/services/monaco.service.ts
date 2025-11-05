@@ -24,8 +24,17 @@ export class MonacoService {
 
     if (!this.monacoPromise) {
       this.monacoPromise = loader.init().then(monaco => {
+        // If init() returns null, Monaco is already loaded - get it from global
         if (!monaco) {
-          throw new Error('Failed to load Monaco Editor from CDN');
+          // Access the global monaco object
+          const globalMonaco = (window as any).monaco;
+          if (globalMonaco) {
+            this.monacoInstance = globalMonaco;
+            console.log('Monaco Editor already loaded, using existing instance');
+            return globalMonaco;
+          } else {
+            throw new Error('Failed to load Monaco Editor from CDN');
+          }
         }
         this.monacoInstance = monaco;
         console.log('Monaco Editor loaded successfully');
