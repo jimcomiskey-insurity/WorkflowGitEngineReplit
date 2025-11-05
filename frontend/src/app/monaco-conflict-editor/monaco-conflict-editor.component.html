@@ -1,0 +1,54 @@
+<div class="monaco-conflict-editor-container">
+  <div class="editor-header">
+    <div class="file-info">
+      <span class="file-icon">📄</span>
+      <div>
+        <h3>{{ fileName }}</h3>
+        <div class="conflict-status" *ngIf="conflictCount > 0">
+          <span class="conflict-badge">{{ conflictCount }} conflict<span *ngIf="conflictCount !== 1">s</span></span>
+        </div>
+        <div class="resolved-status" *ngIf="conflictCount === 0">
+          <span class="success-badge">✓ All conflicts resolved</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="acceptAllCurrent()" *ngIf="conflictCount > 0">
+        Accept All Current
+      </button>
+      <button class="btn btn-secondary" (click)="acceptAllIncoming()" *ngIf="conflictCount > 0">
+        Accept All Incoming
+      </button>
+    </div>
+  </div>
+
+  <div class="editor-instructions" *ngIf="conflictCount > 0">
+    <strong>How to resolve:</strong> Click the action buttons above each conflict block, or edit the text manually and remove conflict markers (&lt;&lt;&lt;&lt;&lt;&lt;&lt;, =======, &gt;&gt;&gt;&gt;&gt;&gt;&gt;).
+  </div>
+
+  <div class="editor-wrapper">
+    <div *ngIf="editorLoading" class="editor-loading">
+      <div class="loading-spinner"></div>
+      <p>Loading Monaco Editor...</p>
+    </div>
+
+    <div *ngIf="editorLoadError" class="editor-error">
+      <p>Failed to load Monaco Editor. Please refresh the page and try again.</p>
+    </div>
+
+    <div id="monaco-conflict-editor" class="monaco-editor-container"></div>
+  </div>
+
+  <div class="editor-actions">
+    <button class="btn btn-secondary" (click)="cancelEdit()">
+      Cancel
+    </button>
+    <button 
+      class="btn btn-primary" 
+      (click)="saveResolution()"
+      [disabled]="editorLoading">
+      Save Resolved Content
+    </button>
+  </div>
+</div>
