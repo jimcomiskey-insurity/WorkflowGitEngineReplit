@@ -364,7 +364,67 @@
     </div>
   </div>
 
-  <div class="empty-changes" *ngIf="changes.length === 0 && assetChanges.length === 0">
+  <!-- Data Store Changes -->
+  <div class="section-header" *ngIf="dataStoreChanges.length > 0">
+    <h4>Data Store Changes ({{ dataStoreChanges.length }})</h4>
+  </div>
+  
+  <div class="changes-list" *ngIf="dataStoreChanges.length > 0">
+    <div class="change-item datastore-change" *ngFor="let change of dataStoreChanges" [attr.data-change-type]="change.changeType">
+      <div class="change-header" (click)="toggleDataStoreDetails(change.dataStoreId)">
+        <div class="change-info">
+          <span class="expand-icon">{{ isDataStoreExpanded(change.dataStoreId) ? '▼' : '▶' }}</span>
+          <span class="change-badge" [ngClass]="change.changeType">{{ change.changeType | titlecase }}</span>
+          <h4>{{ change.dataStoreName }}</h4>
+        </div>
+      </div>
+
+      <!-- Detailed datastore comparison view -->
+      <div class="change-details-expanded" *ngIf="isDataStoreExpanded(change.dataStoreId)">
+        
+        <!-- ADDED DATASTORE -->
+        <div *ngIf="change.changeType === 'added' && change.sourceDataStore" class="added-datastore-details">
+          <div class="detail-section">
+            <h5>New Data Store Details</h5>
+            <div class="datastore-info">
+              <div class="info-row">
+                <strong>Description:</strong> {{ change.sourceDataStore.description || '(none)' }}
+              </div>
+              <div class="info-row">
+                <strong>Groups:</strong> {{ change.sourceDataStore.dataGroups?.length || 0 }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DELETED DATASTORE -->
+        <div *ngIf="change.changeType === 'deleted' && change.targetDataStore" class="deleted-datastore-details">
+          <div class="detail-section">
+            <h5>Removed Data Store Details</h5>
+            <div class="datastore-info">
+              <div class="info-row">
+                <strong>Description:</strong> {{ change.targetDataStore.description || '(none)' }}
+              </div>
+              <div class="info-row">
+                <strong>Groups:</strong> {{ change.targetDataStore.dataGroups?.length || 0 }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODIFIED DATASTORE -->
+        <div *ngIf="change.changeType === 'modified'" class="modified-datastore-details">
+          <div class="detail-section">
+            <h5>Data Store Modified</h5>
+            <p>The structure or content of this data store has been modified.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-changes" *ngIf="changes.length === 0 && assetChanges.length === 0 && dataStoreChanges.length === 0">
     <p>{{ emptyMessage }}</p>
   </div>
 </div>

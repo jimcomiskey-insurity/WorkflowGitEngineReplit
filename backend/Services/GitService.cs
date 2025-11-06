@@ -1984,6 +1984,58 @@ public class GitService
                 });
             }
         }
+
+        // Get datastores from both branches for change detection
+        var sourceDataStores = GetDataStoresFromCommit(repo, sourceCommit);
+        var targetDataStores = GetDataStoresFromCommit(repo, targetCommit);
+        var dataStoreChanges = new List<DataStoreChange>();
+
+        // Find added and modified datastores
+        foreach (var sourceDataStore in sourceDataStores)
+        {
+            var targetDataStore = targetDataStores.FirstOrDefault(d => d.Id == sourceDataStore.Id);
+            
+            if (targetDataStore == null)
+            {
+                dataStoreChanges.Add(new DataStoreChange
+                {
+                    DataStoreId = sourceDataStore.Id,
+                    DataStoreName = sourceDataStore.Name,
+                    ChangeType = "added",
+                    SourceDataStore = sourceDataStore,
+                    TargetDataStore = null
+                });
+            }
+            else if (!DataStoresAreEqual(sourceDataStore, targetDataStore))
+            {
+                dataStoreChanges.Add(new DataStoreChange
+                {
+                    DataStoreId = sourceDataStore.Id,
+                    DataStoreName = sourceDataStore.Name,
+                    ChangeType = "modified",
+                    SourceDataStore = sourceDataStore,
+                    TargetDataStore = targetDataStore
+                });
+            }
+        }
+
+        // Find deleted datastores
+        foreach (var targetDataStore in targetDataStores)
+        {
+            var sourceDataStore = sourceDataStores.FirstOrDefault(d => d.Id == targetDataStore.Id);
+            
+            if (sourceDataStore == null)
+            {
+                dataStoreChanges.Add(new DataStoreChange
+                {
+                    DataStoreId = targetDataStore.Id,
+                    DataStoreName = targetDataStore.Name,
+                    ChangeType = "deleted",
+                    SourceDataStore = null,
+                    TargetDataStore = targetDataStore
+                });
+            }
+        }
         
         return new BranchComparison
         {
@@ -1993,6 +2045,7 @@ public class GitService
             CommitsBehind = commitsBehind,
             Changes = changes,
             AssetChanges = assetChanges,
+            DataStoreChanges = dataStoreChanges,
             Commits = aheadCommits,
             SourceCommitSha = sourceCommit.Sha,
             TargetCommitSha = targetCommit.Sha
@@ -2234,6 +2287,13 @@ public class GitService
             a2.FileSizeBytes
         }, new JsonSerializerOptions { WriteIndented = false });
         
+        return json1 == json2;
+    }
+
+    private bool DataStoresAreEqual(DataStore d1, DataStore d2)
+    {
+        var json1 = JsonSerializer.Serialize(d1, new JsonSerializerOptions { WriteIndented = false });
+        var json2 = JsonSerializer.Serialize(d2, new JsonSerializerOptions { WriteIndented = false });
         return json1 == json2;
     }
 

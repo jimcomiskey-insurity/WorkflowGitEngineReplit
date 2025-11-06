@@ -38,6 +38,7 @@ public class BranchComparison
     public int CommitsBehind { get; set; }
     public List<WorkflowChange> Changes { get; set; } = new();
     public List<AssetChange> AssetChanges { get; set; } = new();
+    public List<DataStoreChange> DataStoreChanges { get; set; } = new();
     public List<CommitInfo> Commits { get; set; } = new();
     public string? SourceCommitSha { get; set; }
     public string? TargetCommitSha { get; set; }
@@ -60,4 +61,13 @@ public class AssetChange
     public Asset? SourceAsset { get; set; }
     public Asset? TargetAsset { get; set; }
     public bool FileContentChanged { get; set; }
+}
+
+public class DataStoreChange
+{
+    public string DataStoreId { get; set; } = string.Empty;
+    public string DataStoreName { get; set; } = string.Empty;
+    public string ChangeType { get; set; } = string.Empty;
+    public DataStore? SourceDataStore { get; set; }
+    public DataStore? TargetDataStore { get; set; }
 }

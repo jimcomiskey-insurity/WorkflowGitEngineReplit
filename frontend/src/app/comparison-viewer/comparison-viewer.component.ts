@@ -23,6 +23,14 @@ export interface AssetChange {
   fileContentChanged: boolean;
 }
 
+export interface DataStoreChange {
+  dataStoreId: string;
+  dataStoreName: string;
+  changeType: string;
+  sourceDataStore?: any;
+  targetDataStore?: any;
+}
+
 @Component({
   selector: 'app-comparison-viewer',
   standalone: true,
@@ -33,6 +41,7 @@ export interface AssetChange {
 export class ComparisonViewerComponent implements OnDestroy {
   @Input() changes: WorkflowChange[] = [];
   @Input() assetChanges: AssetChange[] = [];
+  @Input() dataStoreChanges: DataStoreChange[] = [];
   @Input() title: string = 'Changes';
   @Input() emptyMessage: string = 'No changes';
   @Input() userId: string = '';
@@ -41,6 +50,7 @@ export class ComparisonViewerComponent implements OnDestroy {
   
   expandedChanges: Set<string> = new Set();
   expandedAssets: Set<string> = new Set();
+  expandedDataStores: Set<string> = new Set();
   assetDiffViewers: Map<string, any> = new Map();
   expandedAssetDiffs: Set<string> = new Set();
   loadingDiffs: Set<string> = new Set();
@@ -92,6 +102,18 @@ export class ComparisonViewerComponent implements OnDestroy {
 
   isAssetExpanded(assetId: string): boolean {
     return this.expandedAssets.has(assetId);
+  }
+
+  toggleDataStoreDetails(dataStoreId: string) {
+    if (this.expandedDataStores.has(dataStoreId)) {
+      this.expandedDataStores.delete(dataStoreId);
+    } else {
+      this.expandedDataStores.add(dataStoreId);
+    }
+  }
+
+  isDataStoreExpanded(dataStoreId: string): boolean {
+    return this.expandedDataStores.has(dataStoreId);
   }
 
   getAssetFieldChanges(sourceAsset: any, targetAsset: any): any[] {

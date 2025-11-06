@@ -57,6 +57,7 @@
       <app-comparison-viewer
         [changes]="comparison.changes"
         [assetChanges]="comparison.assetChanges || []"
+        [dataStoreChanges]="comparison.dataStoreChanges || []"
         [title]="'All Changes (' + comparison.commitsAhead + ' ' + (comparison.commitsAhead === 1 ? 'commit' : 'commits') + ')'"
         emptyMessage="No changes in this pull request"
         [userId]="userId"

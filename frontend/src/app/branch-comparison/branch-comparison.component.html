@@ -73,6 +73,7 @@
       <app-comparison-viewer 
         [changes]="comparison.changes"
         [assetChanges]="comparison.assetChanges || []"
+        [dataStoreChanges]="comparison.dataStoreChanges || []"
         [userId]="userId"
         [sourceCommitSha]="comparison.sourceCommitSha"
         [targetCommitSha]="comparison.targetCommitSha">
