@@ -274,11 +274,8 @@ public static class DataInitializer
         var dataStoresDir = Path.Combine(repoPath, "datastores");
         Directory.CreateDirectory(dataStoresDir);
 
-        // Create empty datastore list to track datastores in Git
-        var dataStoreList = new DataStoreList
-        {
-            DataStores = new List<DataStoreListItem>()
-        };
+        // Create empty datastore list to track datastores in Git (as an array, not object)
+        var dataStoreList = new List<DataStoreListItem>();
         var dataStoreListPath = Path.Combine(repoPath, "datastore-list.json");
         var listJson = JsonSerializer.Serialize(dataStoreList, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(dataStoreListPath, listJson);
