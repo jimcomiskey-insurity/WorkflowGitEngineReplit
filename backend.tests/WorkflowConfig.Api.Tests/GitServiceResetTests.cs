@@ -60,23 +60,30 @@ public class GitServiceResetTests : IDisposable
             
             using (var repo = new LibGit2Sharp.Repository(tempInitPath))
             {
-                var sampleWorkflows = new ProgramWorkflows
+                var workflow = new Workflow
                 {
-                    Workflows = new List<Workflow>
-                    {
-                        new Workflow
-                        {
-                            WorkflowKey = "initial-workflow",
-                            WorkflowName = "Initial Workflow",
-                            Description = "Initial commit workflow",
-                            Phases = new List<Phase>()
-                        }
-                    }
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    WorkflowKey = "initial-workflow",
+                    WorkflowName = "Initial Workflow",
+                    Description = "Initial commit workflow",
+                    Phases = new List<Phase>()
                 };
                 
-                var workflowFilePath = Path.Combine(tempInitPath, "workflows.json");
-                var json = System.Text.Json.JsonSerializer.Serialize(sampleWorkflows, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(workflowFilePath, json);
+                // Create split-file format: workflow-list.json + workflows/{id}.json
+                var workflowsDir = Path.Combine(tempInitPath, "workflows");
+                Directory.CreateDirectory(workflowsDir);
+                
+                var workflowList = new WorkflowList
+                {
+                    WorkflowIds = new List<Guid> { workflow.Id }
+                };
+                var listFilePath = Path.Combine(tempInitPath, "workflow-list.json");
+                var listJson = System.Text.Json.JsonSerializer.Serialize(workflowList, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(listFilePath, listJson);
+                
+                var workflowFilePath = Path.Combine(workflowsDir, $"{workflow.Id}.json");
+                var workflowJson = System.Text.Json.JsonSerializer.Serialize(workflow, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(workflowFilePath, workflowJson);
                 
                 LibGit2Sharp.Commands.Stage(repo, "*");
                 var signature = new LibGit2Sharp.Signature("System", "system@workflow.com", DateTimeOffset.Now);

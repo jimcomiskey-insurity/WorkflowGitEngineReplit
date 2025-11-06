@@ -31,6 +31,13 @@ Preferred communication style: Simple, everyday language.
 - Mirror the backend structure in test projects
 - One test file per service/controller
 
+**Test discipline - CRITICAL:**
+- **NEVER proceed with making code changes if ANY tests are failing**
+- All tests (frontend and backend) must pass before starting new work
+- If tests are failing, investigate and fix them immediately before continuing
+- This ensures we maintain code quality and catch regressions early
+- Failing tests indicate broken functionality that must be addressed
+
 ### E2E Testing with NSwag API Client Generation
 
 **Automated API client code generation:**
