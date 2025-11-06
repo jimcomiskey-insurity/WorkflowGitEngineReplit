@@ -20,6 +20,8 @@
       "generateExceptionClasses": true,
       "exceptionClass": "ApiException",
       "wrapDtoExceptions": true,
+      "useHttpStatusCodeAsSuccessCode": false,
+      "successStatusCodeRange": "200-299",
       "useHttpClientCreationMethod": false,
       "httpClientType": "System.Net.Http.HttpClient",
       "useHttpRequestMessageCreationMethod": false,

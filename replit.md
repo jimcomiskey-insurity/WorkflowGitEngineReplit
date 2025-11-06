@@ -50,6 +50,12 @@ Preferred communication style: Simple, everyday language.
 - Previous generic names (DataStoresPOSTAsync, PullRequestsAllAsync) replaced with intention-revealing names
 - All E2E test step definitions updated to use new strongly-typed method names
 
+**NSwag HTTP status code handling (Nov 2025):**
+- NSwag configured with `successStatusCodeRange: "200-299"` to properly handle all 2xx success codes
+- Backend controllers properly annotated with `[ProducesResponseType]` attributes for 201 Created responses
+- Generated clients now treat 201 Created as success instead of throwing exceptions
+- Removed all ugly try-catch workarounds from test code - clean API calls throughout
+
 **Known limitations:**
 - Backend returns lowercase ChangeType values (e.g., "added") - tests updated to match this convention
 
