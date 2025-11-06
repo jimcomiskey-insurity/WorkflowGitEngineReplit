@@ -31,6 +31,22 @@ Preferred communication style: Simple, everyday language.
 - Mirror the backend structure in test projects
 - One test file per service/controller
 
+### E2E Testing with NSwag API Client Generation
+
+**Automated API client code generation:**
+- NSwag.MSBuild automatically generates strongly-typed C# API clients from the backend's OpenAPI spec
+- Configuration file: `backend.tests/WorkflowConfig.E2E.Tests/nswag.json`
+- Auto-regeneration on every build keeps clients in sync with backend API
+- Generated files:
+  - `Generated/ApiClients.g.cs` - Strongly-typed API client methods
+  - `Generated/Contracts.g.cs` - Request/response model classes
+- Benefits: Compile-time safety, IntelliSense support, eliminates route guessing
+- Usage: E2E tests use `IClient` interface with injected HttpClient for API calls
+
+**Known limitations:**
+- Backend OpenAPI annotations for 201 Created responses recently added
+- Some tests may require workarounds for status code handling until regeneration completes
+
 ### Frontend Testing Requirements
 
 **Mandatory for all frontend code changes:**

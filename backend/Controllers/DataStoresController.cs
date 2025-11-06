@@ -46,6 +46,8 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(DataStore))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<DataStore> CreateDataStore(string userId, [FromBody] DataStore dataStore)
         {
             if (string.IsNullOrEmpty(dataStore.Id))

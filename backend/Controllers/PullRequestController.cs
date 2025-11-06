@@ -141,6 +141,8 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(PullRequest))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<PullRequest> CreatePullRequest(
         [FromQuery] string userId,
         [FromBody] CreatePullRequestRequest request)
