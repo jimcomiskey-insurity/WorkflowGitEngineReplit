@@ -82,7 +82,12 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (dataStores) => {
+        console.log('[PendingChanges] Received datastores:', dataStores.length, 'datastores');
+        dataStores.forEach(ds => {
+          console.log(`[PendingChanges] DataStore ${ds.id} (${ds.name}) gitStatus:`, ds.gitStatus);
+        });
         this.dataStores = dataStores.filter(ds => this.hasDataStoreChanges(ds));
+        console.log('[PendingChanges] Datastores with changes:', this.dataStores.length);
         
         this.calculateTotalChanges();
         this.applyFilter();
@@ -92,7 +97,12 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.dataStoresService.getAllDataStores(this.currentUser).subscribe();
+    // Trigger manual refresh of datastores to get latest Git status
+    this.dataStoresService.getAllDataStores(this.currentUser).subscribe({
+      error: (error) => {
+        console.error('Error loading datastores:', error);
+      }
+    });
   }
 
   ngOnDestroy() {
