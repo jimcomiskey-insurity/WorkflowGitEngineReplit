@@ -57,5 +57,13 @@ export const routes: Routes = [
   {
     path: 'branch-comparison',
     loadComponent: () => import('./branch-comparison/branch-comparison.component').then(m => m.BranchComparisonComponent)
+  },
+  {
+    path: 'datastores',
+    loadComponent: () => import('./datastores/datastores.component').then(m => m.DataStoresComponent)
+  },
+  {
+    path: 'datastores/:id',
+    loadComponent: () => import('./datastore-editor/datastore-editor.component').then(m => m.DataStoreEditorComponent)
   }
 ];
