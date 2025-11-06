@@ -48,35 +48,49 @@ namespace WorkflowConfig.Api.Controllers
         [HttpPost]
         public ActionResult<DataStore> CreateDataStore(string userId, [FromBody] DataStore dataStore)
         {
-            var service = GetUserService(userId);
-            var createdDataStore = service.CreateDataStore(dataStore);
-            return CreatedAtAction(nameof(GetDataStoreById), new { userId, id = createdDataStore.Id }, createdDataStore);
+            if (string.IsNullOrEmpty(dataStore.Id))
+            {
+                dataStore.Id = System.Guid.NewGuid().ToString();
+            }
+            
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            dataStores.Add(dataStore);
+            _gitService.WriteDataStores(userId, dataStores);
+            
+            return CreatedAtAction(nameof(GetDataStoreById), new { userId, id = dataStore.Id }, dataStore);
         }
 
         [HttpPut("{id}")]
         public ActionResult<DataStore> UpdateDataStore(string userId, string id, [FromBody] DataStore dataStore)
         {
-            var service = GetUserService(userId);
-            var updatedDataStore = service.UpdateDataStore(id, dataStore);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var existingIndex = dataStores.FindIndex(ds => ds.Id == id);
             
-            if (updatedDataStore == null)
+            if (existingIndex == -1)
             {
                 return NotFound();
             }
 
-            return Ok(updatedDataStore);
+            dataStore.Id = id;
+            dataStores[existingIndex] = dataStore;
+            _gitService.WriteDataStores(userId, dataStores);
+
+            return Ok(dataStore);
         }
 
         [HttpDelete("{id}")]
         public ActionResult DeleteDataStore(string userId, string id)
         {
-            var service = GetUserService(userId);
-            var result = service.DeleteDataStore(id);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var existingDataStore = dataStores.FirstOrDefault(ds => ds.Id == id);
             
-            if (!result)
+            if (existingDataStore == null)
             {
                 return NotFound();
             }
+
+            dataStores.Remove(existingDataStore);
+            _gitService.WriteDataStores(userId, dataStores);
 
             return NoContent();
         }
@@ -88,15 +102,46 @@ namespace WorkflowConfig.Api.Controllers
             [FromBody] DataGroup dataGroup,
             [FromQuery] string? parentGroupId = null)
         {
-            var service = GetUserService(userId);
-            var createdDataGroup = service.AddDataGroup(dataStoreId, dataGroup, parentGroupId);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
             
-            if (createdDataGroup == null)
+            if (dataStore == null)
             {
                 return NotFound();
             }
 
-            return Ok(createdDataGroup);
+            if (string.IsNullOrEmpty(dataGroup.Id))
+            {
+                dataGroup.Id = System.Guid.NewGuid().ToString();
+            }
+
+            if (string.IsNullOrEmpty(parentGroupId))
+            {
+                dataStore.DataGroups.Add(dataGroup);
+            }
+            else
+            {
+                var parentGroup = FindDataGroup(dataStore.DataGroups, parentGroupId);
+                if (parentGroup == null)
+                {
+                    return NotFound("Parent group not found");
+                }
+                parentGroup.ChildGroups.Add(dataGroup);
+            }
+
+            _gitService.WriteDataStores(userId, dataStores);
+            return Ok(dataGroup);
+        }
+
+        private DataGroup? FindDataGroup(List<DataGroup> groups, string groupId)
+        {
+            foreach (var group in groups)
+            {
+                if (group.Id == groupId) return group;
+                var found = FindDataGroup(group.ChildGroups, groupId);
+                if (found != null) return found;
+            }
+            return null;
         }
 
         [HttpPost("{dataStoreId}/datagroups/{dataGroupId}/datapoints")]
@@ -106,15 +151,29 @@ namespace WorkflowConfig.Api.Controllers
             string dataGroupId, 
             [FromBody] DataPoint dataPoint)
         {
-            var service = GetUserService(userId);
-            var createdDataPoint = service.AddDataPoint(dataStoreId, dataGroupId, dataPoint);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
             
-            if (createdDataPoint == null)
+            if (dataStore == null)
             {
-                return NotFound();
+                return NotFound("DataStore not found");
             }
 
-            return Ok(createdDataPoint);
+            var dataGroup = FindDataGroup(dataStore.DataGroups, dataGroupId);
+            if (dataGroup == null)
+            {
+                return NotFound("DataGroup not found");
+            }
+
+            if (string.IsNullOrEmpty(dataPoint.Id))
+            {
+                dataPoint.Id = System.Guid.NewGuid().ToString();
+            }
+
+            dataGroup.DataPoints.Add(dataPoint);
+            _gitService.WriteDataStores(userId, dataStores);
+
+            return Ok(dataPoint);
         }
 
         [HttpPut("{dataStoreId}/datagroups/{dataGroupId}")]
@@ -124,14 +183,26 @@ namespace WorkflowConfig.Api.Controllers
             string dataGroupId, 
             [FromBody] DataGroup dataGroup)
         {
-            var service = GetUserService(userId);
-            var result = service.UpdateDataGroup(dataStoreId, dataGroupId, dataGroup);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
             
-            if (!result)
+            if (dataStore == null)
             {
-                return NotFound();
+                return NotFound("DataStore not found");
             }
 
+            var existingGroup = FindDataGroup(dataStore.DataGroups, dataGroupId);
+            if (existingGroup == null)
+            {
+                return NotFound("DataGroup not found");
+            }
+
+            existingGroup.Name = dataGroup.Name;
+            existingGroup.Description = dataGroup.Description;
+            existingGroup.Tag = dataGroup.Tag;
+            existingGroup.OrderIndex = dataGroup.OrderIndex;
+
+            _gitService.WriteDataStores(userId, dataStores);
             return NoContent();
         }
 
@@ -142,43 +213,119 @@ namespace WorkflowConfig.Api.Controllers
             string dataPointId, 
             [FromBody] DataPoint dataPoint)
         {
-            var service = GetUserService(userId);
-            var result = service.UpdateDataPoint(dataStoreId, dataPointId, dataPoint);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
             
-            if (!result)
+            if (dataStore == null)
             {
-                return NotFound();
+                return NotFound("DataStore not found");
             }
 
+            var existingPoint = FindDataPoint(dataStore.DataGroups, dataPointId);
+            if (existingPoint == null)
+            {
+                return NotFound("DataPoint not found");
+            }
+
+            existingPoint.Name = dataPoint.Name;
+            existingPoint.Description = dataPoint.Description;
+            existingPoint.Tag = dataPoint.Tag;
+            existingPoint.DataType = dataPoint.DataType;
+            existingPoint.OrderIndex = dataPoint.OrderIndex;
+            existingPoint.Configuration = dataPoint.Configuration;
+
+            _gitService.WriteDataStores(userId, dataStores);
             return NoContent();
+        }
+
+        private DataPoint? FindDataPoint(List<DataGroup> groups, string dataPointId)
+        {
+            foreach (var group in groups)
+            {
+                var point = group.DataPoints.FirstOrDefault(dp => dp.Id == dataPointId);
+                if (point != null) return point;
+                
+                var foundInChild = FindDataPoint(group.ChildGroups, dataPointId);
+                if (foundInChild != null) return foundInChild;
+            }
+            return null;
         }
 
         [HttpDelete("{dataStoreId}/datagroups/{dataGroupId}")]
         public ActionResult DeleteDataGroup(string userId, string dataStoreId, string dataGroupId)
         {
-            var service = GetUserService(userId);
-            var result = service.DeleteDataGroup(dataStoreId, dataGroupId);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
             
-            if (!result)
+            if (dataStore == null)
             {
-                return NotFound();
+                return NotFound("DataStore not found");
             }
 
+            if (!RemoveDataGroup(dataStore.DataGroups, dataGroupId))
+            {
+                return NotFound("DataGroup not found");
+            }
+
+            _gitService.WriteDataStores(userId, dataStores);
             return NoContent();
+        }
+
+        private bool RemoveDataGroup(List<DataGroup> groups, string groupId)
+        {
+            for (int i = 0; i < groups.Count; i++)
+            {
+                if (groups[i].Id == groupId)
+                {
+                    groups.RemoveAt(i);
+                    return true;
+                }
+                
+                if (RemoveDataGroup(groups[i].ChildGroups, groupId))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         [HttpDelete("{dataStoreId}/datapoints/{dataPointId}")]
         public ActionResult DeleteDataPoint(string userId, string dataStoreId, string dataPointId)
         {
-            var service = GetUserService(userId);
-            var result = service.DeleteDataPoint(dataStoreId, dataPointId);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
             
-            if (!result)
+            if (dataStore == null)
             {
-                return NotFound();
+                return NotFound("DataStore not found");
             }
 
+            if (!RemoveDataPoint(dataStore.DataGroups, dataPointId))
+            {
+                return NotFound("DataPoint not found");
+            }
+
+            _gitService.WriteDataStores(userId, dataStores);
             return NoContent();
+        }
+
+        private bool RemoveDataPoint(List<DataGroup> groups, string dataPointId)
+        {
+            foreach (var group in groups)
+            {
+                var point = group.DataPoints.FirstOrDefault(dp => dp.Id == dataPointId);
+                if (point != null)
+                {
+                    group.DataPoints.Remove(point);
+                    return true;
+                }
+                
+                if (RemoveDataPoint(group.ChildGroups, dataPointId))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

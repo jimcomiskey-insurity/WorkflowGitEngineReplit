@@ -1275,6 +1275,77 @@ public class GitService
     }
 
     // DataStore Git Status Enrichment
+    public void WriteDataStores(string userId, List<DataStore> dataStores)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+
+        var existingList = ReadDataStoreListIfExists(userRepoPath);
+        var existingIds = existingList?.Select(item => item.Id).ToList() ?? new List<string>();
+        var newIds = dataStores.Select(ds => ds.Id).ToList();
+
+        var deletedIds = existingIds.Except(newIds).ToList();
+        foreach (var deletedId in deletedIds)
+        {
+            DeleteDataStoreFile(userRepoPath, deletedId);
+            _logger.LogInformation($"Deleted orphaned datastore file for ID {deletedId}");
+        }
+
+        var dataStoreList = dataStores.Select(ds => new DataStoreListItem
+        {
+            Id = ds.Id,
+            Name = ds.Name,
+            Description = ds.Description,
+            NoOfTimesUsed = ds.NoOfTimesUsed
+        }).ToList();
+        
+        WriteDataStoreListFile(userRepoPath, dataStoreList);
+
+        foreach (var dataStore in dataStores)
+        {
+            WriteDataStoreFile(userRepoPath, dataStore);
+        }
+
+        _logger.LogInformation($"Written {dataStores.Count} datastores in split-file format for user {userId}");
+    }
+
+    private List<DataStoreListItem>? ReadDataStoreListIfExists(string userRepoPath)
+    {
+        var listPath = Path.Combine(userRepoPath, DataStoreListFileName);
+        if (!File.Exists(listPath))
+        {
+            return null;
+        }
+        var json = File.ReadAllText(listPath);
+        return JsonSerializer.Deserialize<List<DataStoreListItem>>(json);
+    }
+
+    private void WriteDataStoreListFile(string userRepoPath, List<DataStoreListItem> dataStoreList)
+    {
+        var listPath = Path.Combine(userRepoPath, DataStoreListFileName);
+        var json = JsonSerializer.Serialize(dataStoreList, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(listPath, json);
+    }
+
+    private void WriteDataStoreFile(string userRepoPath, DataStore dataStore)
+    {
+        var dataStoresDir = Path.Combine(userRepoPath, DataStoresDirectory);
+        Directory.CreateDirectory(dataStoresDir);
+        
+        var dataStorePath = Path.Combine(dataStoresDir, $"{dataStore.Id}.json");
+        var json = JsonSerializer.Serialize(dataStore, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(dataStorePath, json);
+    }
+
+    private void DeleteDataStoreFile(string userRepoPath, string dataStoreId)
+    {
+        var dataStorePath = Path.Combine(userRepoPath, DataStoresDirectory, $"{dataStoreId}.json");
+        if (File.Exists(dataStorePath))
+        {
+            File.Delete(dataStorePath);
+        }
+    }
+
     public List<DataStore> ReadDataStoresWithGitStatus(string userId)
     {
         var dataStores = ReadDataStores(userId);
