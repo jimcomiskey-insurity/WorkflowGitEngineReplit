@@ -299,7 +299,7 @@ export class DataStoresComponent implements OnInit {
     description: ''
   };
 
-  currentUser = 'user1';
+  currentUser = sessionStorage.getItem('currentUser') || 'userA';
 
   ngOnInit(): void {
     this.loadDataStores();
