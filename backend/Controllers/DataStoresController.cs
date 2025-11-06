@@ -57,7 +57,11 @@ namespace WorkflowConfig.Api.Controllers
             dataStores.Add(dataStore);
             _gitService.WriteDataStores(userId, dataStores);
             
-            return CreatedAtAction(nameof(GetDataStoreById), new { userId, id = dataStore.Id }, dataStore);
+            // Reload with Git status
+            var refreshedDataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var createdDataStore = refreshedDataStores.FirstOrDefault(ds => ds.Id == dataStore.Id);
+            
+            return CreatedAtAction(nameof(GetDataStoreById), new { userId, id = dataStore.Id }, createdDataStore);
         }
 
         [HttpPut("{id}")]
@@ -75,7 +79,11 @@ namespace WorkflowConfig.Api.Controllers
             dataStores[existingIndex] = dataStore;
             _gitService.WriteDataStores(userId, dataStores);
 
-            return Ok(dataStore);
+            // Reload with Git status
+            var refreshedDataStores = _gitService.ReadDataStoresWithGitStatus(userId);
+            var updatedDataStore = refreshedDataStores.FirstOrDefault(ds => ds.Id == id);
+
+            return Ok(updatedDataStore);
         }
 
         [HttpDelete("{id}")]
