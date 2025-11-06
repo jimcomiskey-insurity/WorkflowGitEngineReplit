@@ -335,7 +335,7 @@ export class DataStoreEditorComponent implements OnInit {
   pendingGroupParent: TreeNode | null = null;
   expandedNodeIds: Set<string> = new Set();
 
-  currentUser = 'user1';
+  currentUser = sessionStorage.getItem('currentUser') || 'userA';
 
   dataPointTypes = [
     { name: 'Date', icon: '📅', type: 'Date' },
