@@ -2174,6 +2174,158 @@ public class GitService
         return changes;
     }
 
+    private List<AssetChange> GetCommitAssetChanges(Repository repo, Commit commit)
+    {
+        // Get assets from this commit
+        var commitAssets = GetAssetsFromCommit(repo, commit);
+        
+        // Get assets from parent commit (or empty list if this is the first commit)
+        var parentAssets = new List<Asset>();
+        if (commit.Parents.Any())
+        {
+            var parentCommit = commit.Parents.First();
+            parentAssets = GetAssetsFromCommit(repo, parentCommit);
+        }
+        
+        var changes = new List<AssetChange>();
+        
+        // Find added and modified assets
+        foreach (var asset in commitAssets)
+        {
+            var parentAsset = parentAssets.FirstOrDefault(a => a.Id == asset.Id);
+            
+            if (parentAsset == null)
+            {
+                changes.Add(new AssetChange
+                {
+                    AssetId = asset.Id,
+                    AssetName = asset.Name,
+                    ChangeType = "added",
+                    SourceAsset = asset,
+                    TargetAsset = null,
+                    FileContentChanged = false
+                });
+            }
+            else if (!AssetsAreEqual(asset, parentAsset))
+            {
+                var fileContentChanged = asset.FileName != null && 
+                                        parentAsset.FileName != null &&
+                                        AssetFileContentChanged(repo, commit, commit.Parents.First(), asset.Id, asset.FileName);
+                
+                changes.Add(new AssetChange
+                {
+                    AssetId = asset.Id,
+                    AssetName = asset.Name,
+                    ChangeType = "modified",
+                    SourceAsset = asset,
+                    TargetAsset = parentAsset,
+                    FileContentChanged = fileContentChanged
+                });
+            }
+            else if (asset.FileName != null && 
+                    parentAsset.FileName != null &&
+                    AssetFileContentChanged(repo, commit, commit.Parents.First(), asset.Id, asset.FileName))
+            {
+                // Metadata unchanged but file content changed
+                changes.Add(new AssetChange
+                {
+                    AssetId = asset.Id,
+                    AssetName = asset.Name,
+                    ChangeType = "modified",
+                    SourceAsset = asset,
+                    TargetAsset = parentAsset,
+                    FileContentChanged = true
+                });
+            }
+        }
+        
+        // Find deleted assets
+        foreach (var parentAsset in parentAssets)
+        {
+            var asset = commitAssets.FirstOrDefault(a => a.Id == parentAsset.Id);
+            
+            if (asset == null)
+            {
+                changes.Add(new AssetChange
+                {
+                    AssetId = parentAsset.Id,
+                    AssetName = parentAsset.Name,
+                    ChangeType = "deleted",
+                    SourceAsset = null,
+                    TargetAsset = parentAsset,
+                    FileContentChanged = false
+                });
+            }
+        }
+        
+        return changes;
+    }
+
+    private List<DataStoreChange> GetCommitDataStoreChanges(Repository repo, Commit commit)
+    {
+        // Get datastores from this commit
+        var commitDataStores = GetDataStoresFromCommit(repo, commit);
+        
+        // Get datastores from parent commit (or empty list if this is the first commit)
+        var parentDataStores = new List<DataStore>();
+        if (commit.Parents.Any())
+        {
+            var parentCommit = commit.Parents.First();
+            parentDataStores = GetDataStoresFromCommit(repo, parentCommit);
+        }
+        
+        var changes = new List<DataStoreChange>();
+        
+        // Find added and modified datastores
+        foreach (var dataStore in commitDataStores)
+        {
+            var parentDataStore = parentDataStores.FirstOrDefault(d => d.Id == dataStore.Id);
+            
+            if (parentDataStore == null)
+            {
+                changes.Add(new DataStoreChange
+                {
+                    DataStoreId = dataStore.Id,
+                    DataStoreName = dataStore.Name,
+                    ChangeType = "added",
+                    SourceDataStore = dataStore,
+                    TargetDataStore = null
+                });
+            }
+            else if (!DataStoresAreEqual(dataStore, parentDataStore))
+            {
+                changes.Add(new DataStoreChange
+                {
+                    DataStoreId = dataStore.Id,
+                    DataStoreName = dataStore.Name,
+                    ChangeType = "modified",
+                    SourceDataStore = dataStore,
+                    TargetDataStore = parentDataStore
+                });
+            }
+        }
+        
+        // Find deleted datastores
+        foreach (var parentDataStore in parentDataStores)
+        {
+            var dataStore = commitDataStores.FirstOrDefault(d => d.Id == parentDataStore.Id);
+            
+            if (dataStore == null)
+            {
+                changes.Add(new DataStoreChange
+                {
+                    DataStoreId = parentDataStore.Id,
+                    DataStoreName = parentDataStore.Name,
+                    ChangeType = "deleted",
+                    SourceDataStore = null,
+                    TargetDataStore = parentDataStore
+                });
+            }
+        }
+        
+        return changes;
+    }
+
     public virtual BranchComparison CompareBranchesInCentral(string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
     {
         // For pull requests: work directly with the central repository
