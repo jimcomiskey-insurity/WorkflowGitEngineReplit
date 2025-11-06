@@ -1365,7 +1365,34 @@ public class GitService
         }
 
         var listJson = File.ReadAllText(dataStoreListPath);
-        var dataStoreList = JsonSerializer.Deserialize<List<DataStoreListItem>>(listJson);
+        List<DataStoreListItem>? dataStoreList = null;
+        
+        // Try new format first (array)
+        try
+        {
+            dataStoreList = JsonSerializer.Deserialize<List<DataStoreListItem>>(listJson);
+        }
+        catch (JsonException)
+        {
+            // Fall back to old format (object with DataStores property)
+            try
+            {
+                var oldFormat = JsonSerializer.Deserialize<DataStoreList>(listJson);
+                if (oldFormat?.DataStores != null)
+                {
+                    dataStoreList = oldFormat.DataStores;
+                    // Automatically migrate to new format
+                    _logger.LogInformation($"Migrating datastore-list.json from old format to new format for user {userId}");
+                    var newJson = JsonSerializer.Serialize(dataStoreList, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(dataStoreListPath, newJson);
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError($"Failed to deserialize datastore-list.json for user {userId}: {ex.Message}");
+                return new List<DataStore>();
+            }
+        }
         
         if (dataStoreList == null || !dataStoreList.Any())
         {
@@ -1454,7 +1481,29 @@ public class GitService
 
         var listBlob = (Blob)dataStoreListEntry.Target;
         var listJson = listBlob.GetContentText();
-        var dataStoreList = JsonSerializer.Deserialize<List<DataStoreListItem>>(listJson);
+        List<DataStoreListItem>? dataStoreList = null;
+        
+        // Try new format first (array)
+        try
+        {
+            dataStoreList = JsonSerializer.Deserialize<List<DataStoreListItem>>(listJson);
+        }
+        catch (JsonException)
+        {
+            // Fall back to old format (object with DataStores property)
+            try
+            {
+                var oldFormat = JsonSerializer.Deserialize<DataStoreList>(listJson);
+                if (oldFormat?.DataStores != null)
+                {
+                    dataStoreList = oldFormat.DataStores;
+                }
+            }
+            catch (JsonException)
+            {
+                return new List<DataStore>();
+            }
+        }
         
         if (dataStoreList == null || !dataStoreList.Any())
         {
