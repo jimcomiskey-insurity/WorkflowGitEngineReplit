@@ -339,16 +339,288 @@ public class GitService
         
         using var repo = new Repository(userRepoPath);
         
-        return repo.Commits
-            .Take(count)
-            .Select(c => new Models.CommitInfo
+        var commitInfoList = new List<Models.CommitInfo>();
+        
+        foreach (var commit in repo.Commits.Take(count))
+        {
+            var commitInfo = new Models.CommitInfo
             {
-                Sha = c.Sha,
-                Message = c.MessageShort,
-                Author = c.Author.Name,
-                Date = c.Author.When
-            })
-            .ToList();
+                Sha = commit.Sha,
+                Message = commit.MessageShort,
+                Author = commit.Author.Name,
+                Date = commit.Author.When
+            };
+            
+            // Enrich with changes by comparing with parent commit
+            if (commit.Parents.Any())
+            {
+                var parentCommit = commit.Parents.First();
+                EnrichCommitWithChanges(repo, commit, parentCommit, commitInfo);
+            }
+            else
+            {
+                // Initial commit - mark everything as added
+                EnrichInitialCommit(repo, commit, commitInfo);
+            }
+            
+            commitInfoList.Add(commitInfo);
+        }
+        
+        return commitInfoList;
+    }
+    
+    private void EnrichCommitWithChanges(Repository repo, Commit commit, Commit parentCommit, Models.CommitInfo commitInfo)
+    {
+        // Get workflows from both commits
+        var currentWorkflows = GetWorkflowsFromCommit(repo, commit);
+        var previousWorkflows = GetWorkflowsFromCommit(repo, parentCommit);
+        
+        // Generate workflow changes
+        commitInfo.Changes = GenerateWorkflowChanges(currentWorkflows, previousWorkflows);
+        
+        // Get assets from both commits
+        var currentAssets = GetAssetsFromCommit(repo, commit);
+        var previousAssets = GetAssetsFromCommit(repo, parentCommit);
+        
+        // Generate asset changes
+        commitInfo.AssetChanges = GenerateAssetChanges(repo, commit, parentCommit, currentAssets, previousAssets);
+        
+        // Get datastores from both commits
+        var currentDataStores = GetDataStoresFromCommit(repo, commit);
+        var previousDataStores = GetDataStoresFromCommit(repo, parentCommit);
+        
+        // Generate datastore changes
+        commitInfo.DataStoreChanges = GenerateDataStoreChanges(currentDataStores, previousDataStores);
+    }
+    
+    private void EnrichInitialCommit(Repository repo, Commit commit, Models.CommitInfo commitInfo)
+    {
+        // For initial commit, everything is considered added
+        var workflows = GetWorkflowsFromCommit(repo, commit);
+        commitInfo.Changes = workflows.Select(w => new WorkflowChange
+        {
+            WorkflowKey = w.WorkflowKey,
+            WorkflowName = w.WorkflowName,
+            ChangeType = "added",
+            SourceWorkflow = w,
+            TargetWorkflow = null
+        }).ToList();
+        
+        var assets = GetAssetsFromCommit(repo, commit);
+        commitInfo.AssetChanges = assets.Select(a => new AssetChange
+        {
+            AssetId = a.Id,
+            AssetName = a.Name,
+            ChangeType = "added",
+            SourceAsset = a,
+            TargetAsset = null,
+            FileContentChanged = a.FileName != null
+        }).ToList();
+        
+        var dataStores = GetDataStoresFromCommit(repo, commit);
+        commitInfo.DataStoreChanges = dataStores.Select(ds => new DataStoreChange
+        {
+            DataStoreId = ds.Id,
+            DataStoreName = ds.Name,
+            ChangeType = "added",
+            SourceDataStore = ds,
+            TargetDataStore = null
+        }).ToList();
+    }
+    
+    private List<WorkflowChange> GenerateWorkflowChanges(List<Workflow> current, List<Workflow> previous)
+    {
+        var changes = new List<WorkflowChange>();
+        
+        // Check for added and modified workflows
+        foreach (var currentWorkflow in current)
+        {
+            var previousWorkflow = previous.FirstOrDefault(w => w.WorkflowKey == currentWorkflow.WorkflowKey);
+            
+            if (previousWorkflow == null)
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = currentWorkflow.WorkflowKey,
+                    WorkflowName = currentWorkflow.WorkflowName,
+                    ChangeType = "added",
+                    SourceWorkflow = currentWorkflow,
+                    TargetWorkflow = null
+                });
+            }
+            else if (!WorkflowsAreEqual(currentWorkflow, previousWorkflow))
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = currentWorkflow.WorkflowKey,
+                    WorkflowName = currentWorkflow.WorkflowName,
+                    ChangeType = "modified",
+                    SourceWorkflow = currentWorkflow,
+                    TargetWorkflow = previousWorkflow
+                });
+            }
+        }
+        
+        // Check for deleted workflows
+        foreach (var previousWorkflow in previous)
+        {
+            if (!current.Any(w => w.WorkflowKey == previousWorkflow.WorkflowKey))
+            {
+                changes.Add(new WorkflowChange
+                {
+                    WorkflowKey = previousWorkflow.WorkflowKey,
+                    WorkflowName = previousWorkflow.WorkflowName,
+                    ChangeType = "deleted",
+                    SourceWorkflow = null,
+                    TargetWorkflow = previousWorkflow
+                });
+            }
+        }
+        
+        return changes;
+    }
+    
+    private List<AssetChange> GenerateAssetChanges(Repository repo, Commit currentCommit, Commit previousCommit, List<Asset> current, List<Asset> previous)
+    {
+        var changes = new List<AssetChange>();
+        
+        // Check for added and modified assets
+        foreach (var currentAsset in current)
+        {
+            var previousAsset = previous.FirstOrDefault(a => a.Id == currentAsset.Id);
+            
+            if (previousAsset == null)
+            {
+                changes.Add(new AssetChange
+                {
+                    AssetId = currentAsset.Id,
+                    AssetName = currentAsset.Name,
+                    ChangeType = "added",
+                    SourceAsset = currentAsset,
+                    TargetAsset = null,
+                    FileContentChanged = currentAsset.FileName != null
+                });
+            }
+            else
+            {
+                var fileContentChanged = AssetFileContentChanged(repo, currentCommit, previousCommit, currentAsset);
+                
+                if (!AssetsAreEqual(currentAsset, previousAsset) || fileContentChanged)
+                {
+                    changes.Add(new AssetChange
+                    {
+                        AssetId = currentAsset.Id,
+                        AssetName = currentAsset.Name,
+                        ChangeType = "modified",
+                        SourceAsset = currentAsset,
+                        TargetAsset = previousAsset,
+                        FileContentChanged = fileContentChanged
+                    });
+                }
+            }
+        }
+        
+        // Check for deleted assets
+        foreach (var previousAsset in previous)
+        {
+            if (!current.Any(a => a.Id == previousAsset.Id))
+            {
+                changes.Add(new AssetChange
+                {
+                    AssetId = previousAsset.Id,
+                    AssetName = previousAsset.Name,
+                    ChangeType = "deleted",
+                    SourceAsset = null,
+                    TargetAsset = previousAsset,
+                    FileContentChanged = false
+                });
+            }
+        }
+        
+        return changes;
+    }
+    
+    private bool AssetFileContentChanged(Repository repo, Commit currentCommit, Commit previousCommit, Asset asset)
+    {
+        if (asset.FileName == null)
+        {
+            return false;
+        }
+        
+        var assetFilePath = $"{AssetFilesDirectory}/{asset.Id}/{asset.FileName}";
+        
+        var currentEntry = currentCommit[assetFilePath];
+        var previousEntry = previousCommit[assetFilePath];
+        
+        // If file exists in one but not the other, it changed
+        if ((currentEntry == null) != (previousEntry == null))
+        {
+            return true;
+        }
+        
+        // If file doesn't exist in either, no change
+        if (currentEntry == null && previousEntry == null)
+        {
+            return false;
+        }
+        
+        // Compare file content
+        var currentBlob = (Blob)currentEntry.Target;
+        var previousBlob = (Blob)previousEntry.Target;
+        
+        return currentBlob.Sha != previousBlob.Sha;
+    }
+    
+    private List<DataStoreChange> GenerateDataStoreChanges(List<DataStore> current, List<DataStore> previous)
+    {
+        var changes = new List<DataStoreChange>();
+        
+        // Check for added and modified datastores
+        foreach (var currentDataStore in current)
+        {
+            var previousDataStore = previous.FirstOrDefault(ds => ds.Id == currentDataStore.Id);
+            
+            if (previousDataStore == null)
+            {
+                changes.Add(new DataStoreChange
+                {
+                    DataStoreId = currentDataStore.Id,
+                    DataStoreName = currentDataStore.Name,
+                    ChangeType = "added",
+                    SourceDataStore = currentDataStore,
+                    TargetDataStore = null
+                });
+            }
+            else if (!DataStoresAreEqual(currentDataStore, previousDataStore))
+            {
+                changes.Add(new DataStoreChange
+                {
+                    DataStoreId = currentDataStore.Id,
+                    DataStoreName = currentDataStore.Name,
+                    ChangeType = "modified",
+                    SourceDataStore = currentDataStore,
+                    TargetDataStore = previousDataStore
+                });
+            }
+        }
+        
+        // Check for deleted datastores
+        foreach (var previousDataStore in previous)
+        {
+            if (!current.Any(ds => ds.Id == previousDataStore.Id))
+            {
+                changes.Add(new DataStoreChange
+                {
+                    DataStoreId = previousDataStore.Id,
+                    DataStoreName = previousDataStore.Name,
+                    ChangeType = "deleted",
+                    SourceDataStore = null,
+                    TargetDataStore = previousDataStore
+                });
+            }
+        }
+        
+        return changes;
     }
 
     public ProgramWorkflows ReadWorkflows(string userId)
