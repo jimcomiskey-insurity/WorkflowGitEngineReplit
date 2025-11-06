@@ -183,7 +183,7 @@ public class DataStoreGitIntegrationSteps
             ds => ds.DataStoreName == datastoreName);
         
         foundDatastore.Should().NotBeNull($"Datastore '{datastoreName}' should appear in comparison.dataStoreChanges");
-        foundDatastore!.ChangeType.Should().Be("Added", "Datastore should be marked as Added");
+        foundDatastore!.ChangeType.Should().Be("added", "Datastore should be marked as added");
         
         // Store comparison for next step
         _scenarioContext["Comparison"] = comparison;
@@ -209,6 +209,6 @@ public class DataStoreGitIntegrationSteps
             $"At least one commit should contain datastore '{datastoreName}' in its dataStoreChanges property.");
         
         var changeInCommit = commitWithDatastore!.DataStoreChanges!.First(ds => ds.DataStoreName == datastoreName);
-        changeInCommit.ChangeType.Should().Be("Added", "Datastore should be marked as Added in commit");
+        changeInCommit.ChangeType.Should().Be("added", "Datastore should be marked as added in commit");
     }
 }
