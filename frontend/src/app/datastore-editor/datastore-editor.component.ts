@@ -119,6 +119,73 @@ interface TreeNode {
               />
             </div>
 
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="editingGroup.isRepeatable"
+                  (ngModelChange)="saveGroup()"
+                />
+                Make this data group repeatable
+              </label>
+            </div>
+
+            <div class="form-group" *ngIf="editingGroup.isRepeatable">
+              <label class="checkbox-label indent">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="editingGroup.allowDesiredState"
+                  (ngModelChange)="saveGroup()"
+                />
+                Allow desired state
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="section-label">
+                Allow population by
+                <span class="info-icon" title="Control how this data group can be populated">ⓘ</span>
+              </label>
+              
+              <label class="checkbox-label indent">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="editingGroup.allowPopulationByApplication"
+                  (ngModelChange)="saveGroup()"
+                />
+                Application
+              </label>
+
+              <label class="checkbox-label indent">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="editingGroup.allowPopulationByImportCopy"
+                  (ngModelChange)="saveGroup()"
+                />
+                Import/Copy
+              </label>
+
+              <label class="checkbox-label indent">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="editingGroup.allowPopulationByObjectSync"
+                  (ngModelChange)="saveGroup()"
+                />
+                Object Sync
+              </label>
+
+              <div *ngIf="editingGroup.allowPopulationByObjectSync" class="indent-field">
+                <label>Reference Object</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="editingGroup.referenceObject"
+                  (ngModelChange)="saveGroup()"
+                  class="form-input"
+                  placeholder="Enter reference object"
+                />
+              </div>
+            </div>
+
             <button class="delete-btn" (click)="deleteGroup()">Delete Group</button>
           </div>
 
@@ -491,6 +558,12 @@ export class DataStoreEditorComponent implements OnInit {
       name: 'New Group',
       description: '',
       orderIndex: this.dataStore.dataGroups.length,
+      isRepeatable: false,
+      allowDesiredState: false,
+      allowPopulationByApplication: true,
+      allowPopulationByImportCopy: true,
+      allowPopulationByObjectSync: true,
+      referenceObject: '',
       dataPoints: [],
       childGroups: []
     };
@@ -511,6 +584,12 @@ export class DataStoreEditorComponent implements OnInit {
       name: 'New Nested Group',
       description: '',
       orderIndex: parentGroup.childGroups.length,
+      isRepeatable: false,
+      allowDesiredState: false,
+      allowPopulationByApplication: true,
+      allowPopulationByImportCopy: true,
+      allowPopulationByObjectSync: true,
+      referenceObject: '',
       dataPoints: [],
       childGroups: []
     };

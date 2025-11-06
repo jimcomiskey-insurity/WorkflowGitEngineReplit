@@ -148,6 +148,11 @@ describe('DataStoresService', () => {
         name: 'Test Group',
         description: 'Test',
         orderIndex: 0,
+        isRepeatable: false,
+        allowDesiredState: false,
+        allowPopulationByApplication: true,
+        allowPopulationByImportCopy: true,
+        allowPopulationByObjectSync: true,
         dataPoints: [],
         childGroups: []
       };
@@ -168,6 +173,11 @@ describe('DataStoresService', () => {
         name: 'Child Group',
         description: 'Test',
         orderIndex: 0,
+        isRepeatable: false,
+        allowDesiredState: false,
+        allowPopulationByApplication: true,
+        allowPopulationByImportCopy: true,
+        allowPopulationByObjectSync: true,
         dataPoints: [],
         childGroups: []
       };
@@ -212,6 +222,11 @@ describe('DataStoresService', () => {
         name: 'Updated Group',
         description: 'Updated',
         orderIndex: 0,
+        isRepeatable: false,
+        allowDesiredState: false,
+        allowPopulationByApplication: true,
+        allowPopulationByImportCopy: true,
+        allowPopulationByObjectSync: true,
         dataPoints: [],
         childGroups: []
       };
