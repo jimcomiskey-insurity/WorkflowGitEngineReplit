@@ -331,6 +331,7 @@ export class DataStoreEditorComponent implements OnInit {
   };
 
   pendingGroupParent: TreeNode | null = null;
+  expandedNodeIds: Set<string> = new Set();
 
   currentUser = 'user1';
 
@@ -353,7 +354,7 @@ export class DataStoreEditorComponent implements OnInit {
   ngOnInit(): void {
     const dataStoreId = this.route.snapshot.paramMap.get('id');
     if (dataStoreId) {
-      this.loadDataStore(dataStoreId);
+      this.loadDataStore(dataStoreId, true);
     }
 
     document.addEventListener('click', () => {
@@ -361,11 +362,25 @@ export class DataStoreEditorComponent implements OnInit {
     });
   }
 
-  loadDataStore(id: string): void {
+  loadDataStore(id: string, expandAll: boolean = false): void {
     this.dataStoresService.getDataStoreById(this.currentUser, id).subscribe(dataStore => {
       this.dataStore = dataStore;
+      
+      if (expandAll) {
+        this.expandAllNodes(dataStore);
+      }
+      
       this.buildTree();
     });
+  }
+
+  expandAllNodes(dataStore: DataStore): void {
+    const expandGroupRecursive = (group: DataGroup) => {
+      this.expandedNodeIds.add(group.id);
+      group.childGroups.forEach(child => expandGroupRecursive(child));
+    };
+    
+    dataStore.dataGroups.forEach(group => expandGroupRecursive(group));
   }
 
   buildTree(): void {
@@ -381,6 +396,8 @@ export class DataStoreEditorComponent implements OnInit {
       ...group.childGroups.map(child => this.buildGroupNode(child))
     ];
 
+    const wasExpanded = this.expandedNodeIds.has(group.id);
+
     return {
       id: group.id,
       name: group.name,
@@ -388,7 +405,7 @@ export class DataStoreEditorComponent implements OnInit {
       icon: '📁',
       data: group,
       parentId: group.parentId,
-      expanded: false,
+      expanded: wasExpanded,
       children
     };
   }
@@ -452,6 +469,12 @@ export class DataStoreEditorComponent implements OnInit {
   toggleExpand(node: TreeNode, event: Event): void {
     event.stopPropagation();
     node.expanded = !node.expanded;
+    
+    if (node.expanded) {
+      this.expandedNodeIds.add(node.id);
+    } else {
+      this.expandedNodeIds.delete(node.id);
+    }
   }
 
   toggleMenu(node: TreeNode, event: Event): void {
@@ -479,6 +502,8 @@ export class DataStoreEditorComponent implements OnInit {
     if (!this.dataStore) return;
     this.showMenuForNode = null;
 
+    this.expandedNodeIds.add(parentNode.id);
+
     const parentGroup = parentNode.data as DataGroup;
     const newGroup: Partial<DataGroup> = {
       name: 'New Nested Group',
@@ -500,6 +525,7 @@ export class DataStoreEditorComponent implements OnInit {
 
   addDataPoint(parentNode: TreeNode): void {
     this.showMenuForNode = null;
+    this.expandedNodeIds.add(parentNode.id);
     this.pendingGroupParent = parentNode;
     this.showTypeSelector = true;
   }
