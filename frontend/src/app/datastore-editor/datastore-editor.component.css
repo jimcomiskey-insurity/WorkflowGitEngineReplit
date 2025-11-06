@@ -1,12 +1,16 @@
 .editor-container {
   background: #1e1e1e;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   color: #fff;
+  display: flex;
+  flex-direction: column;
 }
 
 .editor-header {
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #444;
+  flex-shrink: 0;
 }
 
 .back-btn {
@@ -32,7 +36,8 @@
 .editor-content {
   display: grid;
   grid-template-columns: 400px 1fr;
-  height: calc(100vh - 100px);
+  flex: 1;
+  min-height: 0;
 }
 
 .tree-panel {
