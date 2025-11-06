@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { WorkflowStateService } from './services/workflow-state.service';
 import { UserService } from './services/user.service';
+import { GitStateService } from './services/git-state.service';
+import { GitStatus } from './services/git.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -11,14 +13,32 @@ describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let workflowStateService: jest.Mocked<WorkflowStateService>;
+  let gitStateService: jest.Mocked<GitStateService>;
   let userService: jest.Mocked<UserService>;
-  let pendingChangesCountSubject: BehaviorSubject<number>;
+  let gitStatusSubject: BehaviorSubject<GitStatus | null>;
 
   beforeEach(async () => {
-    pendingChangesCountSubject = new BehaviorSubject<number>(0);
+    gitStatusSubject = new BehaviorSubject<GitStatus | null>({
+      isDirty: false,
+      currentBranch: 'master',
+      added: [],
+      modified: [],
+      removed: [],
+      untracked: [],
+      commitsAhead: 0,
+      commitsBehind: 0,
+      hasRemoteTracking: true
+    });
+
+    const gitStateServiceMock = {
+      gitStatus$: gitStatusSubject.asObservable(),
+      commits$: new BehaviorSubject([]).asObservable(),
+      branches$: new BehaviorSubject([]).asObservable(),
+      lastPushedCommit$: new BehaviorSubject(null).asObservable(),
+      refresh: jest.fn()
+    } as unknown as jest.Mocked<GitStateService>;
 
     const workflowStateServiceMock = {
-      pendingChangesCount$: pendingChangesCountSubject.asObservable(),
       refreshManually: jest.fn()
     } as unknown as jest.Mocked<WorkflowStateService>;
 
@@ -35,11 +55,13 @@ describe('AppComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        { provide: GitStateService, useValue: gitStateServiceMock },
         { provide: WorkflowStateService, useValue: workflowStateServiceMock },
         { provide: UserService, useValue: userServiceMock }
       ]
     }).compileComponents();
 
+    gitStateService = TestBed.inject(GitStateService) as jest.Mocked<GitStateService>;
     workflowStateService = TestBed.inject(WorkflowStateService) as jest.Mocked<WorkflowStateService>;
     userService = TestBed.inject(UserService) as jest.Mocked<UserService>;
 
@@ -62,8 +84,18 @@ describe('AppComponent', () => {
   });
 
   describe('Pending Changes Badge', () => {
-    it('should update pending changes count when WorkflowStateService emits new value', (done) => {
-      pendingChangesCountSubject.next(3);
+    it('should update pending changes count when GitStateService emits new Git status', (done) => {
+      gitStatusSubject.next({
+        isDirty: true,
+        currentBranch: 'master',
+        added: ['file1.json'],
+        modified: ['file2.json'],
+        removed: ['file3.json'],
+        untracked: [],
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      });
 
       setTimeout(() => {
         expect(component.pendingChangesCount).toBe(3);
@@ -71,18 +103,38 @@ describe('AppComponent', () => {
       }, 100);
     });
 
-    it('should reactively update when pending changes count changes', (done) => {
+    it('should reactively update when Git status changes', (done) => {
       // Start with 0
       expect(component.pendingChangesCount).toBe(0);
 
-      // Update to 5
-      pendingChangesCountSubject.next(5);
+      // Update to 5 changes
+      gitStatusSubject.next({
+        isDirty: true,
+        currentBranch: 'master',
+        added: ['file1.json', 'file2.json'],
+        modified: ['file3.json'],
+        removed: [],
+        untracked: ['file4.json', 'file5.json'],
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      });
 
       setTimeout(() => {
         expect(component.pendingChangesCount).toBe(5);
 
         // Update to 0 again
-        pendingChangesCountSubject.next(0);
+        gitStatusSubject.next({
+          isDirty: false,
+          currentBranch: 'master',
+          added: [],
+          modified: [],
+          removed: [],
+          untracked: [],
+          commitsAhead: 0,
+          commitsBehind: 0,
+          hasRemoteTracking: true
+        });
 
         setTimeout(() => {
           expect(component.pendingChangesCount).toBe(0);
@@ -91,9 +143,19 @@ describe('AppComponent', () => {
       }, 100);
     });
 
-    it('should subscribe to pendingChangesCount$ on initialization', (done) => {
+    it('should subscribe to Git status on initialization', (done) => {
       // Emit a value after component init
-      pendingChangesCountSubject.next(7);
+      gitStatusSubject.next({
+        isDirty: true,
+        currentBranch: 'master',
+        added: ['a.json', 'b.json'],
+        modified: ['c.json', 'd.json'],
+        removed: [],
+        untracked: ['e.json', 'f.json', 'g.json'],
+        commitsAhead: 0,
+        commitsBehind: 0,
+        hasRemoteTracking: true
+      });
 
       setTimeout(() => {
         expect(component.pendingChangesCount).toBe(7);
