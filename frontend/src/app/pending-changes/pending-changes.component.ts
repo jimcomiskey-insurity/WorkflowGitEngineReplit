@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -44,7 +44,8 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
     private workflowStateService: WorkflowStateService,
     private assetStateService: AssetStateService,
     private dataStoreStateService: DataStoreStateService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -91,6 +92,7 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
         
         this.calculateTotalChanges();
         this.applyFilter();
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading datastores:', error);
@@ -223,6 +225,7 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       this.filteredWorkflows = this.workflows;
       this.filteredAssets = this.assets;
       this.filteredDataStores = this.dataStores;
+      console.log('[PendingChanges] Applied ALL filter. filteredDataStores.length:', this.filteredDataStores.length);
     } else {
       this.filteredWorkflows = this.workflows
         .map(w => this.filterWorkflowByStatus(w, this.selectedFilter))
@@ -233,6 +236,7 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       
       this.filteredDataStores = this.dataStores
         .filter(ds => this.dataStoreMatchesFilter(ds, this.selectedFilter));
+      console.log('[PendingChanges] Applied', this.selectedFilter, 'filter. filteredDataStores.length:', this.filteredDataStores.length);
     }
   }
 
