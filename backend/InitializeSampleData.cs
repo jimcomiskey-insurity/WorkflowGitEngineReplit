@@ -81,10 +81,13 @@ public static class DataInitializer
                 // Create sample assets
                 CreateSampleAssets(tempRepoPath);
 
+                // Initialize empty datastore structure
+                InitializeDataStores(tempRepoPath);
+
                 Commands.Stage(repo, "*");
 
                 var signature = new Signature("System", "system@workflow.com", DateTimeOffset.Now);
-                repo.Commit("Initial commit: Add sample workflow and asset data", signature, signature);
+                repo.Commit("Initial commit: Add sample workflow, asset, and datastore data", signature, signature);
 
                 var remote = repo.Network.Remotes["origin"];
                 var options = new PushOptions();
@@ -264,6 +267,23 @@ public static class DataInitializer
         }
 
         Console.WriteLine("Created 4 sample assets: 1 without file, 1 JSON, 1 XML, 1 PDF");
+    }
+
+    private static void InitializeDataStores(string repoPath)
+    {
+        var dataStoresDir = Path.Combine(repoPath, "datastores");
+        Directory.CreateDirectory(dataStoresDir);
+
+        // Create empty datastore list to track datastores in Git
+        var dataStoreList = new DataStoreList
+        {
+            DataStores = new List<DataStoreListItem>()
+        };
+        var dataStoreListPath = Path.Combine(repoPath, "datastore-list.json");
+        var listJson = JsonSerializer.Serialize(dataStoreList, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(dataStoreListPath, listJson);
+
+        Console.WriteLine("Initialized empty datastore structure");
     }
 
     private static void ForceGarbageCollection()
