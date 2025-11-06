@@ -17,7 +17,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpGet]
-    [SwaggerOperation("Get All Workflows")]
+    [OpenApiOperation("Get All Workflows")]
     public IActionResult GetWorkflows([FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
@@ -25,7 +25,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpGet("{workflowKey}")]
-    [SwaggerOperation("Get Workflow By Key")]
+    [OpenApiOperation("Get Workflow By Key")]
     public IActionResult GetWorkflow(string workflowKey, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
@@ -40,7 +40,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPost]
-    [SwaggerOperation("Create Workflow")]
+    [OpenApiOperation("Create Workflow")]
     public IActionResult CreateWorkflow([FromBody] Workflow workflow, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflows(userId);
@@ -57,7 +57,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPut("{workflowKey}")]
-    [SwaggerOperation("Update Workflow")]
+    [OpenApiOperation("Update Workflow")]
     public IActionResult UpdateWorkflow(string workflowKey, [FromBody] Workflow workflow, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflows(userId);
@@ -80,7 +80,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpDelete("{workflowKey}")]
-    [SwaggerOperation("Delete Workflow")]
+    [OpenApiOperation("Delete Workflow")]
     public IActionResult DeleteWorkflow(string workflowKey, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflows(userId);

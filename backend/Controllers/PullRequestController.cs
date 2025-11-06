@@ -24,7 +24,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpGet]
-    [SwaggerOperation("Get All Pull Requests")]
+    [OpenApiOperation("Get All Pull Requests")]
     public ActionResult<IEnumerable<PullRequest>> GetPullRequests(
         [FromQuery] string userId,
         [FromQuery] string? status = null)
@@ -42,7 +42,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpGet("{number}")]
-    [SwaggerOperation("Get Pull Request By Number")]
+    [OpenApiOperation("Get Pull Request By Number")]
     public ActionResult<PullRequest> GetPullRequest(
         [FromQuery] string userId,
         int number)
@@ -66,7 +66,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpGet("{number}/comparison")]
-    [SwaggerOperation("Get Pull Request Branch Comparison")]
+    [OpenApiOperation("Get Pull Request Branch Comparison")]
     public ActionResult<BranchComparison> GetBranchComparison(
         [FromQuery] string userId,
         int number)
@@ -101,7 +101,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpGet("suggestion")]
-    [SwaggerOperation("Get Pull Request Suggestion")]
+    [OpenApiOperation("Get Pull Request Suggestion")]
     public ActionResult<PullRequestSuggestion> GetPullRequestSuggestion(
         [FromQuery] string sourceBranch,
         [FromQuery] string targetBranch)
@@ -146,7 +146,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpPost]
-    [SwaggerOperation("Create Pull Request")]
+    [OpenApiOperation("Create Pull Request")]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(PullRequest))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<PullRequest> CreatePullRequest(
@@ -175,7 +175,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpPost("{number}/merge")]
-    [SwaggerOperation("Merge Pull Request")]
+    [OpenApiOperation("Merge Pull Request")]
     public ActionResult<PullRequest> MergePullRequest(
         [FromQuery] string userId,
         int number)
@@ -214,7 +214,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpGet("{number}/conflicts")]
-    [SwaggerOperation("Get Merge Conflicts")]
+    [OpenApiOperation("Get Merge Conflicts")]
     public ActionResult<MergeConflictInfo> GetMergeConflicts(
         [FromQuery] string userId,
         int number)
@@ -245,7 +245,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpPost("{number}/resolve-conflicts")]
-    [SwaggerOperation("Resolve Conflicts And Merge")]
+    [OpenApiOperation("Resolve Conflicts And Merge")]
     public ActionResult<PullRequest> ResolveAndMergePullRequest(
         [FromQuery] string userId,
         int number,
@@ -281,7 +281,7 @@ public class PullRequestController : ControllerBase
     }
 
     [HttpPost("{number}/close")]
-    [SwaggerOperation("Close Pull Request")]
+    [OpenApiOperation("Close Pull Request")]
     public ActionResult<PullRequest> ClosePullRequest(
         [FromQuery] string userId,
         int number)

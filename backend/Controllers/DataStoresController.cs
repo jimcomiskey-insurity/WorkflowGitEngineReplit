@@ -26,7 +26,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation("GetAllDataStores")]
+        [OpenApiOperation("GetAllDataStores")]
         public ActionResult<List<DataStore>> GetAllDataStores(string userId)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
@@ -34,7 +34,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        [SwaggerOperation("GetDataStoreById")]
+        [OpenApiOperation("GetDataStoreById")]
         public ActionResult<DataStore> GetDataStoreById(string userId, string id)
         {
             var service = GetUserService(userId);
@@ -49,7 +49,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpPost]
-        [SwaggerOperation("CreateDataStore")]
+        [OpenApiOperation("CreateDataStore")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(DataStore))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<DataStore> CreateDataStore(string userId, [FromBody] DataStore dataStore)
@@ -71,7 +71,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [SwaggerOperation("UpdateDataStore")]
+        [OpenApiOperation("UpdateDataStore")]
         public ActionResult<DataStore> UpdateDataStore(string userId, string id, [FromBody] DataStore dataStore)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
@@ -94,7 +94,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [SwaggerOperation("DeleteDataStore")]
+        [OpenApiOperation("DeleteDataStore")]
         public ActionResult DeleteDataStore(string userId, string id)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
@@ -112,7 +112,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpPost("{dataStoreId}/datagroups")]
-        [SwaggerOperation("AddDataGroup")]
+        [OpenApiOperation("AddDataGroup")]
         public ActionResult<DataGroup> AddDataGroup(
             string userId, 
             string dataStoreId, 
@@ -162,7 +162,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpPost("{dataStoreId}/datagroups/{dataGroupId}/datapoints")]
-        [SwaggerOperation("AddDataPoint")]
+        [OpenApiOperation("AddDataPoint")]
         public ActionResult<DataPoint> AddDataPoint(
             string userId, 
             string dataStoreId, 
@@ -195,7 +195,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpPut("{dataStoreId}/datagroups/{dataGroupId}")]
-        [SwaggerOperation("UpdateDataGroup")]
+        [OpenApiOperation("UpdateDataGroup")]
         public ActionResult UpdateDataGroup(
             string userId, 
             string dataStoreId, 
@@ -226,7 +226,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpPut("{dataStoreId}/datapoints/{dataPointId}")]
-        [SwaggerOperation("UpdateDataPoint")]
+        [OpenApiOperation("UpdateDataPoint")]
         public ActionResult UpdateDataPoint(
             string userId, 
             string dataStoreId, 
@@ -272,7 +272,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpDelete("{dataStoreId}/datagroups/{dataGroupId}")]
-        [SwaggerOperation("DeleteDataGroup")]
+        [OpenApiOperation("DeleteDataGroup")]
         public ActionResult DeleteDataGroup(string userId, string dataStoreId, string dataGroupId)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);
@@ -311,7 +311,7 @@ namespace WorkflowConfig.Api.Controllers
         }
 
         [HttpDelete("{dataStoreId}/datapoints/{dataPointId}")]
-        [SwaggerOperation("DeleteDataPoint")]
+        [OpenApiOperation("DeleteDataPoint")]
         public ActionResult DeleteDataPoint(string userId, string dataStoreId, string dataPointId)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(userId);

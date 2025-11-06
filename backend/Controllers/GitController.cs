@@ -18,7 +18,7 @@ public class GitController : ControllerBase
     }
 
     [HttpGet("status")]
-    [SwaggerOperation("Get Git Status")]
+    [OpenApiOperation("Get Git Status")]
     public IActionResult GetStatus([FromQuery] string userId = "default")
     {
         var status = _gitService.GetStatus(userId);
@@ -26,7 +26,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("commit")]
-    [SwaggerOperation("Commit Changes")]
+    [OpenApiOperation("Commit Changes")]
     public IActionResult Commit([FromBody] CommitRequest request, [FromQuery] string userId = "default")
     {
         _gitService.CommitChanges(userId, request.Message, request.AuthorName, request.AuthorEmail);
@@ -34,7 +34,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("discard")]
-    [SwaggerOperation("Discard Changes")]
+    [OpenApiOperation("Discard Changes")]
     public IActionResult Discard([FromQuery] string userId = "default")
     {
         _gitService.DiscardChanges(userId);
@@ -42,7 +42,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("pull")]
-    [SwaggerOperation("Pull From Remote")]
+    [OpenApiOperation("Pull From Remote")]
     public IActionResult Pull([FromQuery] string userId = "default")
     {
         try
@@ -57,7 +57,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("push")]
-    [SwaggerOperation("Push To Remote")]
+    [OpenApiOperation("Push To Remote")]
     public IActionResult Push([FromQuery] string userId = "default")
     {
         try
@@ -72,7 +72,7 @@ public class GitController : ControllerBase
     }
 
     [HttpGet("branches")]
-    [SwaggerOperation("Get Branches")]
+    [OpenApiOperation("Get Branches")]
     public IActionResult GetBranches([FromQuery] string userId = "default")
     {
         var branches = _gitService.GetBranches(userId);
@@ -80,7 +80,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("branches")]
-    [SwaggerOperation("Create Branch")]
+    [OpenApiOperation("Create Branch")]
     public IActionResult CreateBranch([FromBody] BranchRequest request, [FromQuery] string userId = "default")
     {
         _gitService.CreateBranch(userId, request.BranchName);
@@ -88,7 +88,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("branches/switch")]
-    [SwaggerOperation("Switch Branch")]
+    [OpenApiOperation("Switch Branch")]
     public IActionResult SwitchBranch([FromBody] BranchRequest request, [FromQuery] string userId = "default")
     {
         _gitService.SwitchBranch(userId, request.BranchName);
@@ -96,7 +96,7 @@ public class GitController : ControllerBase
     }
 
     [HttpGet("commits")]
-    [SwaggerOperation("Get Commit History")]
+    [OpenApiOperation("Get Commit History")]
     public IActionResult GetCommits([FromQuery] string userId = "default", [FromQuery] int count = 20)
     {
         var commits = _gitService.GetCommitHistory(userId, count);
@@ -104,7 +104,7 @@ public class GitController : ControllerBase
     }
 
     [HttpGet("last-pushed-commit")]
-    [SwaggerOperation("Get Last Pushed Commit")]
+    [OpenApiOperation("Get Last Pushed Commit")]
     public IActionResult GetLastPushedCommit([FromQuery] string userId = "default")
     {
         try
@@ -123,7 +123,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("reset-to-commit")]
-    [SwaggerOperation("Reset To Commit")]
+    [OpenApiOperation("Reset To Commit")]
     public IActionResult ResetToCommit([FromBody] ResetToCommitRequest request, [FromQuery] string userId = "default")
     {
         try
@@ -138,7 +138,7 @@ public class GitController : ControllerBase
     }
 
     [HttpGet("compare-branches")]
-    [SwaggerOperation("Compare Branches")]
+    [OpenApiOperation("Compare Branches")]
     public IActionResult CompareBranches(
         [FromQuery] string userId,
         [FromQuery] string sourceBranch,
@@ -156,7 +156,7 @@ public class GitController : ControllerBase
     }
 
     [HttpGet("file-at-commit")]
-    [SwaggerOperation("Get File At Commit")]
+    [OpenApiOperation("Get File At Commit")]
     public IActionResult GetFileAtCommit(
         [FromQuery] string userId,
         [FromQuery] string commitSha,
@@ -178,7 +178,7 @@ public class GitController : ControllerBase
     }
 
     [HttpPost("reset")]
-    [SwaggerOperation("Reset Repository")]
+    [OpenApiOperation("Reset Repository")]
     public IActionResult ResetRepositories()
     {
         try
