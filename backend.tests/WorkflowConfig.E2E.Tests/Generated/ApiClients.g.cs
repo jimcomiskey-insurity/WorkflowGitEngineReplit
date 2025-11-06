@@ -25,7 +25,7 @@ namespace WorkflowConfig.E2E.Tests.Generated
     using System = global::System;
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Client : IClient
+    public partial class ApiClient : IApiClient
     {
         #pragma warning disable 8618
         private string _baseUrl;
@@ -36,7 +36,7 @@ namespace WorkflowConfig.E2E.Tests.Generated
         private System.Text.Json.JsonSerializerOptions _instanceSettings;
 
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public Client(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public ApiClient(string baseUrl, System.Net.Http.HttpClient httpClient)
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             BaseUrl = baseUrl;
@@ -74,15 +74,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task AssetsGETAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetAssetsAsync(string userId)
         {
-            return AssetsGETAsync(userId, System.Threading.CancellationToken.None);
+            return GetAssetsAsync(userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task AssetsGETAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetAssetsAsync(string userId, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -152,15 +152,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task AssetsPOSTAsync(string userId, Asset body)
+        public virtual System.Threading.Tasks.Task CreateAssetAsync(string userId, Asset body)
         {
-            return AssetsPOSTAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateAssetAsync(userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task AssetsPOSTAsync(string userId, Asset body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CreateAssetAsync(string userId, Asset body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -234,15 +234,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task AssetsGET2Async(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task GetAssetAsync(System.Guid id, string userId)
         {
-            return AssetsGET2Async(id, userId, System.Threading.CancellationToken.None);
+            return GetAssetAsync(id, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task AssetsGET2Async(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetAssetAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -316,15 +316,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task AssetsPUTAsync(System.Guid id, string userId, Asset body)
+        public virtual System.Threading.Tasks.Task UpdateAssetAsync(System.Guid id, string userId, Asset body)
         {
-            return AssetsPUTAsync(id, userId, body, System.Threading.CancellationToken.None);
+            return UpdateAssetAsync(id, userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task AssetsPUTAsync(System.Guid id, string userId, Asset body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateAssetAsync(System.Guid id, string userId, Asset body, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -402,15 +402,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task AssetsDELETEAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task DeleteAssetAsync(System.Guid id, string userId)
         {
-            return AssetsDELETEAsync(id, userId, System.Threading.CancellationToken.None);
+            return DeleteAssetAsync(id, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task AssetsDELETEAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteAssetAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -484,15 +484,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task FilePOSTAsync(System.Guid id, string userId, FileParameter file)
+        public virtual System.Threading.Tasks.Task UploadFileAsync(System.Guid id, string userId, FileParameter file)
         {
-            return FilePOSTAsync(id, userId, file, System.Threading.CancellationToken.None);
+            return UploadFileAsync(id, userId, file, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task FilePOSTAsync(System.Guid id, string userId, FileParameter file, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UploadFileAsync(System.Guid id, string userId, FileParameter file, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -582,15 +582,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task FileGETAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task DownloadFileAsync(System.Guid id, string userId)
         {
-            return FileGETAsync(id, userId, System.Threading.CancellationToken.None);
+            return DownloadFileAsync(id, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task FileGETAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DownloadFileAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -665,15 +665,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task FileDELETEAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task DeleteFileAsync(System.Guid id, string userId)
         {
-            return FileDELETEAsync(id, userId, System.Threading.CancellationToken.None);
+            return DeleteFileAsync(id, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task FileDELETEAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteFileAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -748,15 +748,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ContentGETAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task GetFileContentAsync(System.Guid id, string userId)
         {
-            return ContentGETAsync(id, userId, System.Threading.CancellationToken.None);
+            return GetFileContentAsync(id, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ContentGETAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetFileContentAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -831,15 +831,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ContentPUTAsync(System.Guid id, string userId, FileContentUpdate body)
+        public virtual System.Threading.Tasks.Task UpdateFileContentAsync(System.Guid id, string userId, FileContentUpdate body)
         {
-            return ContentPUTAsync(id, userId, body, System.Threading.CancellationToken.None);
+            return UpdateFileContentAsync(id, userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ContentPUTAsync(System.Guid id, string userId, FileContentUpdate body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateFileContentAsync(System.Guid id, string userId, FileContentUpdate body, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -918,15 +918,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CommittedAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task GetCommittedFileContentAsync(System.Guid id, string userId)
         {
-            return CommittedAsync(id, userId, System.Threading.CancellationToken.None);
+            return GetCommittedFileContentAsync(id, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CommittedAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetCommittedFileContentAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1001,15 +1001,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> DataStoresAllAsync(string userId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId)
         {
-            return DataStoresAllAsync(userId, System.Threading.CancellationToken.None);
+            return GetAllDataStoresAsync(userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> DataStoresAllAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1084,15 +1084,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataStore> DataStoresPOSTAsync(string userId, DataStore body)
+        public virtual System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, DataStore body)
         {
-            return DataStoresPOSTAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateDataStoreAsync(userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataStore> DataStoresPOSTAsync(string userId, DataStore body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, DataStore body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1181,15 +1181,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataStore> DataStoresGETAsync(string userId, string id)
+        public virtual System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string id)
         {
-            return DataStoresGETAsync(userId, id, System.Threading.CancellationToken.None);
+            return GetDataStoreByIdAsync(userId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataStore> DataStoresGETAsync(string userId, string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string id, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1268,15 +1268,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataStore> DataStoresPUTAsync(string userId, string id, DataStore body)
+        public virtual System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string id, DataStore body)
         {
-            return DataStoresPUTAsync(userId, id, body, System.Threading.CancellationToken.None);
+            return UpdateDataStoreAsync(userId, id, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataStore> DataStoresPUTAsync(string userId, string id, DataStore body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string id, DataStore body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1359,15 +1359,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DataStoresDELETEAsync(string userId, string id)
+        public virtual System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string id)
         {
-            return DataStoresDELETEAsync(userId, id, System.Threading.CancellationToken.None);
+            return DeleteDataStoreAsync(userId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DataStoresDELETEAsync(string userId, string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string id, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1440,15 +1440,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataGroup> DatagroupsPOSTAsync(string userId, string dataStoreId, string parentGroupId, DataGroup body)
+        public virtual System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string dataStoreId, string parentGroupId, DataGroup body)
         {
-            return DatagroupsPOSTAsync(userId, dataStoreId, parentGroupId, body, System.Threading.CancellationToken.None);
+            return AddDataGroupAsync(userId, dataStoreId, parentGroupId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataGroup> DatagroupsPOSTAsync(string userId, string dataStoreId, string parentGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string dataStoreId, string parentGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1538,15 +1538,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataPoint> DatapointsPOSTAsync(string userId, string dataStoreId, string dataGroupId, DataPoint body)
+        public virtual System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string dataStoreId, string dataGroupId, DataPoint body)
         {
-            return DatapointsPOSTAsync(userId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
+            return AddDataPointAsync(userId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataPoint> DatapointsPOSTAsync(string userId, string dataStoreId, string dataGroupId, DataPoint body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string dataStoreId, string dataGroupId, DataPoint body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1635,15 +1635,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DatagroupsPUTAsync(string userId, string dataStoreId, string dataGroupId, DataGroup body)
+        public virtual System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string dataStoreId, string dataGroupId, DataGroup body)
         {
-            return DatagroupsPUTAsync(userId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
+            return UpdateDataGroupAsync(userId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DatagroupsPUTAsync(string userId, string dataStoreId, string dataGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string dataStoreId, string dataGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1725,15 +1725,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DatagroupsDELETEAsync(string userId, string dataStoreId, string dataGroupId)
+        public virtual System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string dataStoreId, string dataGroupId)
         {
-            return DatagroupsDELETEAsync(userId, dataStoreId, dataGroupId, System.Threading.CancellationToken.None);
+            return DeleteDataGroupAsync(userId, dataStoreId, dataGroupId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DatagroupsDELETEAsync(string userId, string dataStoreId, string dataGroupId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string dataStoreId, string dataGroupId, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1811,15 +1811,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DatapointsPUTAsync(string userId, string dataStoreId, string dataPointId, DataPoint body)
+        public virtual System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string dataStoreId, string dataPointId, DataPoint body)
         {
-            return DatapointsPUTAsync(userId, dataStoreId, dataPointId, body, System.Threading.CancellationToken.None);
+            return UpdateDataPointAsync(userId, dataStoreId, dataPointId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DatapointsPUTAsync(string userId, string dataStoreId, string dataPointId, DataPoint body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string dataStoreId, string dataPointId, DataPoint body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1901,15 +1901,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DatapointsDELETEAsync(string userId, string dataStoreId, string dataPointId)
+        public virtual System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string dataStoreId, string dataPointId)
         {
-            return DatapointsDELETEAsync(userId, dataStoreId, dataPointId, System.Threading.CancellationToken.None);
+            return DeleteDataPointAsync(userId, dataStoreId, dataPointId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DatapointsDELETEAsync(string userId, string dataStoreId, string dataPointId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string dataStoreId, string dataPointId, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
@@ -1987,15 +1987,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task StatusAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetStatusAsync(string userId)
         {
-            return StatusAsync(userId, System.Threading.CancellationToken.None);
+            return GetStatusAsync(userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task StatusAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetStatusAsync(string userId, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2384,15 +2384,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task BranchesGETAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetBranchesAsync(string userId)
         {
-            return BranchesGETAsync(userId, System.Threading.CancellationToken.None);
+            return GetBranchesAsync(userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task BranchesGETAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetBranchesAsync(string userId, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2462,15 +2462,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task BranchesPOSTAsync(string userId, BranchRequest body)
+        public virtual System.Threading.Tasks.Task CreateBranchAsync(string userId, BranchRequest body)
         {
-            return BranchesPOSTAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateBranchAsync(userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task BranchesPOSTAsync(string userId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CreateBranchAsync(string userId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2544,15 +2544,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task SwitchAsync(string userId, BranchRequest body)
+        public virtual System.Threading.Tasks.Task SwitchBranchAsync(string userId, BranchRequest body)
         {
-            return SwitchAsync(userId, body, System.Threading.CancellationToken.None);
+            return SwitchBranchAsync(userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task SwitchAsync(string userId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task SwitchBranchAsync(string userId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2626,15 +2626,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CommitsAsync(string userId, int? count)
+        public virtual System.Threading.Tasks.Task GetCommitsAsync(string userId, int? count)
         {
-            return CommitsAsync(userId, count, System.Threading.CancellationToken.None);
+            return GetCommitsAsync(userId, count, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CommitsAsync(string userId, int? count, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetCommitsAsync(string userId, int? count, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2708,15 +2708,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task LastPushedCommitAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId)
         {
-            return LastPushedCommitAsync(userId, System.Threading.CancellationToken.None);
+            return GetLastPushedCommitAsync(userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task LastPushedCommitAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2954,15 +2954,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task FileAtCommitAsync(string userId, string commitSha, string filePath)
+        public virtual System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string commitSha, string filePath)
         {
-            return FileAtCommitAsync(userId, commitSha, filePath, System.Threading.CancellationToken.None);
+            return GetFileAtCommitAsync(userId, commitSha, filePath, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task FileAtCommitAsync(string userId, string commitSha, string filePath, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string commitSha, string filePath, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3040,15 +3040,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ResetAsync()
+        public virtual System.Threading.Tasks.Task ResetRepositoriesAsync()
         {
-            return ResetAsync(System.Threading.CancellationToken.None);
+            return ResetRepositoriesAsync(System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ResetAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task ResetRepositoriesAsync(System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3113,15 +3113,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> PullRequestsAllAsync(string userId, string status)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string status)
         {
-            return PullRequestsAllAsync(userId, status, System.Threading.CancellationToken.None);
+            return GetPullRequestsAsync(userId, status, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> PullRequestsAllAsync(string userId, string status, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string status, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3201,15 +3201,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> PullRequestsPOSTAsync(string userId, CreatePullRequestRequest body)
+        public virtual System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, CreatePullRequestRequest body)
         {
-            return PullRequestsPOSTAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreatePullRequestAsync(userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> PullRequestsPOSTAsync(string userId, CreatePullRequestRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, CreatePullRequestRequest body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3299,15 +3299,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> PullRequestsGETAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, int number)
         {
-            return PullRequestsGETAsync(userId, number, System.Threading.CancellationToken.None);
+            return GetPullRequestAsync(userId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> PullRequestsGETAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
         {
             if (number == null)
                 throw new System.ArgumentNullException("number");
@@ -3387,15 +3387,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<BranchComparison> ComparisonAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, int number)
         {
-            return ComparisonAsync(userId, number, System.Threading.CancellationToken.None);
+            return GetBranchComparisonAsync(userId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<BranchComparison> ComparisonAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
         {
             if (number == null)
                 throw new System.ArgumentNullException("number");
@@ -3476,15 +3476,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequestSuggestion> SuggestionAsync(string sourceBranch, string targetBranch)
+        public virtual System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string sourceBranch, string targetBranch)
         {
-            return SuggestionAsync(sourceBranch, targetBranch, System.Threading.CancellationToken.None);
+            return GetPullRequestSuggestionAsync(sourceBranch, targetBranch, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequestSuggestion> SuggestionAsync(string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3564,15 +3564,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> MergeAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, int number)
         {
-            return MergeAsync(userId, number, System.Threading.CancellationToken.None);
+            return MergePullRequestAsync(userId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> MergeAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
         {
             if (number == null)
                 throw new System.ArgumentNullException("number");
@@ -3654,15 +3654,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<MergeConflictInfo> ConflictsAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, int number)
         {
-            return ConflictsAsync(userId, number, System.Threading.CancellationToken.None);
+            return GetMergeConflictsAsync(userId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<MergeConflictInfo> ConflictsAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
         {
             if (number == null)
                 throw new System.ArgumentNullException("number");
@@ -3743,15 +3743,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> ResolveConflictsAsync(string userId, int number, ResolveConflictsRequest body)
+        public virtual System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, int number, ResolveConflictsRequest body)
         {
-            return ResolveConflictsAsync(userId, number, body, System.Threading.CancellationToken.None);
+            return ResolveAndMergePullRequestAsync(userId, number, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> ResolveConflictsAsync(string userId, int number, ResolveConflictsRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, int number, ResolveConflictsRequest body, System.Threading.CancellationToken cancellationToken)
         {
             if (number == null)
                 throw new System.ArgumentNullException("number");
@@ -3836,15 +3836,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> CloseAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, int number)
         {
-            return CloseAsync(userId, number, System.Threading.CancellationToken.None);
+            return ClosePullRequestAsync(userId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> CloseAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
         {
             if (number == null)
                 throw new System.ArgumentNullException("number");
@@ -3926,15 +3926,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task WorkflowsGETAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetWorkflowsAsync(string userId)
         {
-            return WorkflowsGETAsync(userId, System.Threading.CancellationToken.None);
+            return GetWorkflowsAsync(userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task WorkflowsGETAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetWorkflowsAsync(string userId, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -4004,15 +4004,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task WorkflowsPOSTAsync(string userId, Workflow body)
+        public virtual System.Threading.Tasks.Task CreateWorkflowAsync(string userId, Workflow body)
         {
-            return WorkflowsPOSTAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateWorkflowAsync(userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task WorkflowsPOSTAsync(string userId, Workflow body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CreateWorkflowAsync(string userId, Workflow body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -4086,15 +4086,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task WorkflowsGET2Async(string workflowKey, string userId)
+        public virtual System.Threading.Tasks.Task GetWorkflowAsync(string workflowKey, string userId)
         {
-            return WorkflowsGET2Async(workflowKey, userId, System.Threading.CancellationToken.None);
+            return GetWorkflowAsync(workflowKey, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task WorkflowsGET2Async(string workflowKey, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetWorkflowAsync(string workflowKey, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (workflowKey == null)
                 throw new System.ArgumentNullException("workflowKey");
@@ -4168,15 +4168,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task WorkflowsPUTAsync(string workflowKey, string userId, Workflow body)
+        public virtual System.Threading.Tasks.Task UpdateWorkflowAsync(string workflowKey, string userId, Workflow body)
         {
-            return WorkflowsPUTAsync(workflowKey, userId, body, System.Threading.CancellationToken.None);
+            return UpdateWorkflowAsync(workflowKey, userId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task WorkflowsPUTAsync(string workflowKey, string userId, Workflow body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateWorkflowAsync(string workflowKey, string userId, Workflow body, System.Threading.CancellationToken cancellationToken)
         {
             if (workflowKey == null)
                 throw new System.ArgumentNullException("workflowKey");
@@ -4254,15 +4254,15 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task WorkflowsDELETEAsync(string workflowKey, string userId)
+        public virtual System.Threading.Tasks.Task DeleteWorkflowAsync(string workflowKey, string userId)
         {
-            return WorkflowsDELETEAsync(workflowKey, userId, System.Threading.CancellationToken.None);
+            return DeleteWorkflowAsync(workflowKey, userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task WorkflowsDELETEAsync(string workflowKey, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteWorkflowAsync(string workflowKey, string userId, System.Threading.CancellationToken cancellationToken)
         {
             if (workflowKey == null)
                 throw new System.ArgumentNullException("workflowKey");

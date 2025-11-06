@@ -11,7 +11,15 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomOperationIds(apiDesc =>
+    {
+        // Use the controller action method name as the operation ID
+        var actionDescriptor = apiDesc.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor;
+        return actionDescriptor?.ActionName;
+    });
+});
 
 builder.Services.AddSingleton<GitService>();
 builder.Services.AddSingleton<PullRequestService>();
