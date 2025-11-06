@@ -368,13 +368,5 @@ namespace WorkflowConfig.Api.Services
 
             return false;
         }
-
-        private class DataStoreListItem
-        {
-            public string Id { get; set; } = string.Empty;
-            public string Name { get; set; } = string.Empty;
-            public string? Description { get; set; }
-            public int NoOfTimesUsed { get; set; }
-        }
     }
 }

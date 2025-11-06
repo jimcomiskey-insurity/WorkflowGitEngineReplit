@@ -12,6 +12,7 @@ namespace WorkflowConfig.Api.Models
         public int OrderIndex { get; set; }
         
         public DataPointConfiguration Configuration { get; set; } = new DataPointConfiguration();
+        public string? GitStatus { get; set; }
     }
 
     public class DataPointConfiguration

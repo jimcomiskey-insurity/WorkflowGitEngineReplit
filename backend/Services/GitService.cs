@@ -16,6 +16,8 @@ public class GitService
     private const string AssetListFileName = "asset-list.json";
     private const string AssetsDirectory = "assets";
     private const string AssetFilesDirectory = "asset-files";
+    private const string DataStoreListFileName = "datastore-list.json";
+    private const string DataStoresDirectory = "datastores";
 
     public GitService(IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
     {
@@ -997,6 +999,354 @@ public class GitService
         else
         {
             current.GitStatus = null;
+        }
+    }
+
+    // DataStore Git Status Enrichment
+    public List<DataStore> ReadDataStoresWithGitStatus(string userId)
+    {
+        var dataStores = ReadDataStores(userId);
+        EnrichDataStoresWithGitStatus(userId, dataStores);
+        return dataStores;
+    }
+
+    private List<DataStore> ReadDataStores(string userId)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        var dataStoreListPath = Path.Combine(userRepoPath, DataStoreListFileName);
+        
+        if (!File.Exists(dataStoreListPath))
+        {
+            return new List<DataStore>();
+        }
+
+        var listJson = File.ReadAllText(dataStoreListPath);
+        var dataStoreList = JsonSerializer.Deserialize<List<DataStoreListItem>>(listJson);
+        
+        if (dataStoreList == null || !dataStoreList.Any())
+        {
+            return new List<DataStore>();
+        }
+
+        var dataStores = new List<DataStore>();
+        var dataStoresDir = Path.Combine(userRepoPath, DataStoresDirectory);
+        
+        foreach (var item in dataStoreList)
+        {
+            var dataStorePath = Path.Combine(dataStoresDir, $"{item.Id}.json");
+            if (File.Exists(dataStorePath))
+            {
+                var dataStoreJson = File.ReadAllText(dataStorePath);
+                var dataStore = JsonSerializer.Deserialize<DataStore>(dataStoreJson);
+                if (dataStore != null)
+                {
+                    dataStores.Add(dataStore);
+                }
+            }
+        }
+        
+        return dataStores;
+    }
+
+    private void EnrichDataStoresWithGitStatus(string userId, List<DataStore> dataStores)
+    {
+        EnsureUserRepository(userId);
+        var userRepoPath = GetUserRepoPath(userId);
+        
+        using var repo = new Repository(userRepoPath);
+        
+        var repoStatus = repo.RetrieveStatus();
+        _logger.LogInformation($"Git status refreshed for datastores, detecting {repoStatus.Count()} status entries");
+        
+        var headCommit = repo.Head.Tip;
+        if (headCommit == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var previousDataStores = GetDataStoresFromCommit(repo, headCommit);
+
+            foreach (var dataStore in dataStores)
+            {
+                var previousDataStore = previousDataStores.FirstOrDefault(ds => ds.Id == dataStore.Id);
+                
+                if (previousDataStore == null)
+                {
+                    dataStore.GitStatus = "added";
+                    MarkAllDataStoreItemsAsAdded(dataStore);
+                }
+                else
+                {
+                    CompareDataStore(dataStore, previousDataStore);
+                }
+            }
+
+            foreach (var previousDataStore in previousDataStores)
+            {
+                if (!dataStores.Any(ds => ds.Id == previousDataStore.Id))
+                {
+                    previousDataStore.GitStatus = "deleted";
+                    MarkAllDataStoreItemsAsDeleted(previousDataStore);
+                    dataStores.Add(previousDataStore);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"Error enriching datastores with Git status: {ex.Message}");
+            return;
+        }
+    }
+
+    private List<DataStore> GetDataStoresFromCommit(Repository repo, Commit commit)
+    {
+        var dataStoreListEntry = commit[DataStoreListFileName];
+        if (dataStoreListEntry == null)
+        {
+            return new List<DataStore>();
+        }
+
+        var listBlob = (Blob)dataStoreListEntry.Target;
+        var listJson = listBlob.GetContentText();
+        var dataStoreList = JsonSerializer.Deserialize<List<DataStoreListItem>>(listJson);
+        
+        if (dataStoreList == null || !dataStoreList.Any())
+        {
+            return new List<DataStore>();
+        }
+
+        var dataStores = new List<DataStore>();
+        foreach (var item in dataStoreList)
+        {
+            var dataStorePath = $"{DataStoresDirectory}/{item.Id}.json";
+            var dataStoreEntry = commit[dataStorePath];
+            
+            if (dataStoreEntry != null)
+            {
+                var dataStoreBlob = (Blob)dataStoreEntry.Target;
+                var dataStoreJson = dataStoreBlob.GetContentText();
+                var dataStore = JsonSerializer.Deserialize<DataStore>(dataStoreJson);
+                
+                if (dataStore != null)
+                {
+                    dataStores.Add(dataStore);
+                }
+            }
+        }
+        
+        return dataStores;
+    }
+
+    private void CompareDataStore(DataStore current, DataStore previous)
+    {
+        _logger.LogInformation($"Comparing datastore {current.Id}: current name='{current.Name}', previous name='{previous.Name}'");
+        
+        if (current.Name != previous.Name || current.Description != previous.Description)
+        {
+            _logger.LogInformation($"DataStore {current.Id} marked as MODIFIED");
+            current.GitStatus = "modified";
+        }
+        else
+        {
+            _logger.LogInformation($"DataStore {current.Id} unchanged at datastore level");
+            current.GitStatus = null;
+        }
+
+        // Compare top-level data groups
+        foreach (var group in current.DataGroups)
+        {
+            var previousGroup = previous.DataGroups.FirstOrDefault(g => g.Id == group.Id);
+            
+            if (previousGroup == null)
+            {
+                group.GitStatus = "added";
+                MarkAllDataGroupItemsAsAdded(group);
+            }
+            else
+            {
+                CompareDataGroup(group, previousGroup);
+            }
+        }
+
+        // Check for deleted groups
+        foreach (var previousGroup in previous.DataGroups)
+        {
+            if (!current.DataGroups.Any(g => g.Id == previousGroup.Id))
+            {
+                previousGroup.GitStatus = "deleted";
+                MarkAllDataGroupItemsAsDeleted(previousGroup);
+                current.DataGroups.Add(previousGroup);
+            }
+        }
+    }
+
+    private void CompareDataGroup(DataGroup current, DataGroup previous)
+    {
+        bool groupModified = false;
+
+        if (current.Name != previous.Name || 
+            current.Description != previous.Description || 
+            current.Tag != previous.Tag ||
+            current.OrderIndex != previous.OrderIndex)
+        {
+            groupModified = true;
+        }
+
+        // Check for reordering or count changes in data points
+        if (current.DataPoints.Count != previous.DataPoints.Count)
+        {
+            groupModified = true;
+        }
+        else if (current.DataPoints.Count > 0)
+        {
+            for (int i = 0; i < current.DataPoints.Count; i++)
+            {
+                if (current.DataPoints[i].Id != previous.DataPoints[i].Id)
+                {
+                    groupModified = true;
+                    break;
+                }
+            }
+        }
+
+        // Check for reordering or count changes in child groups
+        if (current.ChildGroups.Count != previous.ChildGroups.Count)
+        {
+            groupModified = true;
+        }
+        else if (current.ChildGroups.Count > 0)
+        {
+            for (int i = 0; i < current.ChildGroups.Count; i++)
+            {
+                if (current.ChildGroups[i].Id != previous.ChildGroups[i].Id)
+                {
+                    groupModified = true;
+                    break;
+                }
+            }
+        }
+
+        current.GitStatus = groupModified ? "modified" : null;
+
+        // Compare data points
+        foreach (var point in current.DataPoints)
+        {
+            var previousPoint = previous.DataPoints.FirstOrDefault(p => p.Id == point.Id);
+            
+            if (previousPoint == null)
+            {
+                point.GitStatus = "added";
+            }
+            else
+            {
+                CompareDataPoint(point, previousPoint);
+            }
+        }
+
+        foreach (var previousPoint in previous.DataPoints)
+        {
+            if (!current.DataPoints.Any(p => p.Id == previousPoint.Id))
+            {
+                previousPoint.GitStatus = "deleted";
+                current.DataPoints.Add(previousPoint);
+            }
+        }
+
+        // Compare child groups recursively
+        foreach (var childGroup in current.ChildGroups)
+        {
+            var previousChildGroup = previous.ChildGroups.FirstOrDefault(g => g.Id == childGroup.Id);
+            
+            if (previousChildGroup == null)
+            {
+                childGroup.GitStatus = "added";
+                MarkAllDataGroupItemsAsAdded(childGroup);
+            }
+            else
+            {
+                CompareDataGroup(childGroup, previousChildGroup);
+            }
+        }
+
+        foreach (var previousChildGroup in previous.ChildGroups)
+        {
+            if (!current.ChildGroups.Any(g => g.Id == previousChildGroup.Id))
+            {
+                previousChildGroup.GitStatus = "deleted";
+                MarkAllDataGroupItemsAsDeleted(previousChildGroup);
+                current.ChildGroups.Add(previousChildGroup);
+            }
+        }
+    }
+
+    private void CompareDataPoint(DataPoint current, DataPoint previous)
+    {
+        bool pointModified = false;
+
+        if (current.Name != previous.Name || 
+            current.Description != previous.Description || 
+            current.Tag != previous.Tag ||
+            current.DataType != previous.DataType ||
+            current.OrderIndex != previous.OrderIndex)
+        {
+            pointModified = true;
+        }
+
+        // Compare configuration
+        if (current.Configuration.Mode != previous.Configuration.Mode ||
+            current.Configuration.DefaultValue != previous.Configuration.DefaultValue ||
+            current.Configuration.AllowMultiLine != previous.Configuration.AllowMultiLine ||
+            current.Configuration.MinLength != previous.Configuration.MinLength ||
+            current.Configuration.MaxLength != previous.Configuration.MaxLength)
+        {
+            pointModified = true;
+        }
+
+        current.GitStatus = pointModified ? "modified" : null;
+    }
+
+    private void MarkAllDataStoreItemsAsAdded(DataStore dataStore)
+    {
+        foreach (var group in dataStore.DataGroups)
+        {
+            MarkAllDataGroupItemsAsAdded(group);
+        }
+    }
+
+    private void MarkAllDataStoreItemsAsDeleted(DataStore dataStore)
+    {
+        foreach (var group in dataStore.DataGroups)
+        {
+            MarkAllDataGroupItemsAsDeleted(group);
+        }
+    }
+
+    private void MarkAllDataGroupItemsAsAdded(DataGroup group)
+    {
+        group.GitStatus = "added";
+        foreach (var point in group.DataPoints)
+        {
+            point.GitStatus = "added";
+        }
+        foreach (var childGroup in group.ChildGroups)
+        {
+            MarkAllDataGroupItemsAsAdded(childGroup);
+        }
+    }
+
+    private void MarkAllDataGroupItemsAsDeleted(DataGroup group)
+    {
+        group.GitStatus = "deleted";
+        foreach (var point in group.DataPoints)
+        {
+            point.GitStatus = "deleted";
+        }
+        foreach (var childGroup in group.ChildGroups)
+        {
+            MarkAllDataGroupItemsAsDeleted(childGroup);
         }
     }
 

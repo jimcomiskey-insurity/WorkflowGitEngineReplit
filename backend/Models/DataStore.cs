@@ -10,5 +10,6 @@ namespace WorkflowConfig.Api.Models
         public int NoOfTimesUsed { get; set; } = 0;
         public List<string>? Aliases { get; set; }
         public List<DataGroup> DataGroups { get; set; } = new List<DataGroup>();
+        public string? GitStatus { get; set; }
     }
 }

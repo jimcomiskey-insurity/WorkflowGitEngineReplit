@@ -12,5 +12,6 @@ namespace WorkflowConfig.Api.Models
         public int OrderIndex { get; set; }
         public List<DataPoint> DataPoints { get; set; } = new List<DataPoint>();
         public List<DataGroup> ChildGroups { get; set; } = new List<DataGroup>();
+        public string? GitStatus { get; set; }
     }
 }
