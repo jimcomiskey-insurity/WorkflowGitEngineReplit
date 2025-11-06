@@ -1,9 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataStoresService } from '../services/datastores.service';
-import { DataStoreStateService, DataStore, DataGroup, DataPoint } from '../services/datastore-state.service';
+import { DataStoreStateService, DataStore, DataGroup, DataPoint, ScriptInput } from '../services/datastore-state.service';
+import { MonacoService } from '../services/monaco.service';
+import { ScriptExecutionService, ScriptInputValue } from '../services/script-execution.service';
 
 interface TreeNode {
   id: string;
@@ -314,7 +316,145 @@ interface TreeNode {
             </div>
 
             <div *ngIf="activeTab === 'dataflow'" class="tab-content">
-              <p class="placeholder-text">Data Flow configuration will be implemented here</p>
+              <div class="dataflow-subtabs">
+                <button 
+                  class="subtab" 
+                  [class.active]="dataflowSubTab === 'population'"
+                  (click)="dataflowSubTab = 'population'">
+                  Population
+                </button>
+                <button 
+                  class="subtab" 
+                  [class.active]="dataflowSubTab === 'calculation'"
+                  (click)="switchToCalculationTab()">
+                  Calculation
+                </button>
+              </div>
+
+              <div *ngIf="dataflowSubTab === 'population'" class="subtab-content">
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" disabled />
+                    Reset data for each new workflow
+                    <span class="info-icon" title="Clear this data when a new workflow instance is created">ℹ</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" disabled />
+                    Lock on Partial Commit
+                    <span class="info-icon" title="Prevent changes after partial commit">ℹ</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label>Allow population by <span class="info-icon" title="Configure how this data can be populated">ℹ</span></label>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" disabled checked />
+                      Application
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" disabled checked />
+                      Import/Copy
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" disabled />
+                      Object Sync
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="dataflowSubTab === 'calculation'" class="subtab-content">
+                <div class="inputs-section">
+                  <div class="section-header">
+                    <label>Inputs <span class="required">*</span></label>
+                    <button class="add-input-btn" (click)="showInputSelector = true">+ Select Inputs</button>
+                  </div>
+
+                  <div *ngIf="getScriptInputs().length === 0" class="empty-inputs">
+                    No inputs selected. Click "+ Select Inputs" to add data points.
+                  </div>
+
+                  <table *ngIf="getScriptInputs().length > 0" class="inputs-table">
+                    <thead>
+                      <tr>
+                        <th>Input</th>
+                        <th>C# Data Type</th>
+                        <th>Alias for Script</th>
+                        <th>Test Value</th>
+                        <th></th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let input of getScriptInputs(); let i = index">
+                        <td>{{ input.dataPointName }}</td>
+                        <td>{{ getCSharpType(input.dataType) }}</td>
+                        <td>
+                          <input 
+                            type="text" 
+                            [(ngModel)]="input.alias"
+                            (ngModelChange)="savePoint()"
+                            class="alias-input"
+                            placeholder="variableName"
+                          />
+                        </td>
+                        <td>
+                          <input 
+                            type="text" 
+                            [value]="getTestValue(input.dataPointId)"
+                            (input)="setTestValue(input.dataPointId, $event)"
+                            class="test-value-input"
+                            [placeholder]="getTestValuePlaceholder(input.dataType)"
+                          />
+                        </td>
+                        <td>
+                          <label class="checkbox-label small">
+                            <input 
+                              type="checkbox" 
+                              [checked]="getTestWithNull(input.dataPointId)"
+                              (change)="setTestWithNull(input.dataPointId, $event)"
+                            />
+                            Test with null
+                          </label>
+                        </td>
+                        <td>
+                          <button class="remove-input-btn" (click)="removeScriptInput(i)" title="Remove input">×</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="script-section">
+                  <label>C# Script</label>
+                  <div class="method-signature" *ngIf="getScriptInputs().length > 0">
+                    {{ getMethodSignature() }}
+                  </div>
+                  <div #scriptEditorContainer class="script-editor-container"></div>
+                </div>
+
+                <div class="script-actions">
+                  <button 
+                    class="test-script-btn" 
+                    (click)="testScript()"
+                    [disabled]="executingScript || getScriptInputs().length === 0">
+                    {{ executingScript ? 'Testing...' : 'Test Script' }}
+                  </button>
+                </div>
+
+                <div *ngIf="scriptResult !== null" class="script-result success">
+                  <strong>Result:</strong> {{ scriptResult }}
+                </div>
+
+                <div *ngIf="scriptError !== null" class="script-result error">
+                  <strong>Error:</strong>
+                  <pre>{{ scriptError }}</pre>
+                </div>
+              </div>
             </div>
 
             <button class="delete-btn" (click)="deletePoint()">Delete Data Point</button>
@@ -338,6 +478,54 @@ interface TreeNode {
         <button class="cancel-btn" (click)="showTypeSelector = false">Cancel</button>
       </div>
     </div>
+
+    <div class="modal" *ngIf="showInputSelector" (click)="showInputSelector = false">
+      <div class="modal-content input-selector" (click)="$event.stopPropagation()">
+        <h2>Select Input Data Points</h2>
+        <button class="close-btn" (click)="showInputSelector = false">×</button>
+        
+        <div class="input-selector-content">
+          <p class="help-text">Select data points from this data store to use as inputs for your calculation:</p>
+          
+          <div class="input-tree">
+            <div *ngFor="let node of tree" class="input-tree-node-wrapper">
+              <ng-container *ngTemplateOutlet="inputTreeNodeTemplate; context: { nodes: [node], level: 0 }"></ng-container>
+            </div>
+          </div>
+        </div>
+
+        <button class="cancel-btn" (click)="showInputSelector = false">Close</button>
+      </div>
+    </div>
+
+    <ng-template #inputTreeNodeTemplate let-nodes="nodes" let-level="level">
+      <div *ngFor="let node of nodes" class="input-tree-node-wrapper">
+        <div 
+          class="input-tree-node" 
+          [style.padding-left.px]="level * 20">
+          
+          <span class="expand-icon" (click)="toggleExpand(node, $event)" *ngIf="node.type === 'group'">
+            {{ node.expanded ? '−' : '+' }}
+          </span>
+          <span class="expand-icon-placeholder" *ngIf="node.type === 'point'"></span>
+          
+          <span class="node-icon">{{ node.icon }}</span>
+          <span class="node-name">{{ node.name }}</span>
+          
+          <button 
+            *ngIf="node.type === 'point' && node.id !== editingPoint.id"
+            class="add-input-small-btn" 
+            (click)="addScriptInput(node)"
+            [disabled]="isInputAlreadyAdded(node.id)">
+            {{ isInputAlreadyAdded(node.id) ? 'Added' : '+ Add' }}
+          </button>
+        </div>
+
+        <div *ngIf="node.expanded && node.children.length > 0" class="input-tree-children">
+          <ng-container *ngTemplateOutlet="inputTreeNodeTemplate; context: { nodes: node.children, level: level + 1 }"></ng-container>
+        </div>
+      </div>
+    </ng-template>
 
     <ng-template #treeNodeTemplate let-nodes="nodes" let-level="level">
       <div *ngFor="let node of nodes" class="tree-node-wrapper">
@@ -376,11 +564,15 @@ interface TreeNode {
   `,
   styleUrls: ['./datastore-editor.component.css']
 })
-export class DataStoreEditorComponent implements OnInit {
+export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private dataStoresService = inject(DataStoresService);
   private stateService = inject(DataStoreStateService);
+  private monacoService = inject(MonacoService);
+  private scriptExecutionService = inject(ScriptExecutionService);
+
+  @ViewChild('scriptEditorContainer') scriptEditorContainer?: ElementRef;
 
   dataStore: DataStore | null = null;
   tree: TreeNode[] = [];
@@ -388,8 +580,10 @@ export class DataStoreEditorComponent implements OnInit {
   selectedNode: TreeNode | null = null;
   showMenuForNode: string | null = null;
   showTypeSelector = false;
+  showInputSelector = false;
   filterText = '';
   activeTab = 'type';
+  dataflowSubTab = 'population';
   
   editingGroup: Partial<DataGroup> = {};
   editingPoint: Partial<DataPoint> = {
@@ -403,6 +597,12 @@ export class DataStoreEditorComponent implements OnInit {
   expandedNodeIds: Set<string> = new Set();
 
   currentUser = sessionStorage.getItem('currentUser') || 'userA';
+
+  scriptEditor: any = null;
+  testValues: Map<string, { value: string, testWithNull: boolean }> = new Map();
+  scriptResult: string | null = null;
+  scriptError: string | null = null;
+  executingScript = false;
 
   dataPointTypes = [
     { name: 'Date', icon: '📅', type: 'Date' },
@@ -723,5 +923,201 @@ export class DataStoreEditorComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/datastores']);
+  }
+
+  ngAfterViewInit(): void {
+    // Monaco editor will be initialized when switching to calculation tab
+  }
+
+  ngOnDestroy(): void {
+    if (this.scriptEditor) {
+      this.scriptEditor.dispose();
+      this.scriptEditor = null;
+    }
+  }
+
+  switchToCalculationTab(): void {
+    this.dataflowSubTab = 'calculation';
+    
+    if (!this.editingPoint.calculation) {
+      this.editingPoint.calculation = {
+        inputs: [],
+        script: 'int Calculate(decimal? TestMoney, string TestYesNo) {\n  if (TestYesNo == "Yes")\n  {\n    return int.Parse(TestMoney) + 500;\n  }\n  else\n  {\n    return 0;\n  }\n}'
+      };
+    }
+
+    setTimeout(() => this.initializeMonacoEditor(), 100);
+  }
+
+  initializeMonacoEditor(): void {
+    if (this.scriptEditor || !this.scriptEditorContainer) {
+      return;
+    }
+
+    this.monacoService.getMonaco().then(() => {
+      if (!this.scriptEditorContainer) return;
+
+      this.scriptEditor = (window as any).monaco.editor.create(
+        this.scriptEditorContainer.nativeElement,
+        {
+          value: this.editingPoint.calculation?.script || '',
+          language: 'csharp',
+          theme: 'vs-dark',
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
+          fontSize: 13,
+          lineNumbers: 'on',
+          automaticLayout: true
+        }
+      );
+
+      this.scriptEditor.onDidChangeModelContent(() => {
+        if (this.editingPoint.calculation) {
+          this.editingPoint.calculation.script = this.scriptEditor.getValue();
+          this.savePoint();
+        }
+      });
+    });
+  }
+
+  getScriptInputs(): ScriptInput[] {
+    return this.editingPoint.calculation?.inputs || [];
+  }
+
+  getCSharpType(dataType: string): string {
+    const typeMap: { [key: string]: string } = {
+      'String': 'string',
+      'Integer': 'int',
+      'Decimal': 'decimal',
+      'Money': 'decimal',
+      'Date': 'DateTime',
+      'Timestamp': 'DateTime',
+      'Year': 'int',
+      'YesNo': 'string',
+      'Email': 'string',
+      'Phone': 'string',
+      'Url': 'string',
+      'Zipcode': 'string',
+      'ListOfStrings': 'List<string>'
+    };
+    return typeMap[dataType] || 'string';
+  }
+
+  getTestValue(dataPointId: string): string {
+    return this.testValues.get(dataPointId)?.value || '';
+  }
+
+  setTestValue(dataPointId: string, event: any): void {
+    const value = event.target.value;
+    const existing = this.testValues.get(dataPointId) || { value: '', testWithNull: false };
+    this.testValues.set(dataPointId, { ...existing, value });
+  }
+
+  getTestWithNull(dataPointId: string): boolean {
+    return this.testValues.get(dataPointId)?.testWithNull || false;
+  }
+
+  setTestWithNull(dataPointId: string, event: any): void {
+    const testWithNull = event.target.checked;
+    const existing = this.testValues.get(dataPointId) || { value: '', testWithNull: false };
+    this.testValues.set(dataPointId, { ...existing, testWithNull });
+  }
+
+  getTestValuePlaceholder(dataType: string): string {
+    const placeholders: { [key: string]: string } = {
+      'String': 'Enter text',
+      'Integer': '123',
+      'Decimal': '123.45',
+      'Money': '100.00',
+      'Date': '2025-01-01',
+      'Timestamp': '2025-01-01T12:00:00',
+      'Year': '2025',
+      'YesNo': 'Yes',
+      'Email': 'user@example.com',
+      'Phone': '555-1234',
+      'Url': 'https://example.com',
+      'Zipcode': '12345'
+    };
+    return placeholders[dataType] || 'Enter value';
+  }
+
+  removeScriptInput(index: number): void {
+    if (this.editingPoint.calculation) {
+      this.editingPoint.calculation.inputs.splice(index, 1);
+      this.savePoint();
+    }
+  }
+
+  addScriptInput(node: TreeNode): void {
+    if (!this.editingPoint.calculation) {
+      this.editingPoint.calculation = { inputs: [], script: '' };
+    }
+
+    const point = node.data as DataPoint;
+    const input: ScriptInput = {
+      dataPointId: point.id,
+      dataPointName: point.name,
+      dataType: point.dataType,
+      alias: this.generateAlias(point.name)
+    };
+
+    this.editingPoint.calculation.inputs.push(input);
+    this.savePoint();
+  }
+
+  isInputAlreadyAdded(dataPointId: string): boolean {
+    return this.getScriptInputs().some(input => input.dataPointId === dataPointId);
+  }
+
+  generateAlias(name: string): string {
+    return name.replace(/[^a-zA-Z0-9]/g, '').replace(/^[0-9]/, '_');
+  }
+
+  getMethodSignature(): string {
+    const inputs = this.getScriptInputs();
+    if (inputs.length === 0) return '';
+
+    const params = inputs.map(input => {
+      const type = this.getCSharpType(input.dataType);
+      const nullableSuffix = type !== 'string' && type !== 'List<string>' ? '?' : '';
+      return `${type}${nullableSuffix} ${input.alias}`;
+    }).join(', ');
+
+    return `int Calculate(${params}) {`;
+  }
+
+  testScript(): void {
+    if (!this.editingPoint.calculation || this.executingScript) {
+      return;
+    }
+
+    this.executingScript = true;
+    this.scriptResult = null;
+    this.scriptError = null;
+
+    const inputs: ScriptInputValue[] = this.getScriptInputs().map(input => ({
+      alias: input.alias,
+      dataType: input.dataType,
+      testValue: this.getTestValue(input.dataPointId),
+      testWithNull: this.getTestWithNull(input.dataPointId)
+    }));
+
+    this.scriptExecutionService.executeScript(this.currentUser, {
+      script: this.editingPoint.calculation.script,
+      inputs
+    }).subscribe({
+      next: (result) => {
+        if (result.success) {
+          this.scriptResult = `${result.result} (${result.resultType})`;
+        } else {
+          this.scriptError = result.error || 'Unknown error';
+        }
+        this.executingScript = false;
+      },
+      error: (err) => {
+        this.scriptError = err.message || 'Failed to execute script';
+        this.executingScript = false;
+      }
+    });
   }
 }
