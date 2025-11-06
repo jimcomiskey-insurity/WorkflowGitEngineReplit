@@ -82,7 +82,8 @@
           </div>
           <app-comparison-viewer
             [changes]="commit.changes"
-            [assetChanges]="[]"
+            [assetChanges]="commit.assetChanges || []"
+            [dataStoreChanges]="commit.dataStoreChanges || []"
             title=""
             emptyMessage="No changes in this commit">
           </app-comparison-viewer>
