@@ -288,7 +288,7 @@ public class GitServiceResetTests : IDisposable
 
         // Assert - The reset should have removed the commit but kept the file changes
         var status = _gitService.GetStatus(userId);
-        status.Modified.Should().Contain("workflows.json", "reset --mixed keeps working directory changes");
+        status.Modified.Should().Contain("workflow-list.json", "reset --mixed keeps working directory changes");
     }
 
     [Fact]

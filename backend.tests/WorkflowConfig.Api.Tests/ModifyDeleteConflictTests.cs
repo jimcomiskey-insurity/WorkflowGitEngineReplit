@@ -56,40 +56,47 @@ public class ModifyDeleteConflictTests : IDisposable
             
             using (var repo = new Repository(tempInitPath))
             {
-                var sampleWorkflows = new ProgramWorkflows
+                var workflow = new Workflow
                 {
-                    Workflows = new List<Workflow>
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    WorkflowKey = "WF-001",
+                    WorkflowName = "Test Workflow",
+                    Description = "Test Description",
+                    Phases = new List<Phase>
                     {
-                        new Workflow
+                        new Phase
                         {
-                            WorkflowKey = "WF-001",
-                            WorkflowName = "Test Workflow",
-                            Description = "Test Description",
-                            Phases = new List<Phase>
+                            PhaseName = "Phase 1",
+                            PhaseOrder = 1,
+                            Tasks = new List<TaskItem>
                             {
-                                new Phase
+                                new TaskItem
                                 {
-                                    PhaseName = "Phase 1",
-                                    PhaseOrder = 1,
-                                    Tasks = new List<TaskItem>
-                                    {
-                                        new TaskItem
-                                        {
-                                            TaskId = "TASK-001",
-                                            TaskName = "Task 1",
-                                            TaskType = "Review",
-                                            AssignedRole = "Underwriter"
-                                        }
-                                    }
+                                    TaskId = "TASK-001",
+                                    TaskName = "Task 1",
+                                    TaskType = "Review",
+                                    AssignedRole = "Underwriter"
                                 }
                             }
                         }
                     }
                 };
                 
-                var workflowFilePath = Path.Combine(tempInitPath, "workflows.json");
-                var json = System.Text.Json.JsonSerializer.Serialize(sampleWorkflows, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(workflowFilePath, json);
+                // Create split-file format: workflow-list.json + workflows/{id}.json
+                var workflowsDir = Path.Combine(tempInitPath, "workflows");
+                Directory.CreateDirectory(workflowsDir);
+                
+                var workflowList = new WorkflowList
+                {
+                    WorkflowIds = new List<Guid> { workflow.Id }
+                };
+                var listFilePath = Path.Combine(tempInitPath, "workflow-list.json");
+                var listJson = System.Text.Json.JsonSerializer.Serialize(workflowList, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(listFilePath, listJson);
+                
+                var workflowFilePath = Path.Combine(workflowsDir, $"{workflow.Id}.json");
+                var workflowJson = System.Text.Json.JsonSerializer.Serialize(workflow, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(workflowFilePath, workflowJson);
                 
                 Commands.Stage(repo, "*");
                 var signature = new Signature("System", "system@workflow.com", DateTimeOffset.Now);

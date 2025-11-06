@@ -64,24 +64,31 @@ public class GitServiceComparisonTests : IDisposable
             
             using (var repo = new LibGit2Sharp.Repository(tempInitPath))
             {
-                // Create sample workflows file
-                var sampleWorkflows = new ProgramWorkflows
+                // Create sample workflow in split-file format
+                var workflow = new Workflow
                 {
-                    Workflows = new List<Workflow>
-                    {
-                        new Workflow
-                        {
-                            WorkflowKey = "new-business",
-                            WorkflowName = "New Business",
-                            Description = "Sample new business workflow",
-                            Phases = new List<Phase>()
-                        }
-                    }
+                    Id = Guid.Parse("ce1ca1f5-b7d9-5346-9099-6c0d0a5f5875"),
+                    WorkflowKey = "new-business",
+                    WorkflowName = "New Business",
+                    Description = "Sample new business workflow",
+                    Phases = new List<Phase>()
                 };
                 
-                var workflowFilePath = Path.Combine(tempInitPath, "workflows.json");
-                var json = System.Text.Json.JsonSerializer.Serialize(sampleWorkflows, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(workflowFilePath, json);
+                // Create split-file format: workflow-list.json + workflows/{id}.json
+                var workflowsDir = Path.Combine(tempInitPath, "workflows");
+                Directory.CreateDirectory(workflowsDir);
+                
+                var workflowList = new WorkflowList
+                {
+                    WorkflowIds = new List<Guid> { workflow.Id }
+                };
+                var listFilePath = Path.Combine(tempInitPath, "workflow-list.json");
+                var listJson = System.Text.Json.JsonSerializer.Serialize(workflowList, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(listFilePath, listJson);
+                
+                var workflowFilePath = Path.Combine(workflowsDir, $"{workflow.Id}.json");
+                var workflowJson = System.Text.Json.JsonSerializer.Serialize(workflow, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(workflowFilePath, workflowJson);
                 
                 // Commit and push to central repository
                 LibGit2Sharp.Commands.Stage(repo, "*");
