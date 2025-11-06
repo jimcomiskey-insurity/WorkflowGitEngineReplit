@@ -83,12 +83,7 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (dataStores) => {
-        console.log('[PendingChanges] Received datastores:', dataStores.length, 'datastores');
-        dataStores.forEach(ds => {
-          console.log(`[PendingChanges] DataStore ${ds.id} (${ds.name}) gitStatus:`, ds.gitStatus);
-        });
         this.dataStores = dataStores.filter(ds => this.hasDataStoreChanges(ds));
-        console.log('[PendingChanges] Datastores with changes:', this.dataStores.length);
         
         this.calculateTotalChanges();
         this.applyFilter();
@@ -225,7 +220,6 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       this.filteredWorkflows = this.workflows;
       this.filteredAssets = this.assets;
       this.filteredDataStores = this.dataStores;
-      console.log('[PendingChanges] Applied ALL filter. filteredDataStores.length:', this.filteredDataStores.length);
     } else {
       this.filteredWorkflows = this.workflows
         .map(w => this.filterWorkflowByStatus(w, this.selectedFilter))
@@ -236,7 +230,6 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       
       this.filteredDataStores = this.dataStores
         .filter(ds => this.dataStoreMatchesFilter(ds, this.selectedFilter));
-      console.log('[PendingChanges] Applied', this.selectedFilter, 'filter. filteredDataStores.length:', this.filteredDataStores.length);
     }
   }
 
