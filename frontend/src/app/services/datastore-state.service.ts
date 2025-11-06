@@ -18,6 +18,12 @@ export interface DataGroup {
   tag?: string;
   parentId?: string;
   orderIndex: number;
+  isRepeatable: boolean;
+  allowDesiredState: boolean;
+  allowPopulationByApplication: boolean;
+  allowPopulationByImportCopy: boolean;
+  allowPopulationByObjectSync: boolean;
+  referenceObject?: string;
   dataPoints: DataPoint[];
   childGroups: DataGroup[];
   gitStatus?: string;
