@@ -20,4 +20,6 @@ public class CommitInfo
     public string Author { get; set; } = string.Empty;
     public DateTimeOffset Date { get; set; }
     public List<WorkflowChange> Changes { get; set; } = new();
+    public List<AssetChange> AssetChanges { get; set; } = new();
+    public List<DataStoreChange> DataStoreChanges { get; set; } = new();
 }
