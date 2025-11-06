@@ -2400,7 +2400,9 @@ public class GitService
                 Message = c.Message,
                 Author = c.Author.Name,
                 Date = c.Author.When,
-                Changes = GetCommitChanges(repo, c)
+                Changes = GetCommitChanges(repo, c),
+                AssetChanges = GetCommitAssetChanges(repo, c),
+                DataStoreChanges = GetCommitDataStoreChanges(repo, c)
             })
             .ToList();
         
