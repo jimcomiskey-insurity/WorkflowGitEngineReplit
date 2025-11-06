@@ -13,9 +13,15 @@ public class TestHooks
         _scenarioContext = scenarioContext;
     }
 
-    [BeforeScenario]
+    [BeforeScenario(Order = 1)]
     public void BeforeScenario()
     {
+        // Skip WebDriver setup for API-only tests
+        if (_scenarioContext.ScenarioInfo.Tags.Contains("api"))
+        {
+            return;
+        }
+        
         var driver = WebDriverFactory.CreateChromeDriver(headless: true);
         _scenarioContext["WebDriver"] = driver;
     }
