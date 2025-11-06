@@ -41,7 +41,7 @@
     </button>
   </div>
 
-  <div *ngIf="filteredWorkflows.length > 0 || filteredAssets.length > 0">
+  <div *ngIf="filteredWorkflows.length > 0 || filteredAssets.length > 0 || filteredDataStores.length > 0">
     <!-- Workflows Section -->
     <div *ngIf="filteredWorkflows.length > 0">
       <h2 class="section-header">Workflows <span class="section-count" *ngIf="filteredWorkflows.length > 0">({{ filteredWorkflows.length }})</span></h2>
@@ -150,9 +150,35 @@
         </div>
       </div>
     </div>
+
+    <!-- Data Stores Section -->
+    <div *ngIf="filteredDataStores.length > 0">
+      <h2 class="section-header">Data Stores <span class="section-count" *ngIf="filteredDataStores.length > 0">({{ filteredDataStores.length }})</span></h2>
+      <div class="changes-list">
+        <div class="workflow-change-card" *ngFor="let dataStore of filteredDataStores" [attr.data-git-status]="dataStore.gitStatus">
+          <div class="workflow-change-header">
+            <div class="workflow-info">
+              <h2 class="workflow-name">{{ dataStore.name }}</h2>
+              <span class="change-count-badge" *ngIf="countDataStoreChanges(dataStore) > 0">{{ countDataStoreChanges(dataStore) }} {{ countDataStoreChanges(dataStore) === 1 ? 'change' : 'changes' }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="dataStore.gitStatus" *ngIf="dataStore.gitStatus && dataStore.gitStatus !== 'none'">
+              {{ dataStore.gitStatus | titlecase }}
+            </span>
+          </div>
+          
+          <p class="workflow-description" *ngIf="dataStore.description">{{ dataStore.description }}</p>
+
+          <div class="datastore-meta">
+            <span class="meta-item">{{ dataStore.dataGroups.length }} {{ dataStore.dataGroups.length === 1 ? 'group' : 'groups' }}</span>
+            <span class="meta-divider">•</span>
+            <span class="meta-item">Used {{ dataStore.noOfTimesUsed }} {{ dataStore.noOfTimesUsed === 1 ? 'time' : 'times' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="empty-state" *ngIf="filteredWorkflows.length === 0 && filteredAssets.length === 0">
+  <div class="empty-state" *ngIf="filteredWorkflows.length === 0 && filteredAssets.length === 0 && filteredDataStores.length === 0">
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M9 11l3 3L22 4"></path>
       <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>

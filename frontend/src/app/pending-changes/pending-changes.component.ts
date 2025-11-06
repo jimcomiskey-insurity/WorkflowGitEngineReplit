@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -7,6 +7,8 @@ import { Workflow, Phase, TaskItem } from '../services/workflow.service';
 import { WorkflowStateService } from '../services/workflow-state.service';
 import { AssetStateService } from '../services/asset-state.service';
 import { Asset } from '../services/asset.service';
+import { DataStoreStateService, DataStore } from '../services/datastore-state.service';
+import { DataStoresService } from '../services/datastores.service';
 
 interface ExtendedPhase extends Phase {
   collapsed: boolean;
@@ -30,13 +32,18 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
   filteredWorkflows: ExtendedWorkflow[] = [];
   assets: Asset[] = [];
   filteredAssets: Asset[] = [];
+  dataStores: DataStore[] = [];
+  filteredDataStores: DataStore[] = [];
   selectedFilter: 'all' | 'added' | 'modified' | 'deleted' = 'all';
   totalChanges = 0;
   private destroy$ = new Subject<void>();
+  private dataStoresService = inject(DataStoresService);
+  currentUser = 'userA';
 
   constructor(
     private workflowStateService: WorkflowStateService,
     private assetStateService: AssetStateService,
+    private dataStoreStateService: DataStoreStateService,
     private router: Router
   ) {}
 
@@ -70,6 +77,22 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
         console.error('Error loading assets:', error);
       }
     });
+
+    this.dataStoreStateService.dataStores$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (dataStores) => {
+        this.dataStores = dataStores.filter(ds => this.hasDataStoreChanges(ds));
+        
+        this.calculateTotalChanges();
+        this.applyFilter();
+      },
+      error: (error) => {
+        console.error('Error loading datastores:', error);
+      }
+    });
+
+    this.dataStoresService.getAllDataStores(this.currentUser).subscribe();
   }
 
   ngOnDestroy() {
@@ -113,6 +136,23 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
            asset.gitStatus !== 'none';
   }
 
+  hasDataStoreChanges(dataStore: DataStore): boolean {
+    if (dataStore.gitStatus && dataStore.gitStatus !== 'none') {
+      return true;
+    }
+    return dataStore.dataGroups.some(dg => this.hasDataGroupChanges(dg));
+  }
+
+  hasDataGroupChanges(dataGroup: any): boolean {
+    if (dataGroup.gitStatus && dataGroup.gitStatus !== 'none') {
+      return true;
+    }
+    if (dataGroup.dataPoints.some((dp: any) => dp.gitStatus && dp.gitStatus !== 'none')) {
+      return true;
+    }
+    return dataGroup.childGroups.some((cg: any) => this.hasDataGroupChanges(cg));
+  }
+
   countChanges(workflow: Workflow): number {
     let count = 0;
     
@@ -137,13 +177,42 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
   calculateTotalChanges() {
     const workflowChanges = this.workflows.reduce((sum, w) => sum + w.changeCount, 0);
     const assetChanges = this.assets.filter(a => this.hasAssetChanges(a)).length;
-    this.totalChanges = workflowChanges + assetChanges;
+    const dataStoreChanges = this.dataStores.reduce((sum, ds) => sum + this.countDataStoreChanges(ds), 0);
+    this.totalChanges = workflowChanges + assetChanges + dataStoreChanges;
+  }
+
+  countDataStoreChanges(dataStore: DataStore): number {
+    let count = 0;
+    if (dataStore.gitStatus && dataStore.gitStatus !== 'none') {
+      count++;
+    }
+    dataStore.dataGroups.forEach(dg => {
+      count += this.countDataGroupChanges(dg);
+    });
+    return count;
+  }
+
+  countDataGroupChanges(dataGroup: any): number {
+    let count = 0;
+    if (dataGroup.gitStatus && dataGroup.gitStatus !== 'none') {
+      count++;
+    }
+    dataGroup.dataPoints.forEach((dp: any) => {
+      if (dp.gitStatus && dp.gitStatus !== 'none') {
+        count++;
+      }
+    });
+    dataGroup.childGroups.forEach((cg: any) => {
+      count += this.countDataGroupChanges(cg);
+    });
+    return count;
   }
 
   applyFilter() {
     if (this.selectedFilter === 'all') {
       this.filteredWorkflows = this.workflows;
       this.filteredAssets = this.assets;
+      this.filteredDataStores = this.dataStores;
     } else {
       this.filteredWorkflows = this.workflows
         .map(w => this.filterWorkflowByStatus(w, this.selectedFilter))
@@ -151,7 +220,30 @@ export class PendingChangesComponent implements OnInit, OnDestroy {
       
       this.filteredAssets = this.assets
         .filter(a => a.gitStatus === this.selectedFilter);
+      
+      this.filteredDataStores = this.dataStores
+        .filter(ds => this.dataStoreMatchesFilter(ds, this.selectedFilter));
     }
+  }
+
+  dataStoreMatchesFilter(dataStore: DataStore, status: string): boolean {
+    if (dataStore.gitStatus === status) {
+      return true;
+    }
+    
+    return dataStore.dataGroups.some(dg => this.dataGroupMatchesFilter(dg, status));
+  }
+
+  dataGroupMatchesFilter(dataGroup: any, status: string): boolean {
+    if (dataGroup.gitStatus === status) {
+      return true;
+    }
+    
+    if (dataGroup.dataPoints.some((dp: any) => dp.gitStatus === status)) {
+      return true;
+    }
+    
+    return dataGroup.childGroups.some((cg: any) => this.dataGroupMatchesFilter(cg, status));
   }
 
   filterWorkflowByStatus(workflow: ExtendedWorkflow, status: string): ExtendedWorkflow {

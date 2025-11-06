@@ -8,6 +8,7 @@ export interface DataStore {
   noOfTimesUsed: number;
   aliases?: string[];
   dataGroups: DataGroup[];
+  gitStatus?: string;
 }
 
 export interface DataGroup {
@@ -19,6 +20,7 @@ export interface DataGroup {
   orderIndex: number;
   dataPoints: DataPoint[];
   childGroups: DataGroup[];
+  gitStatus?: string;
 }
 
 export interface DataPoint {
@@ -29,6 +31,7 @@ export interface DataPoint {
   dataType: string;
   orderIndex: number;
   configuration: DataPointConfiguration;
+  gitStatus?: string;
 }
 
 export interface DataPointConfiguration {

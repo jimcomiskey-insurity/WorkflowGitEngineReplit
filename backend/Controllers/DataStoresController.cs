@@ -20,7 +20,7 @@ namespace WorkflowConfig.Api.Controllers
 
         private DataStoreService GetUserService(string userId)
         {
-            var userRepoPath = System.IO.Path.Combine(_basePath, "repositories", userId);
+            var userRepoPath = System.IO.Path.Combine(_basePath, "user-repos", userId);
             return new DataStoreService(userRepoPath);
         }
 
