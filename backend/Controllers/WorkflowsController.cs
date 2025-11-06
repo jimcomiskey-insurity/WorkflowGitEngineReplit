@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WorkflowConfig.Api.Models;
 using WorkflowConfig.Api.Services;
+using NSwag.Annotations;
 
 namespace WorkflowConfig.Api.Controllers;
 
@@ -16,6 +17,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpGet]
+    [SwaggerOperation("Get All Workflows")]
     public IActionResult GetWorkflows([FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
@@ -23,6 +25,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpGet("{workflowKey}")]
+    [SwaggerOperation("Get Workflow By Key")]
     public IActionResult GetWorkflow(string workflowKey, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
@@ -37,6 +40,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPost]
+    [SwaggerOperation("Create Workflow")]
     public IActionResult CreateWorkflow([FromBody] Workflow workflow, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflows(userId);
@@ -53,6 +57,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPut("{workflowKey}")]
+    [SwaggerOperation("Update Workflow")]
     public IActionResult UpdateWorkflow(string workflowKey, [FromBody] Workflow workflow, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflows(userId);
@@ -75,6 +80,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpDelete("{workflowKey}")]
+    [SwaggerOperation("Delete Workflow")]
     public IActionResult DeleteWorkflow(string workflowKey, [FromQuery] string userId = "default")
     {
         var workflows = _gitService.ReadWorkflows(userId);

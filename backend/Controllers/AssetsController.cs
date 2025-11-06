@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WorkflowConfig.Api.Models;
 using WorkflowConfig.Api.Services;
+using NSwag.Annotations;
 
 namespace WorkflowConfig.Api.Controllers;
 
@@ -16,6 +17,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpGet]
+    [SwaggerOperation("Get All Assets")]
     public IActionResult GetAssets([FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssetsWithGitStatus(userId);
@@ -23,6 +25,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [SwaggerOperation("Get Asset By Id")]
     public IActionResult GetAsset(Guid id, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -37,6 +40,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpPost]
+    [SwaggerOperation("Create Asset")]
     public IActionResult CreateAsset([FromBody] Asset asset, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -53,6 +57,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [SwaggerOperation("Update Asset")]
     public IActionResult UpdateAsset(Guid id, [FromBody] Asset asset, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -71,6 +76,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [SwaggerOperation("Delete Asset")]
     public IActionResult DeleteAsset(Guid id, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -93,6 +99,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpPost("{id}/file")]
+    [SwaggerOperation("Upload Asset File")]
     public async Task<IActionResult> UploadFile(Guid id, [FromQuery] string userId = "default", IFormFile? file = null)
     {
         if (file == null || file.Length == 0)
@@ -129,6 +136,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpGet("{id}/file")]
+    [SwaggerOperation("Get Asset File Info")]
     public IActionResult DownloadFile(Guid id, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -151,6 +159,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpGet("{id}/file/content")]
+    [SwaggerOperation("Get Asset File Content")]
     public IActionResult GetFileContent(Guid id, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -173,6 +182,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpGet("{id}/file/content/committed")]
+    [SwaggerOperation("Get Asset File Content At Commit")]
     public IActionResult GetCommittedFileContent(Guid id, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -195,6 +205,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpPut("{id}/file/content")]
+    [SwaggerOperation("Update Asset File Content")]
     public IActionResult UpdateFileContent(Guid id, [FromBody] FileContentUpdate update, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
@@ -219,6 +230,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpDelete("{id}/file")]
+    [SwaggerOperation("Delete Asset File")]
     public IActionResult DeleteFile(Guid id, [FromQuery] string userId = "default")
     {
         var assets = _gitService.ReadAssets(userId);
