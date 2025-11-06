@@ -39,13 +39,19 @@ Preferred communication style: Simple, everyday language.
 - Auto-regeneration on every build keeps clients in sync with backend API
 - Generated files:
   - `Generated/ApiClients.g.cs` - Strongly-typed API client methods
-  - `Generated/Contracts.g.cs` - Request/response model classes
+  - `Generated/Contracts.g.cs` - Request/response model classes and IApiClient interface
 - Benefits: Compile-time safety, IntelliSense support, eliminates route guessing
-- Usage: E2E tests use `IClient` interface with injected HttpClient for API calls
+- Usage: E2E tests use `IApiClient` interface with injected HttpClient for API calls
+
+**NSwag method name improvements (Nov 2025):**
+- Backend configured to generate operation IDs from controller action method names (Program.cs)
+- NSwag set to SingleClientFromOperationId mode for clean, descriptive method names
+- Examples: `CreateDataStoreAsync`, `GetAllDataStoresAsync`, `CreatePullRequestAsync`, `GetBranchComparisonAsync`
+- Previous generic names (DataStoresPOSTAsync, PullRequestsAllAsync) replaced with intention-revealing names
+- All E2E test step definitions updated to use new strongly-typed method names
 
 **Known limitations:**
-- Backend OpenAPI annotations for 201 Created responses recently added
-- Some tests may require workarounds for status code handling until regeneration completes
+- Backend returns lowercase ChangeType values (e.g., "added") - tests updated to match this convention
 
 ### Frontend Testing Requirements
 
