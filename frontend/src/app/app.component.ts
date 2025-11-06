@@ -319,7 +319,7 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
     
     .main-content {
       flex: 1;
-      overflow-y: auto;
+      overflow: hidden;
       background-color: var(--bg-primary);
     }
 
