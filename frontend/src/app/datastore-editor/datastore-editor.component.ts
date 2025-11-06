@@ -515,7 +515,7 @@ interface TreeNode {
           <button 
             *ngIf="node.type === 'point' && node.id !== editingPoint.id"
             class="add-input-small-btn" 
-            (click)="addScriptInput(node)"
+            (click)="addScriptInput(node); $event.stopPropagation()"
             [disabled]="isInputAlreadyAdded(node.id)">
             {{ isInputAlreadyAdded(node.id) ? 'Added' : '+ Add' }}
           </button>
