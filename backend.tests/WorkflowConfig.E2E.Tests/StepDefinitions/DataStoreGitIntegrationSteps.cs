@@ -117,16 +117,8 @@ public class DataStoreGitIntegrationSteps
     [When(@"I push the changes for user ""(.*)""")]
     public async Task WhenIPushTheChangesForUser(string userId)
     {
-        try
-        {
-            // Push using generated client
-            await _apiClient.PushAsync(userId);
-        }
-        catch (ApiException ex) when (ex.StatusCode == 400)
-        {
-            // If push fails because of branch protection or upstream, that's OK - we can still create a PR from local commits
-            Console.WriteLine($"Push failed but continuing test: {ex.Message}");
-        }
+        // Push using generated client - must succeed for PR creation
+        await _apiClient.PushAsync(userId);
         
         await Task.Delay(1000); // Give time for push
     }
