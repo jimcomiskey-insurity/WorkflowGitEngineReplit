@@ -10,6 +10,12 @@ namespace WorkflowConfig.Api.Models
         public string? Tag { get; set; }
         public string? ParentId { get; set; }
         public int OrderIndex { get; set; }
+        public bool IsRepeatable { get; set; }
+        public bool AllowDesiredState { get; set; }
+        public bool AllowPopulationByApplication { get; set; } = true;
+        public bool AllowPopulationByImportCopy { get; set; } = true;
+        public bool AllowPopulationByObjectSync { get; set; } = true;
+        public string? ReferenceObject { get; set; }
         public List<DataPoint> DataPoints { get; set; } = new List<DataPoint>();
         public List<DataGroup> ChildGroups { get; set; } = new List<DataGroup>();
         public string? GitStatus { get; set; }
