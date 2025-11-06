@@ -87,7 +87,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 **Frontend**:
 - Built with Angular 20.3.6 (Standalone Components) using client-side routing and lazy-loaded components.
-- **Centralized State Management**: Implements reactive state management using RxJS BehaviorSubjects via dedicated state services (`GitStateService`, `WorkflowStateService`, `AssetStateService`) for automatic refresh and UI synchronization.
+- **Centralized State Management**: Implements reactive state management using RxJS BehaviorSubjects via dedicated state services (`GitStateService`, `WorkflowStateService`, `AssetStateService`, `DataStoreStateService`) for automatic refresh and UI synchronization.
 - **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting and vs-dark theme, loaded dynamically via `MonacoService` singleton to prevent duplicate initialization across components. Includes Monaco Diff Editor for comparisons, continuous auto-save with retry logic, and branch-aware editing.
 - **Monaco Conflict Resolution**: Visual Git conflict editor with syntax highlighting, color-coded conflict blocks (red for current, blue for incoming). Provides "Accept All Current" and "Accept All Incoming" header buttons for quick resolution, plus manual editing capability. Supports multiple simultaneous conflict editors with proper resource cleanup.
 
@@ -108,6 +108,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 -   **Workflow Management**: CRUD operations for workflows, including nested phases and tasks with dependencies, role assignments, duration estimates, and automation flags.
 -   **Asset Management**: CRUD operations for assets with metadata and file upload capabilities. Supports rich text editing with Monaco Editor for various file types, continuous auto-save, and branch-aware content reloading.
+-   **Data Store Management**: CRUD operations for data stores with hierarchical structure (DataStore > DataGroup > DataPoint). Supports 13 data point types (String, Integer, Decimal, Date, Email, Phone, URL, Money, Zipcode, Timestamp, Year, Yes-No, List of Strings). Features include a tree-based editor with expand/collapse navigation, context menus for adding nested groups and points, type selector modal, and detail forms with configuration options (Basic/List/Advanced modes, validation rules, default values).
 -   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are collaborative, stored in a shared global JSON file, and track commit SHAs. Asset file diffs are displayed using Monaco Diff Editor.
 -   **Git Version Control**: Tracks changes, commits, and synchronizes with a central repository. Displays Git status, commit history, branch management (create, switch, push), and counts of commits ahead/behind. Includes visual change indicators, a Pending Changes View, master branch protection, and a commit reset feature.
 -   **Conflict Resolution**: Monaco-based visual conflict resolution for asset file merge conflicts. Detects Git conflict markers, provides syntax highlighting with color-coded blocks, and offers one-click resolution via inline action buttons. Supports multiple simultaneous conflict editors.
@@ -116,10 +117,10 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 ### System Design Choices
 
--   **Split-File Persistence**: Workflows and assets use split-file structures for improved Git granularity, clearer history, easier conflict resolution, and explicit deletions. Includes migration from legacy formats.
+-   **Split-File Persistence**: Workflows, assets, and data stores use split-file structures for improved Git granularity, clearer history, easier conflict resolution, and explicit deletions. Data stores follow the pattern: `datastore-list.json` + `datastores/{datastoreId}.json`. Includes migration from legacy formats.
 -   **Persistent Storage**: All runtime data is stored in `/home/runner/workflow-data/` for persistence across restarts and separation of application code from data.
 -   **Multi-user Support**: Each user operates within an isolated Git repository cloned from a central one.
--   **API Integration**: Frontend communicates with the backend via Workflow Service, Asset Service, and Git Service APIs.
+-   **API Integration**: Frontend communicates with the backend via Workflow Service, Asset Service, DataStore Service, and Git Service APIs.
 
 ## External Dependencies
 
