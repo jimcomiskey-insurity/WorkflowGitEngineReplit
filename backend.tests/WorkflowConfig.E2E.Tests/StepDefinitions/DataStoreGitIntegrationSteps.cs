@@ -43,11 +43,19 @@ public class DataStoreGitIntegrationSteps
     {
         _branchName = branchName;
         
-        var payload = new { branchName };
-        var response = await _httpClient.PostAsJsonAsync($"/api/git/branches?userId={userId}", payload);
-        response.EnsureSuccessStatusCode();
+        // Create the branch
+        var createPayload = new { branchName };
+        var createResponse = await _httpClient.PostAsJsonAsync($"/api/git/branches?userId={userId}", createPayload);
+        createResponse.EnsureSuccessStatusCode();
         
-        await Task.Delay(500); // Give time for branch creation
+        await Task.Delay(300);
+        
+        // Switch to the new branch (API doesn't auto-switch like the frontend)
+        var switchPayload = new { branchName };
+        var switchResponse = await _httpClient.PostAsJsonAsync($"/api/git/branches/switch?userId={userId}", switchPayload);
+        switchResponse.EnsureSuccessStatusCode();
+        
+        await Task.Delay(500); // Give time for branch switch
     }
 
     [When(@"I create a new datastore with the following details for user ""(.*)"":")]
@@ -135,14 +143,22 @@ public class DataStoreGitIntegrationSteps
             author = userId
         };
         
-        var response = await _httpClient.PostAsJsonAsync($"/api/pullrequests?userId={userId}", payload);
+        var response = await _httpClient.PostAsJsonAsync($"/api/pull-requests?userId={userId}", payload);
         response.EnsureSuccessStatusCode();
         
         var result = await response.Content.ReadFromJsonAsync<JsonElement>();
-        _pullRequestId = result.GetProperty("id").GetInt32();
-        _pullRequestId.Should().BeGreaterThan(0, "Pull request ID should be returned");
+        
+        // PR API returns "number" property, not "id"
+        _pullRequestId = result.GetProperty("number").GetInt32();
+        _pullRequestId.Should().BeGreaterThan(0, "Pull request number should be returned");
+        
+        // Store commit SHAs for later verification
+        var sourceCommitSha = result.GetProperty("sourceCommitSha").GetString();
+        var targetCommitSha = result.GetProperty("targetCommitSha").GetString();
         
         _scenarioContext["PullRequestId"] = _pullRequestId;
+        _scenarioContext["SourceCommitSha"] = sourceCommitSha;
+        _scenarioContext["TargetCommitSha"] = targetCommitSha;
         
         await Task.Delay(500); // Give time for PR creation
     }
@@ -150,27 +166,34 @@ public class DataStoreGitIntegrationSteps
     [Then(@"the pull request comparison should contain the datastore in dataStoreChanges")]
     public async Task ThenThePullRequestComparisonShouldContainTheDatastoreInDataStoreChanges()
     {
-        // Get the PR details which includes comparison
-        var response = await _httpClient.GetAsync($"/api/pullrequests/{_pullRequestId}?userId={_userId}");
-        response.EnsureSuccessStatusCode();
-        
-        var pr = await response.Content.ReadFromJsonAsync<JsonElement>();
-        pr.ValueKind.Should().NotBe(JsonValueKind.Undefined, "Pull request should be returned");
-        
-        // Extract source and target commit SHAs
-        var sourceCommitSha = pr.GetProperty("sourceCommitSha").GetString();
-        var targetCommitSha = pr.GetProperty("targetCommitSha").GetString();
+        // Use commit SHAs from PR creation response (already stored in context)
+        var sourceCommitSha = _scenarioContext["SourceCommitSha"].ToString();
+        var targetCommitSha = _scenarioContext["TargetCommitSha"].ToString();
         
         sourceCommitSha.Should().NotBeNullOrEmpty("Source commit SHA should be present");
         targetCommitSha.Should().NotBeNullOrEmpty("Target commit SHA should be present");
         
         // Call the comparison API
-        var comparisonUrl = $"/api/git/compare?userId={_userId}&sourceBranch={_branchName}&targetBranch=master&sourceCommitSha={sourceCommitSha}&targetCommitSha={targetCommitSha}";
+        var comparisonUrl = $"/api/git/compare-branches?userId={_userId}&sourceBranch={_branchName}&targetBranch=master";
+        Console.WriteLine($"Calling comparison API: {comparisonUrl}");
+        
         var comparisonResponse = await _httpClient.GetAsync(comparisonUrl);
+        
+        if (!comparisonResponse.IsSuccessStatusCode)
+        {
+            var errorContent = await comparisonResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"Comparison API failed: {comparisonResponse.StatusCode} - {errorContent}");
+        }
+        
         comparisonResponse.EnsureSuccessStatusCode();
         
-        var comparison = await comparisonResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var comparisonContent = await comparisonResponse.Content.ReadAsStringAsync();
+        Console.WriteLine($"Comparison response: {comparisonContent.Substring(0, Math.Min(500, comparisonContent.Length))}...");
+        
+        var comparison = JsonSerializer.Deserialize<JsonElement>(comparisonContent);
         comparison.ValueKind.Should().NotBe(JsonValueKind.Undefined, "Comparison should be returned");
+        
+        Console.WriteLine($"Comparison properties: {string.Join(", ", comparison.EnumerateObject().Select(p => p.Name))}");
         
         // Check if dataStoreChanges exists and contains our datastore
         var hasDataStoreChanges = comparison.TryGetProperty("dataStoreChanges", out var dataStoreChanges);
