@@ -74,7 +74,9 @@ interface TreeNode {
             </div>
           </div>
 
-          <button class="add-group-btn" (click)="addTopLevelGroup()">+ Add Top-Level Data Group</button>
+          <div class="tree-footer">
+            <button class="add-group-btn" (click)="addTopLevelGroup()">+ Add Top-Level Data Group</button>
+          </div>
         </div>
 
         <div class="detail-panel">
