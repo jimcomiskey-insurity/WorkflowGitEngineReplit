@@ -37,6 +37,7 @@ export interface DataPoint {
   dataType: string;
   orderIndex: number;
   configuration: DataPointConfiguration;
+  calculation?: DataPointCalculation;
   gitStatus?: string;
 }
 
@@ -52,6 +53,18 @@ export interface DataPointConfiguration {
   format?: string;
   allowedValues?: string[];
   additionalProperties?: { [key: string]: any };
+}
+
+export interface DataPointCalculation {
+  inputs: ScriptInput[];
+  script: string;
+}
+
+export interface ScriptInput {
+  dataPointId: string;
+  dataPointName: string;
+  dataType: string;
+  alias: string;
 }
 
 @Injectable({
