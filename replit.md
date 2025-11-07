@@ -74,7 +74,7 @@ Preferred communication style: Simple, everyday language.
 
 ### UI/UX Decisions
 
-The frontend features a modern dark theme with a redesigned layout, including a persistent top header, sidebar navigation, a card-grid for workflows, and dedicated views for Version Control and Pending Changes. Key elements include workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes. An "API Docs" link provides quick access to the backend's Swagger UI.
+The frontend features a modern dark theme with a redesigned layout, including a persistent top header, sidebar navigation, a card-grid for workflows, and dedicated views for Version Control and Pending Changes. The sidebar navigation is organized into two distinct sections: **Program Configuration** (Workflows, Assets, Data) and **Version Control** (History, Pending Changes, Pull Requests, Branch Comparison), clearly separating workflow design features from version control operations. Key elements include workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes. An "API Docs" link provides quick access to the backend's Swagger UI.
 
 ### Technical Implementations
 

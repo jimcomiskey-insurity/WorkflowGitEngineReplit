@@ -57,7 +57,7 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
           </div>
           
           <nav class="sidebar-nav">
-            <div class="nav-section">Navigation</div>
+            <div class="nav-section">Program Configuration</div>
             <a routerLink="/workflows" routerLinkActive="active" class="nav-item">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
@@ -82,6 +82,8 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
               </svg>
               <span>Data</span>
             </a>
+
+            <div class="nav-section" style="margin-top: 24px;">Version Control</div>
             <a routerLink="/version-control" routerLinkActive="active" class="nav-item">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="18" r="3"></circle>
@@ -90,7 +92,7 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
                 <path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"></path>
                 <path d="M12 12v3"></path>
               </svg>
-              <span>Version Control</span>
+              <span>History</span>
             </a>
             <a routerLink="/pending-changes" routerLinkActive="active" class="nav-item">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
