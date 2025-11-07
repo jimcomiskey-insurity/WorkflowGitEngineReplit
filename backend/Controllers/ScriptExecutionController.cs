@@ -84,6 +84,15 @@ Calculate({parameters})
             {
                 var scriptBuilder = new StringBuilder();
                 
+                // Add common using statements for IntelliSense
+                scriptBuilder.AppendLine("using System;");
+                scriptBuilder.AppendLine("using System.Collections.Generic;");
+                scriptBuilder.AppendLine("using System.Linq;");
+                scriptBuilder.AppendLine("using System.Text;");
+                scriptBuilder.AppendLine("using System.Text.RegularExpressions;");
+                scriptBuilder.AppendLine();
+                
+                // Add input variable declarations
                 foreach (var input in request.Inputs)
                 {
                     var csharpType = GetCSharpType(input.DataType);
