@@ -1040,6 +1040,20 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           dataType: input.dataType
         }));
 
+        // TEST: Add a simple hardcoded suggestion to verify Monaco displays SOMETHING
+        const testSuggestion = {
+          label: 'TEST_SUGGESTION',
+          kind: monaco.languages.CompletionItemKind.Text,
+          insertText: 'TEST_SUGGESTION',
+          detail: 'This is a test',
+          documentation: 'Test documentation',
+          sortText: '0000',
+          filterText: 'TEST_SUGGESTION',
+          range: range
+        };
+        
+        console.log('[TEST] Adding hardcoded test suggestion:', testSuggestion);
+        
         return this.scriptExecutionService.getCompletions(this.currentUser, {
           script,
           position: offset,
@@ -1051,7 +1065,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           const suggestions = response?.items.map((item, index) => {
             // Prioritize parameters and variables with sortText
             const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
-            const sortText = isParameter ? `000${index}` : `999${index}`;
+            const sortText = isParameter ? `000${String(index).padStart(4, '0')}` : `999${String(index).padStart(4, '0')}`;
             
             return {
               label: item.label,
@@ -1064,6 +1078,9 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
               range: range         // REQUIRED: tells Monaco what text to replace
             };
           }) || [];
+          
+          // Prepend test suggestion at the very top
+          suggestions.unshift(testSuggestion);
 
           console.log('[Completion Provider] Suggestions to Monaco:', suggestions.length);
           console.log('[Completion Provider] First 10 suggestions:', suggestions.slice(0, 10).map(s => ({ 
