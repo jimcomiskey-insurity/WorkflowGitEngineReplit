@@ -959,10 +959,23 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
 
       // Extract body from full method (for backward compatibility)
       const scriptBody = this.extractMethodBody(this.editingPoint.calculation?.script || '');
+      
+      // Build method signature with parameters for display
+      const inputs = this.getScriptInputs();
+      const params = inputs.map(input => {
+        const csharpType = this.getCSharpType(input.dataType);
+        return `${csharpType} ${input.alias}`;
+      }).join(', ');
+      const methodSignature = `public object Calculate(${params})\n{\n`;
+      const methodEnd = '\n}';
+      
+      // Full code with signature (for Monaco to understand parameters)
+      const fullCode = methodSignature + scriptBody + methodEnd;
 
       // If editor already exists, just update its value
       if (this.scriptEditor) {
-        this.scriptEditor.setValue(scriptBody);
+        this.scriptEditor.setValue(fullCode);
+        this.updateReadOnlyRanges();
         return;
       }
 
@@ -970,7 +983,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
       this.scriptEditor = (window as any).monaco.editor.create(
         this.scriptEditorContainer.nativeElement,
         {
-          value: scriptBody,
+          value: fullCode,
           language: 'csharp',
           theme: 'vs-dark',
           minimap: { enabled: false },
@@ -992,17 +1005,24 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             showKeywords: true,
             showSnippets: true,
             showWords: false,
-            filterGraceful: true,  // Enable fuzzy matching (match anywhere in word, not just prefix)
+            filterGraceful: true,
             snippetsPreventQuickSuggestions: false,
-            localityBonus: true    // Boost suggestions that are contextually relevant
+            localityBonus: true
           }
         }
       );
 
+      this.updateReadOnlyRanges();
+
       this.scriptEditor.onDidChangeModelContent(() => {
         if (this.editingPoint.calculation) {
-          // Save only the body (no method signature)
-          this.editingPoint.calculation.script = this.scriptEditor.getValue();
+          // Extract just the body (remove signature and closing brace)
+          const fullText = this.scriptEditor.getValue();
+          const lines = fullText.split('\n');
+          
+          // Remove first 2 lines (signature + opening brace) and last line (closing brace)
+          const bodyLines = lines.slice(2, -1);
+          this.editingPoint.calculation.script = bodyLines.join('\n');
           this.savePoint();
         }
       });
@@ -1010,6 +1030,36 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
       // Register completion provider for C# IntelliSense
       this.registerCompletionProvider();
     });
+  }
+
+  private updateReadOnlyRanges(): void {
+    if (!this.scriptEditor) return;
+    
+    const model = this.scriptEditor.getModel();
+    if (!model) return;
+    
+    const totalLines = model.getLineCount();
+    
+    // Make first 2 lines (signature + opening brace) and last line (closing brace) read-only
+    model.deltaDecorations([], [
+      {
+        range: new (window as any).monaco.Range(1, 1, 2, 1000),
+        options: {
+          isWholeLine: true,
+          className: 'read-only-line',
+          glyphMarginClassName: 'read-only-glyph',
+          stickiness: 1
+        }
+      },
+      {
+        range: new (window as any).monaco.Range(totalLines, 1, totalLines, 1000),
+        options: {
+          isWholeLine: true,
+          className: 'read-only-line',
+          stickiness: 1
+        }
+      }
+    ]);
   }
 
   private registerCompletionProvider(): void {

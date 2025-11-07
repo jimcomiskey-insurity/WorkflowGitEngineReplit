@@ -636,6 +636,16 @@
   height: 300px;
   border: 1px solid #444;
   border-radius: 4px;
+}
+
+/* Read-only signature lines styling */
+::ng-deep .read-only-line {
+  background-color: #2d2d2d !important;
+  opacity: 0.7;
+}
+
+::ng-deep .read-only-glyph {
+  background-color: #3e3e3e;
   overflow: hidden;
 }
 
