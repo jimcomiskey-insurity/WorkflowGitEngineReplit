@@ -5,7 +5,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataStoresService } from '../services/datastores.service';
 import { DataStoreStateService, DataStore, DataGroup, DataPoint, ScriptInput } from '../services/datastore-state.service';
 import { MonacoService } from '../services/monaco.service';
-import { MonacoIntelliSenseService } from '../services/monaco-intellisense.service';
 import { ScriptExecutionService, ScriptInputValue } from '../services/script-execution.service';
 
 interface TreeNode {
@@ -986,13 +985,13 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             comments: false,
             strings: false
           },
-          wordBasedSuggestions: 'allDocuments',
+          wordBasedSuggestions: 'off',
           acceptSuggestionOnEnter: 'on',
           tabCompletion: 'on',
           suggest: {
             showKeywords: true,
             showSnippets: true,
-            showWords: true,
+            showWords: false,
             filterGraceful: true,  // Enable fuzzy matching (match anywhere in word, not just prefix)
             snippetsPreventQuickSuggestions: false,
             localityBonus: true    // Boost suggestions that are contextually relevant
@@ -1008,51 +1007,94 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
         }
       });
 
-      // Initialize IntelliSage for C# IntelliSense
-      this.initializeIntelliSense();
+      // Register completion provider for C# IntelliSense
+      this.registerCompletionProvider();
     });
   }
 
-  private async initializeIntelliSense(): Promise<void> {
+  private registerCompletionProvider(): void {
     const monaco = (window as any).monaco;
-    const model = this.scriptEditor.getModel();
+    const self = this;  // Preserve context for use in provider
     
-    try {
-      const intelliSenseService = new MonacoIntelliSenseService();
-      
-      // Calculate line offset introduced by the wrapper
-      // Wrapper format:
-      // Line 1: using System;
-      // Line 2: using System.Linq;
-      // Line 3: (empty)
-      // Line 4: public decimal Calculate(...) {
-      // Line 5+: user's code starts here
-      const LINE_OFFSET = 4;
-      
-      const codeTransformer = (code: string) => {
-        const inputs = this.getScriptInputs();
-        const parameters = inputs.map(input => 
-          `${this.getCSharpType(input.dataType)} ${input.alias}`
-        ).join(', ');
+    monaco.languages.registerCompletionItemProvider('csharp', {
+      triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
+      provideCompletionItems: (model: any, position: any) => {
+        console.log('[COMPLETION] Provider called!');
         
-        const transformedCode = `using System;
-using System.Linq;
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn
+        };
+        
+        const completionInputs = self.getScriptInputs().map(input => ({
+          alias: input.alias,
+          dataType: input.dataType
+        }));
+        
+        console.log('[COMPLETION] Inputs:', completionInputs);
 
-public decimal Calculate(${parameters}) {
-${code}
-}`;
-        
-        console.log('[IntelliSense] Code transformer called');
-        console.log('[IntelliSense] Parameters:', parameters);
-        console.log('[IntelliSense] Transformed code:', transformedCode);
-        
-        return transformedCode;
-      };
-      
-      await intelliSenseService.initialize(monaco, model, codeTransformer, LINE_OFFSET);
-      console.log('[IntelliSense] Initialized successfully');
-    } catch (error) {
-      console.error('[IntelliSense] Failed to initialize:', error);
+        // Return a NEW promise (not toPromise()) to ensure proper handling
+        return new Promise((resolve) => {
+          const script = model.getValue();
+          const offset = model.getOffsetAt(position);
+          
+          self.scriptExecutionService.getCompletions(self.currentUser, {
+            script,
+            position: offset,
+            inputs: completionInputs
+          }).subscribe({
+            next: (response) => {
+              console.log('[COMPLETION] Backend returned', response?.items?.length, 'items');
+              
+              if (response?.items?.length > 0) {
+                console.log('[COMPLETION] First 3:', response.items.slice(0, 3).map(i => i.label));
+              }
+              
+              const suggestions = response?.items.map((item, index) => {
+                const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
+                const sortText = isParameter ? `000${String(index).padStart(4, '0')}` : `999${String(index).padStart(4, '0')}`;
+                
+                return {
+                  label: item.label,
+                  kind: self.getMonacoCompletionKind(item.kind),
+                  insertText: item.insertText,
+                  detail: item.detail,
+                  documentation: item.documentation,
+                  sortText: sortText,
+                  filterText: item.label,
+                  range: range
+                };
+              }) || [];
+
+              console.log('[COMPLETION] Resolving with', suggestions.length, 'suggestions');
+              resolve({ suggestions: suggestions });
+            },
+            error: (err) => {
+              console.error('[COMPLETION] Error:', err);
+              resolve({ suggestions: [] });
+            }
+          });
+        });
+      }
+    });
+  }
+
+  private getMonacoCompletionKind(kind: string): any {
+    const monaco = (window as any).monaco;
+    const CompletionItemKind = monaco.languages.CompletionItemKind;
+    
+    switch (kind) {
+      case 'Method': return CompletionItemKind.Method;
+      case 'Property': return CompletionItemKind.Property;
+      case 'Field': return CompletionItemKind.Field;
+      case 'Class': return CompletionItemKind.Class;
+      case 'Module': return CompletionItemKind.Module;
+      case 'Keyword': return CompletionItemKind.Keyword;
+      case 'Variable': return CompletionItemKind.Variable;
+      default: return CompletionItemKind.Text;
     }
   }
 
