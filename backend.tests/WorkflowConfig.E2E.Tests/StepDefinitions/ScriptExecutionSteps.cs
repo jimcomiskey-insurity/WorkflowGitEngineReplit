@@ -9,6 +9,7 @@ namespace WorkflowConfig.E2E.Tests.StepDefinitions;
 [Binding]
 public class ScriptExecutionSteps
 {
+    private const string ProgramId = "default";
     private readonly ScenarioContext _scenarioContext;
     private readonly HttpClient _httpClient;
     private readonly IApiClient _apiClient;
@@ -61,7 +62,7 @@ public class ScriptExecutionSteps
             Inputs = _scriptInputs
         };
 
-        _completionResponse = await _apiClient.GetCompletionsAsync(_userId, request);
+        _completionResponse = await _apiClient.GetCompletionsAsync(_userId, ProgramId, request);
         _completionResponse.Should().NotBeNull("Completion response should be returned");
     }
 
@@ -78,7 +79,7 @@ public class ScriptExecutionSteps
             Inputs = _scriptInputs
         };
 
-        _completionResponse = await _apiClient.GetCompletionsAsync(_userId, request);
+        _completionResponse = await _apiClient.GetCompletionsAsync(_userId, ProgramId, request);
         _completionResponse.Should().NotBeNull("Completion response should be returned");
     }
 
