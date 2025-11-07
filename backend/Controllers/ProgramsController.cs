@@ -19,7 +19,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<List<ProgramModel>> GetAllPrograms(string userId)
+    public ActionResult<List<ProgramModel>> GetAllPrograms([FromRoute] string userId)
     {
         try
         {
@@ -34,7 +34,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpGet("{programId}")]
-    public ActionResult<ProgramModel> GetProgram(string userId, string programId)
+    public ActionResult<ProgramModel> GetProgram([FromRoute] string userId, [FromRoute] string programId)
     {
         try
         {
@@ -53,7 +53,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<ProgramModel> CreateProgram(string userId, [FromBody] ProgramModel program)
+    public ActionResult<ProgramModel> CreateProgram([FromRoute] string userId, [FromBody] ProgramModel program)
     {
         try
         {
@@ -72,7 +72,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpPut("{programId}")]
-    public ActionResult<ProgramModel> UpdateProgram(string userId, string programId, [FromBody] ProgramModel program)
+    public ActionResult<ProgramModel> UpdateProgram([FromRoute] string userId, [FromRoute] string programId, [FromBody] ProgramModel program)
     {
         try
         {
@@ -91,7 +91,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpDelete("{programId}")]
-    public IActionResult DeleteProgram(string userId, string programId)
+    public IActionResult DeleteProgram([FromRoute] string userId, [FromRoute] string programId)
     {
         try
         {

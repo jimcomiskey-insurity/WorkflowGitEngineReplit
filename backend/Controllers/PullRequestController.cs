@@ -26,8 +26,8 @@ public class PullRequestController : ControllerBase
     [HttpGet]
     [OpenApiOperation("Get All Pull Requests")]
     public ActionResult<IEnumerable<PullRequest>> GetPullRequests(
-        string userId,
-        string programId,
+        [FromRoute] string userId,
+        [FromRoute] string programId,
         [FromQuery] string? status = null)
     {
         try
@@ -45,9 +45,9 @@ public class PullRequestController : ControllerBase
     [HttpGet("{number}")]
     [OpenApiOperation("Get Pull Request By Number")]
     public ActionResult<PullRequest> GetPullRequest(
-        string userId,
-        string programId,
-        int number)
+        [FromRoute] string userId,
+        [FromRoute] string programId,
+        [FromRoute] int number)
     {
         try
         {
@@ -70,9 +70,9 @@ public class PullRequestController : ControllerBase
     [HttpGet("{number}/comparison")]
     [OpenApiOperation("Get Pull Request Branch Comparison")]
     public ActionResult<BranchComparison> GetBranchComparison(
-        string userId,
-        string programId,
-        int number)
+        [FromRoute] string userId,
+        [FromRoute] string programId,
+        [FromRoute] int number)
     {
         try
         {
@@ -107,8 +107,8 @@ public class PullRequestController : ControllerBase
     [HttpGet("suggestion")]
     [OpenApiOperation("Get Pull Request Suggestion")]
     public ActionResult<PullRequestSuggestion> GetPullRequestSuggestion(
-        string userId,
-        string programId,
+        [FromRoute] string userId,
+        [FromRoute] string programId,
         [FromQuery] string sourceBranch,
         [FromQuery] string targetBranch)
     {
@@ -156,8 +156,8 @@ public class PullRequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(PullRequest))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<PullRequest> CreatePullRequest(
-        string userId,
-        string programId,
+        [FromRoute] string userId,
+        [FromRoute] string programId,
         [FromBody] CreatePullRequestRequest request)
     {
         try
@@ -184,9 +184,9 @@ public class PullRequestController : ControllerBase
     [HttpPost("{number}/merge")]
     [OpenApiOperation("Merge Pull Request")]
     public ActionResult<PullRequest> MergePullRequest(
-        string userId,
-        string programId,
-        int number)
+        [FromRoute] string userId,
+        [FromRoute] string programId,
+        [FromRoute] int number)
     {
         try
         {
@@ -224,9 +224,9 @@ public class PullRequestController : ControllerBase
     [HttpGet("{number}/conflicts")]
     [OpenApiOperation("Get Merge Conflicts")]
     public ActionResult<MergeConflictInfo> GetMergeConflicts(
-        string userId,
-        string programId,
-        int number)
+        [FromRoute] string userId,
+        [FromRoute] string programId,
+        [FromRoute] int number)
     {
         try
         {
@@ -256,9 +256,9 @@ public class PullRequestController : ControllerBase
     [HttpPost("{number}/resolve-conflicts")]
     [OpenApiOperation("Resolve Conflicts And Merge")]
     public ActionResult<PullRequest> ResolveAndMergePullRequest(
-        string userId,
-        string programId,
-        int number,
+        [FromRoute] string userId,
+        [FromRoute] string programId,
+        [FromRoute] int number,
         [FromBody] ResolveConflictsRequest request)
     {
         try
@@ -293,9 +293,9 @@ public class PullRequestController : ControllerBase
     [HttpPost("{number}/close")]
     [OpenApiOperation("Close Pull Request")]
     public ActionResult<PullRequest> ClosePullRequest(
-        string userId,
-        string programId,
-        int number)
+        [FromRoute] string userId,
+        [FromRoute] string programId,
+        [FromRoute] int number)
     {
         try
         {
