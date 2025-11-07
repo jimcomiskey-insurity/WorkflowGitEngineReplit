@@ -274,13 +274,410 @@ public static class DataInitializer
         var dataStoresDir = Path.Combine(repoPath, "datastores");
         Directory.CreateDirectory(dataStoresDir);
 
-        // Create empty datastore list to track datastores in Git (as an array, not object)
-        var dataStoreList = new List<DataStoreListItem>();
+        // Create Auto Insurance DataStore
+        var dataStoreId = "ds-auto-insurance-001";
+        var dataStore = CreateAutoInsuranceDataStore(dataStoreId);
+
+        // Write individual datastore file
+        var dataStorePath = Path.Combine(dataStoresDir, $"{dataStoreId}.json");
+        var dataStoreJson = JsonSerializer.Serialize(dataStore, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(dataStorePath, dataStoreJson);
+
+        // Create datastore list
+        var dataStoreList = new List<DataStoreListItem>
+        {
+            new DataStoreListItem
+            {
+                Id = dataStoreId,
+                Name = dataStore.Name,
+                Description = dataStore.Description,
+                NoOfTimesUsed = dataStore.NoOfTimesUsed
+            }
+        };
         var dataStoreListPath = Path.Combine(repoPath, "datastore-list.json");
         var listJson = JsonSerializer.Serialize(dataStoreList, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(dataStoreListPath, listJson);
 
-        Console.WriteLine("Initialized empty datastore structure");
+        Console.WriteLine($"Created sample auto insurance datastore with {dataStore.DataGroups.Count} top-level groups");
+    }
+
+    private static DataStore CreateAutoInsuranceDataStore(string id)
+    {
+        var dataStore = new DataStore
+        {
+            Id = id,
+            Name = "Auto Insurance Starter",
+            Description = "Sample DataStore for auto insurance policies with calculated fields",
+            NoOfTimesUsed = 0,
+            Aliases = new List<string> { "AutoPolicy", "VehicleInsurance" },
+            DataGroups = new List<DataGroup>()
+        };
+
+        // 1. Account Group
+        var accountGroup = new DataGroup
+        {
+            Id = "dg-account",
+            Name = "Account",
+            Description = "Policyholder account information",
+            OrderIndex = 0,
+            IsRepeatable = false,
+            DataPoints = new List<DataPoint>
+            {
+                new DataPoint
+                {
+                    Id = "dp-account-firstname",
+                    Name = "First Name",
+                    DataType = "String",
+                    OrderIndex = 0,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        MaxLength = 50
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-account-lastname",
+                    Name = "Last Name",
+                    DataType = "String",
+                    OrderIndex = 1,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        MaxLength = 50
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-account-fullname",
+                    Name = "Full Name",
+                    Description = "Calculated: Combines First Name and Last Name",
+                    DataType = "String",
+                    OrderIndex = 2,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Calculated"
+                    },
+                    Calculation = new DataPointCalculation
+                    {
+                        Inputs = new List<ScriptInput>
+                        {
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-account-firstname",
+                                DataPointName = "First Name",
+                                DataType = "String",
+                                Alias = "firstName"
+                            },
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-account-lastname",
+                                DataPointName = "Last Name",
+                                DataType = "String",
+                                Alias = "lastName"
+                            }
+                        },
+                        Script = "  // Combine first and last name with null handling\n  var first = firstName ?? \"\";\n  var last = lastName ?? \"\";\n  return (first + \" \" + last).Trim();"
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-account-email",
+                    Name = "Email",
+                    DataType = "Email",
+                    OrderIndex = 3,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic"
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-account-phone",
+                    Name = "Phone",
+                    DataType = "Phone",
+                    OrderIndex = 4,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic"
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-account-zipcode",
+                    Name = "Zip Code",
+                    DataType = "Zipcode",
+                    OrderIndex = 5,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic"
+                    }
+                }
+            }
+        };
+
+        // 2. Producer Group
+        var producerGroup = new DataGroup
+        {
+            Id = "dg-producer",
+            Name = "Producer",
+            Description = "Insurance agent/broker information",
+            OrderIndex = 1,
+            IsRepeatable = false,
+            DataPoints = new List<DataPoint>
+            {
+                new DataPoint
+                {
+                    Id = "dp-producer-name",
+                    Name = "Agent Name",
+                    DataType = "String",
+                    OrderIndex = 0,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic"
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-producer-code",
+                    Name = "Producer Code",
+                    DataType = "String",
+                    OrderIndex = 1,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        MaxLength = 10
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-producer-email",
+                    Name = "Producer Email",
+                    DataType = "Email",
+                    OrderIndex = 2,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic"
+                    }
+                }
+            }
+        };
+
+        // 3. Business Group
+        var businessGroup = new DataGroup
+        {
+            Id = "dg-business",
+            Name = "Business",
+            Description = "Business and underwriting information",
+            OrderIndex = 2,
+            IsRepeatable = false,
+            DataPoints = new List<DataPoint>
+            {
+                new DataPoint
+                {
+                    Id = "dp-business-state",
+                    Name = "State",
+                    DataType = "String",
+                    OrderIndex = 0,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        MaxLength = 2
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-business-effectivedate",
+                    Name = "Effective Date",
+                    DataType = "Date",
+                    OrderIndex = 1,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic"
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-business-expirationdate",
+                    Name = "Expiration Date",
+                    DataType = "Date",
+                    OrderIndex = 2,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic"
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-business-termdays",
+                    Name = "Term Days",
+                    Description = "Calculated: Days between effective and expiration dates",
+                    DataType = "Integer",
+                    OrderIndex = 3,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Calculated"
+                    },
+                    Calculation = new DataPointCalculation
+                    {
+                        Inputs = new List<ScriptInput>
+                        {
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-business-effectivedate",
+                                DataPointName = "Effective Date",
+                                DataType = "Date",
+                                Alias = "effectiveDate"
+                            },
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-business-expirationdate",
+                                DataPointName = "Expiration Date",
+                                DataType = "Date",
+                                Alias = "expirationDate"
+                            }
+                        },
+                        Script = "  // Calculate days between dates with null handling\n  if (effectiveDate == null || expirationDate == null)\n  {\n    return 0;\n  }\n  \n  var days = (expirationDate.Value - effectiveDate.Value).Days;\n  return Math.Max(0, days);"
+                    }
+                }
+            }
+        };
+
+        // 4. Policy Set Group
+        var policySetGroup = new DataGroup
+        {
+            Id = "dg-policyset",
+            Name = "Policy Set",
+            Description = "Policy details and premium calculations",
+            OrderIndex = 3,
+            IsRepeatable = false,
+            DataPoints = new List<DataPoint>
+            {
+                new DataPoint
+                {
+                    Id = "dp-policy-prefix",
+                    Name = "Policy Prefix",
+                    DataType = "String",
+                    OrderIndex = 0,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        DefaultValue = "AUTO",
+                        MaxLength = 10
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-policy-sequence",
+                    Name = "Policy Sequence",
+                    DataType = "Integer",
+                    OrderIndex = 1,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        MinValue = 1
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-policy-number",
+                    Name = "Policy Number",
+                    Description = "Calculated: Formatted policy number with prefix and padded sequence",
+                    DataType = "String",
+                    OrderIndex = 2,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Calculated"
+                    },
+                    Calculation = new DataPointCalculation
+                    {
+                        Inputs = new List<ScriptInput>
+                        {
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-policy-prefix",
+                                DataPointName = "Policy Prefix",
+                                DataType = "String",
+                                Alias = "prefix"
+                            },
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-policy-sequence",
+                                DataPointName = "Policy Sequence",
+                                DataType = "Integer",
+                                Alias = "sequence"
+                            }
+                        },
+                        Script = "  // Format policy number: PREFIX-NNNNNN\n  var prefixValue = prefix ?? \"AUTO\";\n  var sequenceValue = sequence ?? 0;\n  \n  // Pad sequence to 6 digits\n  var paddedSequence = sequenceValue.ToString().PadLeft(6, '0');\n  return $\"{prefixValue}-{paddedSequence}\";"
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-policy-premium",
+                    Name = "Base Premium",
+                    DataType = "Money",
+                    OrderIndex = 3,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        DecimalPlaces = 2
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-policy-taxes",
+                    Name = "Taxes & Fees",
+                    DataType = "Money",
+                    OrderIndex = 4,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Basic",
+                        DecimalPlaces = 2
+                    }
+                },
+                new DataPoint
+                {
+                    Id = "dp-policy-total",
+                    Name = "Total Premium",
+                    Description = "Calculated: Sum of Base Premium and Taxes & Fees",
+                    DataType = "Money",
+                    OrderIndex = 5,
+                    Configuration = new DataPointConfiguration
+                    {
+                        Mode = "Calculated",
+                        DecimalPlaces = 2
+                    },
+                    Calculation = new DataPointCalculation
+                    {
+                        Inputs = new List<ScriptInput>
+                        {
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-policy-premium",
+                                DataPointName = "Base Premium",
+                                DataType = "Money",
+                                Alias = "basePremium"
+                            },
+                            new ScriptInput
+                            {
+                                DataPointId = "dp-policy-taxes",
+                                DataPointName = "Taxes & Fees",
+                                DataType = "Money",
+                                Alias = "taxes"
+                            }
+                        },
+                        Script = "  // Calculate total premium with null handling\n  var premium = basePremium ?? 0m;\n  var taxAmount = taxes ?? 0m;\n  return premium + taxAmount;"
+                    }
+                }
+            }
+        };
+
+        dataStore.DataGroups.Add(accountGroup);
+        dataStore.DataGroups.Add(producerGroup);
+        dataStore.DataGroups.Add(businessGroup);
+        dataStore.DataGroups.Add(policySetGroup);
+
+        return dataStore;
     }
 
     private static void ForceGarbageCollection()
