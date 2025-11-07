@@ -950,7 +950,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   initializeMonacoEditor(): void {
-    if (this.scriptEditor || !this.scriptEditorContainer) {
+    if (!this.scriptEditorContainer) {
       return;
     }
 
@@ -960,6 +960,13 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
       // Extract body from full method (for backward compatibility)
       const scriptBody = this.extractMethodBody(this.editingPoint.calculation?.script || '');
 
+      // If editor already exists, just update its value
+      if (this.scriptEditor) {
+        this.scriptEditor.setValue(scriptBody);
+        return;
+      }
+
+      // Create new editor
       this.scriptEditor = (window as any).monaco.editor.create(
         this.scriptEditorContainer.nativeElement,
         {
