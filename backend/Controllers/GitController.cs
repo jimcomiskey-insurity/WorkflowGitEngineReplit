@@ -5,7 +5,7 @@ using NSwag.Annotations;
 namespace WorkflowConfig.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users/{userId}/programs/{programId}/[controller]")]
 public class GitController : ControllerBase
 {
     private readonly GitService _gitService;
@@ -19,35 +19,35 @@ public class GitController : ControllerBase
 
     [HttpGet("status")]
     [OpenApiOperation("Get Git Status")]
-    public IActionResult GetStatus([FromQuery] string userId = "default")
+    public IActionResult GetStatus(string userId, string programId)
     {
-        var status = _gitService.GetStatus(userId);
+        var status = _gitService.GetStatus(programId, userId);
         return Ok(status);
     }
 
     [HttpPost("commit")]
     [OpenApiOperation("Commit Changes")]
-    public IActionResult Commit([FromBody] CommitRequest request, [FromQuery] string userId = "default")
+    public IActionResult Commit(string userId, string programId, [FromBody] CommitRequest request)
     {
-        _gitService.CommitChanges(userId, request.Message, request.AuthorName, request.AuthorEmail);
+        _gitService.CommitChanges(programId, userId, request.Message, request.AuthorName, request.AuthorEmail);
         return Ok(new { message = "Changes committed successfully" });
     }
 
     [HttpPost("discard")]
     [OpenApiOperation("Discard Changes")]
-    public IActionResult Discard([FromQuery] string userId = "default")
+    public IActionResult Discard(string userId, string programId)
     {
-        _gitService.DiscardChanges(userId);
+        _gitService.DiscardChanges(programId, userId);
         return Ok(new { message = "Changes discarded successfully" });
     }
 
     [HttpPost("pull")]
     [OpenApiOperation("Pull From Remote")]
-    public IActionResult Pull([FromQuery] string userId = "default")
+    public IActionResult Pull(string userId, string programId)
     {
         try
         {
-            _gitService.Pull(userId);
+            _gitService.Pull(programId, userId);
             return Ok(new { message = "Changes pulled successfully" });
         }
         catch (Exception ex)
@@ -58,11 +58,11 @@ public class GitController : ControllerBase
 
     [HttpPost("push")]
     [OpenApiOperation("Push To Remote")]
-    public IActionResult Push([FromQuery] string userId = "default")
+    public IActionResult Push(string userId, string programId)
     {
         try
         {
-            _gitService.Push(userId);
+            _gitService.Push(programId, userId);
             return Ok(new { message = "Changes pushed successfully" });
         }
         catch (Exception ex)
@@ -73,43 +73,43 @@ public class GitController : ControllerBase
 
     [HttpGet("branches")]
     [OpenApiOperation("Get Branches")]
-    public IActionResult GetBranches([FromQuery] string userId = "default")
+    public IActionResult GetBranches(string userId, string programId)
     {
-        var branches = _gitService.GetBranches(userId);
+        var branches = _gitService.GetBranches(programId, userId);
         return Ok(branches);
     }
 
     [HttpPost("branches")]
     [OpenApiOperation("Create Branch")]
-    public IActionResult CreateBranch([FromBody] BranchRequest request, [FromQuery] string userId = "default")
+    public IActionResult CreateBranch(string userId, string programId, [FromBody] BranchRequest request)
     {
-        _gitService.CreateBranch(userId, request.BranchName);
+        _gitService.CreateBranch(programId, userId, request.BranchName);
         return Ok(new { message = $"Branch '{request.BranchName}' created successfully" });
     }
 
     [HttpPost("branches/switch")]
     [OpenApiOperation("Switch Branch")]
-    public IActionResult SwitchBranch([FromBody] BranchRequest request, [FromQuery] string userId = "default")
+    public IActionResult SwitchBranch(string userId, string programId, [FromBody] BranchRequest request)
     {
-        _gitService.SwitchBranch(userId, request.BranchName);
+        _gitService.SwitchBranch(programId, userId, request.BranchName);
         return Ok(new { message = $"Switched to branch '{request.BranchName}'" });
     }
 
     [HttpGet("commits")]
     [OpenApiOperation("Get Commit History")]
-    public IActionResult GetCommits([FromQuery] string userId = "default", [FromQuery] int count = 20)
+    public IActionResult GetCommits(string userId, string programId, [FromQuery] int count = 20)
     {
-        var commits = _gitService.GetCommitHistory(userId, count);
+        var commits = _gitService.GetCommitHistory(programId, userId, count);
         return Ok(commits);
     }
 
     [HttpGet("last-pushed-commit")]
     [OpenApiOperation("Get Last Pushed Commit")]
-    public IActionResult GetLastPushedCommit([FromQuery] string userId = "default")
+    public IActionResult GetLastPushedCommit(string userId, string programId)
     {
         try
         {
-            var commitSha = _gitService.GetLastPushedCommitSha(userId);
+            var commitSha = _gitService.GetLastPushedCommitSha(programId, userId);
             if (commitSha == null)
             {
                 return Ok(new { commitSha = (string?)null, message = "No pushed commits found for current branch" });
@@ -124,11 +124,11 @@ public class GitController : ControllerBase
 
     [HttpPost("reset-to-commit")]
     [OpenApiOperation("Reset To Commit")]
-    public IActionResult ResetToCommit([FromBody] ResetToCommitRequest request, [FromQuery] string userId = "default")
+    public IActionResult ResetToCommit(string userId, string programId, [FromBody] ResetToCommitRequest request)
     {
         try
         {
-            _gitService.ResetToCommit(userId, request.CommitSha);
+            _gitService.ResetToCommit(programId, userId, request.CommitSha);
             return Ok(new { message = "Successfully reset to commit" });
         }
         catch (Exception ex)
@@ -140,13 +140,14 @@ public class GitController : ControllerBase
     [HttpGet("compare-branches")]
     [OpenApiOperation("Compare Branches")]
     public IActionResult CompareBranches(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         [FromQuery] string sourceBranch,
         [FromQuery] string targetBranch)
     {
         try
         {
-            var comparison = _gitService.CompareBranchesInCentral(userId, sourceBranch, targetBranch);
+            var comparison = _gitService.CompareBranchesInCentral(programId, sourceBranch, targetBranch);
             return Ok(comparison);
         }
         catch (Exception ex)
@@ -158,13 +159,14 @@ public class GitController : ControllerBase
     [HttpGet("file-at-commit")]
     [OpenApiOperation("Get File At Commit")]
     public IActionResult GetFileAtCommit(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         [FromQuery] string commitSha,
         [FromQuery] string filePath)
     {
         try
         {
-            var content = _gitService.GetFileContentAtCommit(userId, commitSha, filePath);
+            var content = _gitService.GetFileContentAtCommit(programId, userId, commitSha, filePath);
             if (content == null)
             {
                 return NotFound(new { error = "File not found at the specified commit" });
@@ -179,12 +181,12 @@ public class GitController : ControllerBase
 
     [HttpPost("reset")]
     [OpenApiOperation("Reset Repository")]
-    public IActionResult ResetRepositories()
+    public IActionResult ResetRepositories(string userId, string programId)
     {
         try
         {
             var sampleDataPath = Path.Combine(Directory.GetCurrentDirectory(), "sampledata.json");
-            _gitService.ResetAllRepositories(sampleDataPath);
+            _gitService.ResetAllRepositories(programId, sampleDataPath);
             return Ok(new { message = "All repositories have been reset successfully. Users will get fresh clones on next access." });
         }
         catch (Exception ex)

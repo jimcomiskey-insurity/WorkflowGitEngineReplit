@@ -6,7 +6,7 @@ using NSwag.Annotations;
 namespace WorkflowConfig.Api.Controllers;
 
 [ApiController]
-[Route("api/pull-requests")]
+[Route("api/users/{userId}/programs/{programId}/pull-requests")]
 public class PullRequestController : ControllerBase
 {
     private readonly PullRequestService _pullRequestService;
@@ -26,7 +26,8 @@ public class PullRequestController : ControllerBase
     [HttpGet]
     [OpenApiOperation("Get All Pull Requests")]
     public ActionResult<IEnumerable<PullRequest>> GetPullRequests(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         [FromQuery] string? status = null)
     {
         try
@@ -44,7 +45,8 @@ public class PullRequestController : ControllerBase
     [HttpGet("{number}")]
     [OpenApiOperation("Get Pull Request By Number")]
     public ActionResult<PullRequest> GetPullRequest(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         int number)
     {
         try
@@ -68,7 +70,8 @@ public class PullRequestController : ControllerBase
     [HttpGet("{number}/comparison")]
     [OpenApiOperation("Get Pull Request Branch Comparison")]
     public ActionResult<BranchComparison> GetBranchComparison(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         int number)
     {
         try
@@ -87,6 +90,7 @@ public class PullRequestController : ControllerBase
             
             // Compare branches in the central repository (not user's local repo)
             var comparison = _gitService.CompareBranchesInCentral(
+                programId,
                 pullRequest.SourceBranch, 
                 pullRequest.TargetBranch, 
                 sourceCommitSha,
@@ -103,13 +107,15 @@ public class PullRequestController : ControllerBase
     [HttpGet("suggestion")]
     [OpenApiOperation("Get Pull Request Suggestion")]
     public ActionResult<PullRequestSuggestion> GetPullRequestSuggestion(
+        string userId,
+        string programId,
         [FromQuery] string sourceBranch,
         [FromQuery] string targetBranch)
     {
         try
         {
             // Compare branches in the central repository to get commits
-            var comparison = _gitService.CompareBranchesInCentral(sourceBranch, targetBranch);
+            var comparison = _gitService.CompareBranchesInCentral(programId, sourceBranch, targetBranch);
             
             string suggestedTitle = "";
             string suggestedDescription = "";
@@ -150,18 +156,19 @@ public class PullRequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(PullRequest))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<PullRequest> CreatePullRequest(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         [FromBody] CreatePullRequestRequest request)
     {
         try
         {
             // Pull requests work directly with the central repository
             // Both branches must be pushed to central before creating a PR
-            var sourceCommitSha = _gitService.GetBranchCommitShaFromCentral(request.SourceBranch);
-            var targetCommitSha = _gitService.GetBranchCommitShaFromCentral(request.TargetBranch);
+            var sourceCommitSha = _gitService.GetBranchCommitShaFromCentral(programId, request.SourceBranch);
+            var targetCommitSha = _gitService.GetBranchCommitShaFromCentral(programId, request.TargetBranch);
             
             var pullRequest = _pullRequestService.CreatePullRequest(userId, request, sourceCommitSha, targetCommitSha);
-            return CreatedAtAction(nameof(GetPullRequest), new { userId, number = pullRequest.Number }, pullRequest);
+            return CreatedAtAction(nameof(GetPullRequest), new { userId, programId, number = pullRequest.Number }, pullRequest);
         }
         catch (ArgumentException ex) when (ex.Message.Contains("not found in central repository"))
         {
@@ -177,7 +184,8 @@ public class PullRequestController : ControllerBase
     [HttpPost("{number}/merge")]
     [OpenApiOperation("Merge Pull Request")]
     public ActionResult<PullRequest> MergePullRequest(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         int number)
     {
         try
@@ -195,7 +203,7 @@ public class PullRequestController : ControllerBase
             }
 
             // Perform the Git merge
-            _gitService.MergeBranch(userId, pullRequest.SourceBranch, pullRequest.TargetBranch, pullRequest.Title);
+            _gitService.MergeBranch(programId, userId, pullRequest.SourceBranch, pullRequest.TargetBranch, pullRequest.Title);
 
             // Update PR status
             var mergedPr = _pullRequestService.MergePullRequest(userId, number);
@@ -216,7 +224,8 @@ public class PullRequestController : ControllerBase
     [HttpGet("{number}/conflicts")]
     [OpenApiOperation("Get Merge Conflicts")]
     public ActionResult<MergeConflictInfo> GetMergeConflicts(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         int number)
     {
         try
@@ -233,7 +242,7 @@ public class PullRequestController : ControllerBase
                 return BadRequest(new { message = "Only open pull requests can be analyzed for conflicts" });
             }
 
-            var conflicts = _gitService.GetMergeConflicts(userId, pullRequest.SourceBranch, pullRequest.TargetBranch);
+            var conflicts = _gitService.GetMergeConflicts(programId, userId, pullRequest.SourceBranch, pullRequest.TargetBranch);
             
             return Ok(conflicts);
         }
@@ -247,7 +256,8 @@ public class PullRequestController : ControllerBase
     [HttpPost("{number}/resolve-conflicts")]
     [OpenApiOperation("Resolve Conflicts And Merge")]
     public ActionResult<PullRequest> ResolveAndMergePullRequest(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         int number,
         [FromBody] ResolveConflictsRequest request)
     {
@@ -266,7 +276,7 @@ public class PullRequestController : ControllerBase
             }
 
             // Perform the Git merge with conflict resolutions
-            _gitService.ResolveAndMerge(userId, pullRequest.SourceBranch, pullRequest.TargetBranch, request.Resolutions);
+            _gitService.ResolveAndMerge(programId, userId, pullRequest.SourceBranch, pullRequest.TargetBranch, request.Resolutions);
 
             // Update PR status
             var mergedPr = _pullRequestService.MergePullRequest(userId, number);
@@ -283,7 +293,8 @@ public class PullRequestController : ControllerBase
     [HttpPost("{number}/close")]
     [OpenApiOperation("Close Pull Request")]
     public ActionResult<PullRequest> ClosePullRequest(
-        [FromQuery] string userId,
+        string userId,
+        string programId,
         int number)
     {
         try

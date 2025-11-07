@@ -21,6 +21,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddSingleton<ProgramService>();
 builder.Services.AddSingleton<GitService>();
 builder.Services.AddSingleton<PullRequestService>();
 
@@ -36,12 +37,31 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+var programService = app.Services.GetRequiredService<ProgramService>();
 var gitService = app.Services.GetRequiredService<GitService>();
-gitService.InitializeCentralRepository();
 
-var centralRepoPath = app.Configuration["GitSettings:CentralRepoPath"] ?? "data/central-repo";
-var sampleDataPath = Path.Combine(Directory.GetCurrentDirectory(), "sampledata.json");
-DataInitializer.InitializeSampleData(centralRepoPath, sampleDataPath);
+var defaultProgramId = programService.GetDefaultProgramId();
+var programs = programService.GetAllPrograms();
+
+if (!programs.Any())
+{
+    var defaultProgram = new WorkflowConfig.Api.Models.Program
+    {
+        Id = defaultProgramId,
+        Name = "Auto Insurance",
+        Description = "Default insurance program with workflows, assets, and data stores",
+        CreatedDate = DateTime.UtcNow
+    };
+    programService.CreateProgram(defaultProgram);
+    
+    gitService.InitializeCentralRepository(defaultProgramId);
+    
+    var centralRepoPath = programService.GetCentralRepoPath(defaultProgramId);
+    var sampleDataPath = Path.Combine(Directory.GetCurrentDirectory(), "sampledata.json");
+    DataInitializer.InitializeSampleData(centralRepoPath, sampleDataPath);
+    
+    app.Logger.LogInformation("Created default program '{ProgramName}' with sample data", defaultProgram.Name);
+}
 
 if (app.Environment.IsDevelopment())
 {

@@ -6,7 +6,7 @@ using NSwag.Annotations;
 namespace WorkflowConfig.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users/{userId}/programs/{programId}/[controller]")]
 public class AssetsController : ControllerBase
 {
     private readonly GitService _gitService;
@@ -18,17 +18,17 @@ public class AssetsController : ControllerBase
 
     [HttpGet]
     [OpenApiOperation("Get All Assets")]
-    public IActionResult GetAssets([FromQuery] string userId = "default")
+    public IActionResult GetAssets(string userId, string programId)
     {
-        var assets = _gitService.ReadAssetsWithGitStatus(userId);
+        var assets = _gitService.ReadAssetsWithGitStatus(programId, userId);
         return Ok(assets);
     }
 
     [HttpGet("{id}")]
     [OpenApiOperation("Get Asset By Id")]
-    public IActionResult GetAsset(Guid id, [FromQuery] string userId = "default")
+    public IActionResult GetAsset(string userId, string programId, Guid id)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null)
@@ -41,9 +41,9 @@ public class AssetsController : ControllerBase
 
     [HttpPost]
     [OpenApiOperation("Create Asset")]
-    public IActionResult CreateAsset([FromBody] Asset asset, [FromQuery] string userId = "default")
+    public IActionResult CreateAsset(string userId, string programId, [FromBody] Asset asset)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         
         if (asset.Id == null || asset.Id == Guid.Empty)
         {
@@ -51,16 +51,16 @@ public class AssetsController : ControllerBase
         }
 
         assets.Assets.Add(asset);
-        _gitService.WriteAssets(userId, assets);
+        _gitService.WriteAssets(programId, userId, assets);
         
-        return CreatedAtAction(nameof(GetAsset), new { id = asset.Id, userId }, asset);
+        return CreatedAtAction(nameof(GetAsset), new { userId, programId, id = asset.Id }, asset);
     }
 
     [HttpPut("{id}")]
     [OpenApiOperation("Update Asset")]
-    public IActionResult UpdateAsset(Guid id, [FromBody] Asset asset, [FromQuery] string userId = "default")
+    public IActionResult UpdateAsset(string userId, string programId, Guid id, [FromBody] Asset asset)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var index = assets.Assets.FindIndex(a => a.Id == id);
         
         if (index == -1)
@@ -70,16 +70,16 @@ public class AssetsController : ControllerBase
 
         asset.Id = id;
         assets.Assets[index] = asset;
-        _gitService.WriteAssets(userId, assets);
+        _gitService.WriteAssets(programId, userId, assets);
         
         return Ok(asset);
     }
 
     [HttpDelete("{id}")]
     [OpenApiOperation("Delete Asset")]
-    public IActionResult DeleteAsset(Guid id, [FromQuery] string userId = "default")
+    public IActionResult DeleteAsset(string userId, string programId, Guid id)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null)
@@ -89,25 +89,25 @@ public class AssetsController : ControllerBase
 
         if (asset.FileName != null)
         {
-            _gitService.DeleteAssetFileContent(userId, id, asset.FileName);
+            _gitService.DeleteAssetFileContent(programId, userId, id, asset.FileName);
         }
 
         assets.Assets.Remove(asset);
-        _gitService.WriteAssets(userId, assets);
+        _gitService.WriteAssets(programId, userId, assets);
         
         return NoContent();
     }
 
     [HttpPost("{id}/file")]
     [OpenApiOperation("Upload Asset File")]
-    public async Task<IActionResult> UploadFile(Guid id, [FromQuery] string userId = "default", IFormFile? file = null)
+    public async Task<IActionResult> UploadFile(string userId, string programId, Guid id, IFormFile? file = null)
     {
         if (file == null || file.Length == 0)
         {
             return BadRequest("No file uploaded");
         }
 
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null)
@@ -117,12 +117,12 @@ public class AssetsController : ControllerBase
 
         if (asset.FileName != null)
         {
-            _gitService.DeleteAssetFileContent(userId, id, asset.FileName);
+            _gitService.DeleteAssetFileContent(programId, userId, id, asset.FileName);
         }
 
         using (var stream = file.OpenReadStream())
         {
-            _gitService.SaveAssetFileContent(userId, id, file.FileName, stream);
+            _gitService.SaveAssetFileContent(programId, userId, id, file.FileName, stream);
         }
 
         asset.FileName = file.FileName;
@@ -130,16 +130,16 @@ public class AssetsController : ControllerBase
         asset.FileSizeBytes = file.Length;
         asset.FileUploadedDate = DateTime.UtcNow;
 
-        _gitService.WriteAssets(userId, assets);
+        _gitService.WriteAssets(programId, userId, assets);
 
         return Ok(asset);
     }
 
     [HttpGet("{id}/file")]
     [OpenApiOperation("Get Asset File Info")]
-    public IActionResult DownloadFile(Guid id, [FromQuery] string userId = "default")
+    public IActionResult DownloadFile(string userId, string programId, Guid id)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null || asset.FileName == null)
@@ -147,7 +147,7 @@ public class AssetsController : ControllerBase
             return NotFound();
         }
 
-        var fileContent = _gitService.GetAssetFileContent(userId, id, asset.FileName);
+        var fileContent = _gitService.GetAssetFileContent(programId, userId, id, asset.FileName);
         
         if (fileContent == null)
         {
@@ -160,9 +160,9 @@ public class AssetsController : ControllerBase
 
     [HttpGet("{id}/file/content")]
     [OpenApiOperation("Get Asset File Content")]
-    public IActionResult GetFileContent(Guid id, [FromQuery] string userId = "default")
+    public IActionResult GetFileContent(string userId, string programId, Guid id)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null || asset.FileName == null)
@@ -170,7 +170,7 @@ public class AssetsController : ControllerBase
             return NotFound();
         }
 
-        var fileContent = _gitService.GetAssetFileContent(userId, id, asset.FileName);
+        var fileContent = _gitService.GetAssetFileContent(programId, userId, id, asset.FileName);
         
         if (fileContent == null)
         {
@@ -183,9 +183,9 @@ public class AssetsController : ControllerBase
 
     [HttpGet("{id}/file/content/committed")]
     [OpenApiOperation("Get Asset File Content At Commit")]
-    public IActionResult GetCommittedFileContent(Guid id, [FromQuery] string userId = "default")
+    public IActionResult GetCommittedFileContent(string userId, string programId, Guid id)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null || asset.FileName == null)
@@ -193,7 +193,7 @@ public class AssetsController : ControllerBase
             return NotFound();
         }
 
-        var fileContent = _gitService.GetAssetFileContentFromCommit(userId, id, asset.FileName);
+        var fileContent = _gitService.GetAssetFileContentFromCommit(programId, userId, id, asset.FileName);
         
         if (fileContent == null)
         {
@@ -206,9 +206,9 @@ public class AssetsController : ControllerBase
 
     [HttpPut("{id}/file/content")]
     [OpenApiOperation("Update Asset File Content")]
-    public IActionResult UpdateFileContent(Guid id, [FromBody] FileContentUpdate update, [FromQuery] string userId = "default")
+    public IActionResult UpdateFileContent(string userId, string programId, Guid id, [FromBody] FileContentUpdate update)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null || asset.FileName == null)
@@ -219,21 +219,21 @@ public class AssetsController : ControllerBase
         var contentBytes = System.Text.Encoding.UTF8.GetBytes(update.Content);
         using (var stream = new MemoryStream(contentBytes))
         {
-            _gitService.SaveAssetFileContent(userId, id, asset.FileName, stream);
+            _gitService.SaveAssetFileContent(programId, userId, id, asset.FileName, stream);
         }
 
         asset.FileSizeBytes = contentBytes.Length;
         asset.FileUploadedDate = DateTime.UtcNow;
-        _gitService.WriteAssets(userId, assets);
+        _gitService.WriteAssets(programId, userId, assets);
 
         return Ok(asset);
     }
 
     [HttpDelete("{id}/file")]
     [OpenApiOperation("Delete Asset File")]
-    public IActionResult DeleteFile(Guid id, [FromQuery] string userId = "default")
+    public IActionResult DeleteFile(string userId, string programId, Guid id)
     {
-        var assets = _gitService.ReadAssets(userId);
+        var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
         
         if (asset == null || asset.FileName == null)
@@ -241,14 +241,14 @@ public class AssetsController : ControllerBase
             return NotFound();
         }
 
-        _gitService.DeleteAssetFileContent(userId, id, asset.FileName);
+        _gitService.DeleteAssetFileContent(programId, userId, id, asset.FileName);
 
         asset.FileName = null;
         asset.FileType = null;
         asset.FileSizeBytes = null;
         asset.FileUploadedDate = null;
 
-        _gitService.WriteAssets(userId, assets);
+        _gitService.WriteAssets(programId, userId, assets);
 
         return NoContent();
     }

@@ -6,7 +6,7 @@ using NSwag.Annotations;
 namespace WorkflowConfig.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users/{userId}/programs/{programId}/[controller]")]
 public class WorkflowsController : ControllerBase
 {
     private readonly GitService _gitService;
@@ -18,17 +18,17 @@ public class WorkflowsController : ControllerBase
 
     [HttpGet]
     [OpenApiOperation("Get All Workflows")]
-    public IActionResult GetWorkflows([FromQuery] string userId = "default")
+    public IActionResult GetWorkflows(string userId, string programId)
     {
-        var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var workflows = _gitService.ReadWorkflowsWithGitStatus(programId, userId);
         return Ok(workflows);
     }
 
     [HttpGet("{workflowKey}")]
     [OpenApiOperation("Get Workflow By Key")]
-    public IActionResult GetWorkflow(string workflowKey, [FromQuery] string userId = "default")
+    public IActionResult GetWorkflow(string userId, string programId, string workflowKey)
     {
-        var workflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var workflows = _gitService.ReadWorkflowsWithGitStatus(programId, userId);
         var workflow = workflows.Workflows.FirstOrDefault(w => w.WorkflowKey == workflowKey);
         
         if (workflow == null)
@@ -41,9 +41,9 @@ public class WorkflowsController : ControllerBase
 
     [HttpPost]
     [OpenApiOperation("Create Workflow")]
-    public IActionResult CreateWorkflow([FromBody] Workflow workflow, [FromQuery] string userId = "default")
+    public IActionResult CreateWorkflow(string userId, string programId, [FromBody] Workflow workflow)
     {
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(programId, userId);
         
         if (workflows.Workflows.Any(w => w.WorkflowKey == workflow.WorkflowKey))
         {
@@ -51,16 +51,16 @@ public class WorkflowsController : ControllerBase
         }
 
         workflows.Workflows.Add(workflow);
-        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.WriteWorkflows(programId, userId, workflows);
         
-        return CreatedAtAction(nameof(GetWorkflow), new { workflowKey = workflow.WorkflowKey, userId }, workflow);
+        return CreatedAtAction(nameof(GetWorkflow), new { userId, programId, workflowKey = workflow.WorkflowKey }, workflow);
     }
 
     [HttpPut("{workflowKey}")]
     [OpenApiOperation("Update Workflow")]
-    public IActionResult UpdateWorkflow(string workflowKey, [FromBody] Workflow workflow, [FromQuery] string userId = "default")
+    public IActionResult UpdateWorkflow(string userId, string programId, string workflowKey, [FromBody] Workflow workflow)
     {
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(programId, userId);
         var index = workflows.Workflows.FindIndex(w => w.WorkflowKey == workflowKey);
         
         if (index == -1)
@@ -74,16 +74,16 @@ public class WorkflowsController : ControllerBase
         workflow.Id = existingId;
         
         workflows.Workflows[index] = workflow;
-        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.WriteWorkflows(programId, userId, workflows);
         
         return Ok(workflow);
     }
 
     [HttpDelete("{workflowKey}")]
     [OpenApiOperation("Delete Workflow")]
-    public IActionResult DeleteWorkflow(string workflowKey, [FromQuery] string userId = "default")
+    public IActionResult DeleteWorkflow(string userId, string programId, string workflowKey)
     {
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(programId, userId);
         var workflow = workflows.Workflows.FirstOrDefault(w => w.WorkflowKey == workflowKey);
         
         if (workflow == null)
@@ -92,7 +92,7 @@ public class WorkflowsController : ControllerBase
         }
 
         workflows.Workflows.Remove(workflow);
-        _gitService.WriteWorkflows(userId, workflows);
+        _gitService.WriteWorkflows(programId, userId, workflows);
         
         return NoContent();
     }

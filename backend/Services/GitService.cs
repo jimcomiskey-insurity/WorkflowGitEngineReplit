@@ -6,8 +6,7 @@ namespace WorkflowConfig.Api.Services;
 
 public class GitService
 {
-    private readonly string _repoBasePath;
-    private readonly string _centralRepoPath;
+    private readonly ProgramService _programService;
     private readonly string _pullRequestsPath;
     private readonly ILogger<GitService> _logger;
     private const string WorkflowFileName = "workflows.json"; // Legacy format
@@ -19,45 +18,38 @@ public class GitService
     private const string DataStoreListFileName = "datastore-list.json";
     private const string DataStoresDirectory = "datastores";
 
-    public GitService(IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
+    public GitService(ProgramService programService, IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
     {
+        _programService = programService;
         _logger = logger;
-        var repoBasePath = configuration["GitSettings:RepoBasePath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "user-repos");
-        var centralRepoPath = configuration["GitSettings:CentralRepoPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "data", "central-repo");
         var prBasePath = configuration["GitSettings:PullRequestsPath"] ?? "../../workflow-data/pull-requests";
         
         // Resolve paths relative to the content root to ensure consistent behavior in all contexts
-        _repoBasePath = Path.IsPathRooted(repoBasePath) 
-            ? repoBasePath 
-            : Path.GetFullPath(Path.Combine(environment.ContentRootPath, repoBasePath));
-        _centralRepoPath = Path.IsPathRooted(centralRepoPath) 
-            ? centralRepoPath 
-            : Path.GetFullPath(Path.Combine(environment.ContentRootPath, centralRepoPath));
         _pullRequestsPath = Path.IsPathRooted(prBasePath) 
             ? prBasePath 
             : Path.GetFullPath(Path.Combine(environment.ContentRootPath, prBasePath));
         
-        Directory.CreateDirectory(_repoBasePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(_centralRepoPath)!);
         Directory.CreateDirectory(_pullRequestsPath);
     }
 
-    public void InitializeCentralRepository()
+    public void InitializeCentralRepository(string programId)
     {
-        if (!Repository.IsValid(_centralRepoPath))
+        var centralRepoPath = _programService.GetCentralRepoPath(programId);
+        if (!Repository.IsValid(centralRepoPath))
         {
-            Repository.Init(_centralRepoPath, isBare: true);
+            Repository.Init(centralRepoPath, isBare: true);
         }
     }
 
-    public string GetUserRepoPath(string userId)
+    public string GetUserRepoPath(string programId, string userId)
     {
-        return Path.Combine(_repoBasePath, userId);
+        return _programService.GetUserRepoPath(programId, userId);
     }
 
-    public void CloneRepositoryForUser(string userId)
+    public void CloneRepositoryForUser(string programId, string userId)
     {
-        var userRepoPath = GetUserRepoPath(userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
+        var centralRepoPath = _programService.GetCentralRepoPath(programId);
         
         if (Repository.IsValid(userRepoPath))
         {
@@ -75,23 +67,24 @@ public class GitService
         }
 
         _logger.LogInformation("Cloning central repository for user {UserId}", userId);
-        Repository.Clone(_centralRepoPath, userRepoPath);
+        Repository.Clone(centralRepoPath, userRepoPath);
         
         // Ensure the remote URL is correct after cloning
         using var repo = new Repository(userRepoPath);
-        repo.Network.Remotes.Update("origin", r => r.Url = _centralRepoPath);
+        repo.Network.Remotes.Update("origin", r => r.Url = centralRepoPath);
         
         _logger.LogInformation("Successfully created repository for user {UserId}", userId);
     }
 
-    private void EnsureUserRepository(string userId)
+    private void EnsureUserRepository(string programId, string userId)
     {
-        var userRepoPath = GetUserRepoPath(userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
+        var centralRepoPath = _programService.GetCentralRepoPath(programId);
         
         if (!Repository.IsValid(userRepoPath))
         {
             _logger.LogDebug("Repository validation failed for user {UserId} at {Path}", userId, userRepoPath);
-            CloneRepositoryForUser(userId);
+            CloneRepositoryForUser(programId, userId);
         }
         else
         {
@@ -100,19 +93,19 @@ public class GitService
             // Fix remote URL if it's incorrect (e.g., after data folder relocation)
             using var repo = new Repository(userRepoPath);
             var remote = repo.Network.Remotes["origin"];
-            if (remote != null && remote.Url != _centralRepoPath)
+            if (remote != null && remote.Url != centralRepoPath)
             {
                 _logger.LogInformation("Updating remote URL for user {UserId} from {OldUrl} to {NewUrl}", 
-                    userId, remote.Url, _centralRepoPath);
-                repo.Network.Remotes.Update("origin", r => r.Url = _centralRepoPath);
+                    userId, remote.Url, centralRepoPath);
+                repo.Network.Remotes.Update("origin", r => r.Url = centralRepoPath);
             }
         }
     }
 
-    public GitStatus GetStatus(string userId)
+    public GitStatus GetStatus(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         using var repo = new Repository(userRepoPath);
         var status = repo.RetrieveStatus();
@@ -160,10 +153,10 @@ public class GitService
         };
     }
 
-    public void CommitChanges(string userId, string message, string authorName, string authorEmail)
+    public void CommitChanges(string programId, string userId, string message, string authorName, string authorEmail)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -173,10 +166,10 @@ public class GitService
         repo.Commit(message, signature, signature);
     }
 
-    public void DiscardChanges(string userId)
+    public void DiscardChanges(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -200,10 +193,10 @@ public class GitService
         }
     }
 
-    public void Pull(string userId)
+    public void Pull(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -213,10 +206,10 @@ public class GitService
         Commands.Pull(repo, signature, options);
     }
 
-    public void Push(string userId)
+    public void Push(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -260,20 +253,20 @@ public class GitService
         }
     }
 
-    public void CreateBranch(string userId, string branchName)
+    public void CreateBranch(string programId, string userId, string branchName)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
         repo.CreateBranch(branchName);
     }
 
-    public void SwitchBranch(string userId, string branchName)
+    public void SwitchBranch(string programId, string userId, string branchName)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -322,20 +315,20 @@ public class GitService
         }
     }
 
-    public List<string> GetBranches(string userId)
+    public List<string> GetBranches(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
         return repo.Branches.Select(b => b.FriendlyName).ToList();
     }
 
-    public List<Models.CommitInfo> GetCommitHistory(string userId, int count = 20)
+    public List<Models.CommitInfo> GetCommitHistory(string programId, string userId, int count = 20)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -623,10 +616,10 @@ public class GitService
         return changes;
     }
 
-    public ProgramWorkflows ReadWorkflows(string userId)
+    public ProgramWorkflows ReadWorkflows(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         // Try new split-file format first
         var workflowList = ReadWorkflowListIfExists(userRepoPath);
@@ -716,10 +709,10 @@ public class GitService
         return guid.ToString();
     }
 
-    public void WriteWorkflows(string userId, ProgramWorkflows workflows)
+    public void WriteWorkflows(string programId, string userId, ProgramWorkflows workflows)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         // Ensure all workflows have stable, deterministic IDs
         EnsureWorkflowIds(workflows);
@@ -863,10 +856,10 @@ public class GitService
             .ToList();
     }
 
-    public ProgramAssets ReadAssets(string userId)
+    public ProgramAssets ReadAssets(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         var assetList = ReadAssetListIfExists(userRepoPath);
         if (assetList != null)
@@ -893,10 +886,10 @@ public class GitService
         return new ProgramAssets { Assets = new List<Asset>() };
     }
 
-    public void WriteAssets(string userId, ProgramAssets assets)
+    public void WriteAssets(string programId, string userId, ProgramAssets assets)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         EnsureAssetIds(assets);
 
@@ -1059,10 +1052,10 @@ public class GitService
         }
     }
 
-    public void SaveAssetFileContent(string userId, Guid assetId, string fileName, Stream fileStream)
+    public void SaveAssetFileContent(string programId, string userId, Guid assetId, string fileName, Stream fileStream)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         var assetFileDir = GetAssetFileDirectoryPath(userRepoPath, assetId);
         if (Directory.Exists(assetFileDir))
@@ -1077,10 +1070,10 @@ public class GitService
         outputStream.Flush(flushToDisk: true);
     }
 
-    public byte[]? GetAssetFileContent(string userId, Guid assetId, string fileName)
+    public byte[]? GetAssetFileContent(string programId, string userId, Guid assetId, string fileName)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         var filePath = GetAssetFileStoragePath(userRepoPath, assetId, fileName);
         
         if (!File.Exists(filePath))
@@ -1091,10 +1084,10 @@ public class GitService
         return File.ReadAllBytes(filePath);
     }
 
-    public byte[]? GetAssetFileContentFromCommit(string userId, Guid assetId, string fileName)
+    public byte[]? GetAssetFileContentFromCommit(string programId, string userId, Guid assetId, string fileName)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         var headCommit = repo.Head.Tip;
@@ -1118,10 +1111,10 @@ public class GitService
         return memoryStream.ToArray();
     }
 
-    public void DeleteAssetFileContent(string userId, Guid assetId, string fileName)
+    public void DeleteAssetFileContent(string programId, string userId, Guid assetId, string fileName)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         var assetFileDir = GetAssetFileDirectoryPath(userRepoPath, assetId);
         if (Directory.Exists(assetFileDir))
@@ -1130,17 +1123,17 @@ public class GitService
         }
     }
 
-    public ProgramAssets ReadAssetsWithGitStatus(string userId)
+    public ProgramAssets ReadAssetsWithGitStatus(string programId, string userId)
     {
-        var assets = ReadAssets(userId);
-        EnrichAssetsWithGitStatus(userId, assets);
+        var assets = ReadAssets(programId, userId);
+        EnrichAssetsWithGitStatus(programId, userId, assets);
         return assets;
     }
 
-    private void EnrichAssetsWithGitStatus(string userId, ProgramAssets programAssets)
+    private void EnrichAssetsWithGitStatus(string programId, string userId, ProgramAssets programAssets)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -1275,10 +1268,10 @@ public class GitService
     }
 
     // DataStore Git Status Enrichment
-    public void WriteDataStores(string userId, List<DataStore> dataStores)
+    public void WriteDataStores(string programId, string userId, List<DataStore> dataStores)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         var existingList = ReadDataStoreListIfExists(userRepoPath);
         var existingIds = existingList?.Select(item => item.Id).ToList() ?? new List<string>();
@@ -1353,17 +1346,17 @@ public class GitService
         }
     }
 
-    public List<DataStore> ReadDataStoresWithGitStatus(string userId)
+    public List<DataStore> ReadDataStoresWithGitStatus(string programId, string userId)
     {
-        var dataStores = ReadDataStores(userId);
-        EnrichDataStoresWithGitStatus(userId, dataStores);
+        var dataStores = ReadDataStores(programId, userId);
+        EnrichDataStoresWithGitStatus(programId, userId, dataStores);
         return dataStores;
     }
 
-    private List<DataStore> ReadDataStores(string userId)
+    private List<DataStore> ReadDataStores(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         var dataStoreListPath = Path.Combine(userRepoPath, DataStoreListFileName);
         
         if (!File.Exists(dataStoreListPath))
@@ -1422,10 +1415,10 @@ public class GitService
         return dataStores;
     }
 
-    private void EnrichDataStoresWithGitStatus(string userId, List<DataStore> dataStores)
+    private void EnrichDataStoresWithGitStatus(string programId, string userId, List<DataStore> dataStores)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -1745,17 +1738,17 @@ public class GitService
         }
     }
 
-    public ProgramWorkflows ReadWorkflowsWithGitStatus(string userId)
+    public ProgramWorkflows ReadWorkflowsWithGitStatus(string programId, string userId)
     {
-        var workflows = ReadWorkflows(userId);
-        EnrichWithGitStatus(userId, workflows);
+        var workflows = ReadWorkflows(programId, userId);
+        EnrichWithGitStatus(programId, userId, workflows);
         return workflows;
     }
 
-    private void EnrichWithGitStatus(string userId, ProgramWorkflows programWorkflows)
+    private void EnrichWithGitStatus(string programId, string userId, ProgramWorkflows programWorkflows)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -2057,11 +2050,12 @@ public class GitService
         return null;
     }
 
-    public string GetBranchCommitShaFromCentral(string branchName)
+    public string GetBranchCommitShaFromCentral(string programId, string branchName)
     {
         // For pull requests: work directly with the central repository
         // PRs should only care about branches that have been pushed to central
-        using var repo = new Repository(_centralRepoPath);
+        var centralRepoPath = _programService.GetCentralRepoPath(programId);
+        using var repo = new Repository(centralRepoPath);
         
         // In a bare repository, all branches are what would be "remote" branches in a clone
         // Look for refs/heads/branchName
@@ -2075,10 +2069,10 @@ public class GitService
         return branch.Tip.Sha;
     }
 
-    public string GetBranchCommitSha(string userId, string branchName, bool preferRemote = false)
+    public string GetBranchCommitSha(string programId, string userId, string branchName, bool preferRemote = false)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         using var repo = new Repository(userRepoPath);
         
@@ -2329,11 +2323,12 @@ public class GitService
         return changes;
     }
 
-    public virtual BranchComparison CompareBranchesInCentral(string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
+    public virtual BranchComparison CompareBranchesInCentral(string programId, string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
     {
         // For pull requests: work directly with the central repository
         // This ensures we're comparing branches as they exist in the central repo (what was pushed)
-        using var repo = new Repository(_centralRepoPath);
+        var centralRepoPath = _programService.GetCentralRepoPath(programId);
+        using var repo = new Repository(centralRepoPath);
         
         // Get source commit - either from SHA or from branch tip
         Commit sourceCommit;
@@ -2601,10 +2596,10 @@ public class GitService
         };
     }
 
-    public BranchComparison CompareBranches(string userId, string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
+    public BranchComparison CompareBranches(string programId, string userId, string sourceBranch, string targetBranch, string? sourceCommitSha = null, string? targetCommitSha = null)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         using var repo = new Repository(userRepoPath);
         
@@ -2875,7 +2870,7 @@ public class GitService
         return sourceBlob.Sha != targetBlob.Sha;
     }
 
-    private void DetectAssetFileContentConflicts(Repository repo, Branch sourceBranch, Branch targetBranch, MergeConflictInfo conflictInfo)
+    private void DetectAssetFileContentConflicts(Repository repo, Branch sourceBranch, Branch targetBranch, MergeConflictInfo conflictInfo, string programId, string userId)
     {
         // Store current HEAD for cleanup
         var originalHead = repo.Head;
@@ -2945,7 +2940,7 @@ public class GitService
                                             conflictedContent.Contains(">>>>>>>");
                     
                     // Get asset name from metadata
-                    var assets = ReadAssets(GetUserIdFromPath(userRepoPath));
+                    var assets = ReadAssets(programId, userId);
                     var asset = assets.Assets.FirstOrDefault(a => a.Id == assetId);
                     var assetName = asset?.Name ?? $"Asset {assetId}";
                     
@@ -2971,15 +2966,15 @@ public class GitService
     
     private string GetUserIdFromPath(string repoPath)
     {
-        // Extract user ID from repository path: /path/to/user-repos/{userId}
+        // Extract user ID from repository path: /path/to/user-repos/{programId}/{userId}
         var parts = repoPath.TrimEnd(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar);
         return parts[^1];
     }
 
-    public void MergeBranch(string userId, string sourceBranch, string targetBranch, string message)
+    public void MergeBranch(string programId, string userId, string sourceBranch, string targetBranch, string message)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         using var repo = new Repository(userRepoPath);
         
@@ -3025,10 +3020,10 @@ public class GitService
         repo.Network.Push(remote, $"refs/heads/{targetBranch}", options);
     }
 
-    public string? GetLastPushedCommitSha(string userId)
+    public string? GetLastPushedCommitSha(string programId, string userId)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -3051,10 +3046,10 @@ public class GitService
         return trackedBranch.Tip?.Sha;
     }
 
-    public void ResetToCommit(string userId, string commitSha)
+    public void ResetToCommit(string programId, string userId, string commitSha)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
         
         using var repo = new Repository(userRepoPath);
         
@@ -3068,7 +3063,7 @@ public class GitService
         }
         
         // Get the last pushed commit (remote tracking branch tip)
-        var lastPushedSha = GetLastPushedCommitSha(userId);
+        var lastPushedSha = GetLastPushedCommitSha(programId, userId);
         
         // Safety check: Only allow resetting to the last pushed commit
         if (commitSha != lastPushedSha)
@@ -3090,10 +3085,10 @@ public class GitService
         repo.Reset(ResetMode.Mixed, commit);
     }
 
-    public MergeConflictInfo GetMergeConflicts(string userId, string sourceBranch, string targetBranch)
+    public MergeConflictInfo GetMergeConflicts(string programId, string userId, string sourceBranch, string targetBranch)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         using var repo = new Repository(userRepoPath);
         
@@ -3171,7 +3166,7 @@ public class GitService
         }
 
         // Detect asset file content conflicts
-        DetectAssetFileContentConflicts(repo, sourceBranchRef, targetBranchRef, conflictInfo);
+        DetectAssetFileContentConflicts(repo, sourceBranchRef, targetBranchRef, conflictInfo, programId, userId);
 
         conflictInfo.TotalConflicts = conflictInfo.WorkflowConflicts.Sum(wc => 
             wc.FieldConflicts.Count + 
@@ -3513,13 +3508,14 @@ public class GitService
     }
 
     public void ResolveAndMerge(
+        string programId,
         string userId, 
         string sourceBranch, 
         string targetBranch, 
         List<ConflictResolution> resolutions)
     {
-        EnsureUserRepository(userId);
-        var userRepoPath = GetUserRepoPath(userId);
+        EnsureUserRepository(programId, userId);
+        var userRepoPath = GetUserRepoPath(programId, userId);
 
         using var repo = new Repository(userRepoPath);
         
@@ -3542,7 +3538,7 @@ public class GitService
 
         // Use WriteWorkflows to properly handle split-file persistence
         var wrapper = new ProgramWorkflows { Workflows = mergedWorkflows };
-        WriteWorkflows(userId, wrapper);
+        WriteWorkflows(programId, userId, wrapper);
 
         // Stage all workflow files (workflow-list.json + all workflow files)
         Commands.Stage(repo, "*");
@@ -3789,9 +3785,10 @@ public class GitService
         return currentValue == incomingValue ? currentValue : currentValue;
     }
 
-    public string? GetFileContentAtCommit(string userId, string commitSha, string filePath)
+    public string? GetFileContentAtCommit(string programId, string userId, string commitSha, string filePath)
     {
-        using var centralRepo = new Repository(_centralRepoPath);
+        var centralRepoPath = _programService.GetCentralRepoPath(programId);
+        using var centralRepo = new Repository(centralRepoPath);
         
         // Find the commit by SHA
         var commit = centralRepo.Lookup<Commit>(commitSha);
@@ -3814,25 +3811,28 @@ public class GitService
         return blob.GetContentText();
     }
 
-    public void ResetAllRepositories(string sampleDataPath)
+    public void ResetAllRepositories(string programId, string sampleDataPath)
     {
-        _logger.LogInformation("Starting repository reset...");
+        _logger.LogInformation("Starting repository reset for program {ProgramId}...", programId);
         
         try
         {
+            var centralRepoPath = _programService.GetCentralRepoPath(programId);
+            var userReposBasePath = _programService.GetUserReposBasePath(programId);
+            
             // Delete all user repositories
-            if (Directory.Exists(_repoBasePath))
+            if (Directory.Exists(userReposBasePath))
             {
-                _logger.LogInformation("Deleting all user repositories at {Path}", _repoBasePath);
-                Directory.Delete(_repoBasePath, true);
-                Directory.CreateDirectory(_repoBasePath);
+                _logger.LogInformation("Deleting all user repositories at {Path}", userReposBasePath);
+                Directory.Delete(userReposBasePath, true);
+                Directory.CreateDirectory(userReposBasePath);
             }
 
             // Delete central repository
-            if (Directory.Exists(_centralRepoPath))
+            if (Directory.Exists(centralRepoPath))
             {
-                _logger.LogInformation("Deleting central repository at {Path}", _centralRepoPath);
-                Directory.Delete(_centralRepoPath, true);
+                _logger.LogInformation("Deleting central repository at {Path}", centralRepoPath);
+                Directory.Delete(centralRepoPath, true);
             }
 
             // Delete pull requests
@@ -3847,17 +3847,17 @@ public class GitService
 
             // Recreate central repository
             _logger.LogInformation("Recreating central repository");
-            Repository.Init(_centralRepoPath, isBare: true);
+            Repository.Init(centralRepoPath, isBare: true);
 
             // Initialize with sample data
             _logger.LogInformation("Initializing sample data");
-            DataInitializer.InitializeSampleData(_centralRepoPath, sampleDataPath);
+            DataInitializer.InitializeSampleData(centralRepoPath, sampleDataPath);
 
-            _logger.LogInformation("Repository reset completed successfully");
+            _logger.LogInformation("Repository reset completed successfully for program {ProgramId}", programId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during repository reset");
+            _logger.LogError(ex, "Error during repository reset for program {ProgramId}", programId);
             throw;
         }
     }
