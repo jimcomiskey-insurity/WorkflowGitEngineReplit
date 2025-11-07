@@ -942,7 +942,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     if (!this.editingPoint.calculation) {
       this.editingPoint.calculation = {
         inputs: [],
-        script: 'int Calculate(decimal? TestMoney, string TestYesNo) {\n  if (TestYesNo == "Yes")\n  {\n    return int.Parse(TestMoney) + 500;\n  }\n  else\n  {\n    return 0;\n  }\n}'
+        script: '  // Write your calculation logic here\n  // Example:\n  // return 0;'
       };
     }
 
@@ -957,10 +957,13 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     this.monacoService.getMonaco().then(() => {
       if (!this.scriptEditorContainer) return;
 
+      // Extract body from full method (for backward compatibility)
+      const scriptBody = this.extractMethodBody(this.editingPoint.calculation?.script || '');
+
       this.scriptEditor = (window as any).monaco.editor.create(
         this.scriptEditorContainer.nativeElement,
         {
-          value: this.editingPoint.calculation?.script || '',
+          value: scriptBody,
           language: 'csharp',
           theme: 'vs-dark',
           minimap: { enabled: false },
@@ -973,6 +976,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
 
       this.scriptEditor.onDidChangeModelContent(() => {
         if (this.editingPoint.calculation) {
+          // Save only the body (no method signature)
           this.editingPoint.calculation.script = this.scriptEditor.getValue();
           this.savePoint();
         }
@@ -1075,7 +1079,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
 
   getMethodSignature(): string {
     const inputs = this.getScriptInputs();
-    if (inputs.length === 0) return '';
+    if (inputs.length === 0) return 'int Calculate() {';
 
     const params = inputs.map(input => {
       const type = this.getCSharpType(input.dataType);
@@ -1084,6 +1088,33 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     }).join(', ');
 
     return `int Calculate(${params}) {`;
+  }
+
+  extractMethodBody(fullScript: string): string {
+    // Check if script already contains method signature
+    const methodSignaturePattern = /^\s*int\s+Calculate\s*\([^)]*\)\s*\{/;
+    
+    if (!methodSignaturePattern.test(fullScript)) {
+      // Script is already just the body
+      return fullScript;
+    }
+
+    // Extract body from full method
+    // Find the first { and last }
+    const firstBrace = fullScript.indexOf('{');
+    const lastBrace = fullScript.lastIndexOf('}');
+    
+    if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
+      return fullScript; // Return as-is if can't parse
+    }
+
+    // Extract content between braces
+    return fullScript.substring(firstBrace + 1, lastBrace);
+  }
+
+  wrapMethodBody(body: string): string {
+    const signature = this.getMethodSignature();
+    return `${signature}\n${body}\n}`;
   }
 
   testScript(): void {
@@ -1102,8 +1133,11 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
       testWithNull: this.getTestWithNull(input.dataPointId)
     }));
 
+    // Wrap the method body with the full signature before execution
+    const fullScript = this.wrapMethodBody(this.editingPoint.calculation.script);
+
     this.scriptExecutionService.executeScript(this.currentUser, {
-      script: this.editingPoint.calculation.script,
+      script: fullScript,
       inputs
     }).subscribe({
       next: (result) => {
