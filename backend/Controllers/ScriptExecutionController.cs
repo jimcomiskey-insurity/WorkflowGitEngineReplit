@@ -80,6 +80,7 @@ Calculate({parameters})
         [ProducesResponseType(typeof(CompletionResponse), 200)]
         public async Task<IActionResult> GetCompletions(string userId, [FromBody] CompletionRequest request)
         {
+            Console.WriteLine($"[Completions] Requested at position {request.Position}, script length: {request.Script?.Length ?? 0}, inputs: {request.Inputs?.Count ?? 0}");
             try
             {
                 var scriptBuilder = new StringBuilder();
