@@ -8,6 +8,8 @@ export class MonacoIntelliSenseService {
   private debouncedResolveCompletionItem: any;
   private debouncedProvideCompletionItems: any;
   private debouncedGetDiagnosticsAsync: any;
+  private codeTransformer: ((code: string) => string) | null = null;
+  private lineOffset: number = 0;
 
   constructor() {
     this.debouncedResolveCompletionItem = debounce(
@@ -24,9 +26,11 @@ export class MonacoIntelliSenseService {
     );
   }
 
-  async initialize(monaco: any, model: any, iframeUrl = 'https://intellisage.vercel.app/') {
+  async initialize(monaco: any, model: any, codeTransformer?: (code: string) => string, lineOffset?: number, iframeUrl = 'https://intellisage.vercel.app/') {
     this.monaco = monaco;
     this.model = model;
+    this.codeTransformer = codeTransformer || null;
+    this.lineOffset = lineOffset || 0;
     
     if (!this.monaco) {
       throw new Error('Monaco instance was not defined');
@@ -136,7 +140,8 @@ export class MonacoIntelliSenseService {
   dispose() {}
 
   async getDiagnosticsAsync(code: string) {
-    const diagnostics = await this.intellisage('GetDiagnosticsAsync', code);
+    const transformedCode = this.codeTransformer ? this.codeTransformer(code) : code;
+    const diagnostics = await this.intellisage('GetDiagnosticsAsync', transformedCode);
     if (diagnostics) {
       this.setDiagnostics(diagnostics);
     }
@@ -149,9 +154,10 @@ export class MonacoIntelliSenseService {
 
     try {
       const code = model.getValue();
+      const transformedCode = this.codeTransformer ? this.codeTransformer(code) : code;
       const response = await this.intellisage(
         'GetCompletionAsync',
-        code,
+        transformedCode,
         request
       );
       if (!response) {
@@ -207,7 +213,8 @@ export class MonacoIntelliSenseService {
     const req = this._createRequest(position);
     try {
       const code = model.getValue();
-      const res = await this.intellisage('GetSignatureHelpAsync', code, req);
+      const transformedCode = this.codeTransformer ? this.codeTransformer(code) : code;
+      const res = await this.intellisage('GetSignatureHelpAsync', transformedCode, req);
 
       if (!res) {
         return undefined;
@@ -250,7 +257,9 @@ export class MonacoIntelliSenseService {
   async provideHover(_document: any, position: any) {
     const request = this._createRequest(position);
     try {
-      const response = await this.intellisage('GetQuickInfoAsync', request);
+      const code = this.model.getValue();
+      const transformedCode = this.codeTransformer ? this.codeTransformer(code) : code;
+      const response = await this.intellisage('GetQuickInfoAsync', transformedCode, request);
       if (!response || !response.markdown) {
         return undefined;
       }
@@ -269,14 +278,18 @@ export class MonacoIntelliSenseService {
 
   setDiagnostics(diagnostics: any[]) {
     diagnostics.forEach((diagnostic) => {
-      diagnostic.startLineNumber = diagnostic.start.line + 1;
+      // Adjust positions back to editor coordinates by subtracting the line offset
+      diagnostic.startLineNumber = diagnostic.start.line + 1 - this.lineOffset;
       diagnostic.startColumn = diagnostic.start.character + 1;
 
-      diagnostic.endLineNumber = diagnostic.end.line + 1;
+      diagnostic.endLineNumber = diagnostic.end.line + 1 - this.lineOffset;
       diagnostic.endColumn = diagnostic.end.character + 1;
     });
 
-    this.monaco.editor.setModelMarkers(this.model, 'intellisage', diagnostics);
+    // Filter out diagnostics that are in the wrapper code (before line 1)
+    const filteredDiagnostics = diagnostics.filter(d => d.startLineNumber >= 1);
+
+    this.monaco.editor.setModelMarkers(this.model, 'intellisage', filteredDiagnostics);
   }
 
   _getParameterDocumentation(parameter: any) {
@@ -295,12 +308,13 @@ export class MonacoIntelliSenseService {
     const docs = omnisharpCompletion.documentation;
 
     const mapRange = (edit: any) => {
+      // Adjust positions back to editor coordinates by subtracting line offset
       const newStart = {
-        lineNumber: edit.startLine + 1,
+        lineNumber: edit.startLine + 1 - this.lineOffset,
         column: edit.startColumn + 1,
       };
       const newEnd = {
-        lineNumber: edit.endLine + 1,
+        lineNumber: edit.endLine + 1 - this.lineOffset,
         column: edit.endColumn + 1,
       };
       return {
@@ -314,13 +328,14 @@ export class MonacoIntelliSenseService {
     const mapTextEdit = (edit: any) => {
       return {
         range: mapRange(edit),
-        text: edit.NewText
+        text: edit.newText || edit.NewText  // OmniSharp uses lowercase 'newText'
       };
     };
 
-    const additionalTextEdits = omnisharpCompletion.additionalTextEdits?.map(
-      mapTextEdit
-    );
+    // Filter out additional text edits that target wrapper lines (line numbers ≤ 0 after offset adjustment)
+    const additionalTextEdits = omnisharpCompletion.additionalTextEdits
+      ?.map(mapTextEdit)
+      .filter((edit: any) => edit.range.startLineNumber >= 1);
 
     const newText =
       omnisharpCompletion.textEdit?.newText ?? omnisharpCompletion.insertText;
@@ -350,8 +365,9 @@ export class MonacoIntelliSenseService {
   }
 
   _createRequest(position: any) {
+    // Adjust position to wrapped code coordinates by adding the line offset
     return {
-      Line: position.lineNumber - 1,
+      Line: position.lineNumber - 1 + this.lineOffset,
       Column: position.column - 1,
     };
   }

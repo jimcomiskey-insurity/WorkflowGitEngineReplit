@@ -2,14 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Completion;
-using Microsoft.CodeAnalysis.Host.Mef;
-using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace WorkflowConfig.Api.Controllers
@@ -73,148 +68,6 @@ Calculate({parameters})
                     Error = ex.Message
                 });
             }
-        }
-
-        [HttpPost("completions")]
-        [OpenApiOperation("Get Code Completions")]
-        [ProducesResponseType(typeof(CompletionResponse), 200)]
-        public async Task<IActionResult> GetCompletions(string userId, [FromBody] CompletionRequest request)
-        {
-            try
-            {
-                var scriptBuilder = new StringBuilder();
-                
-                // Add common using statements for IntelliSense
-                scriptBuilder.AppendLine("using System;");
-                scriptBuilder.AppendLine("using System.Collections.Generic;");
-                scriptBuilder.AppendLine("using System.Linq;");
-                scriptBuilder.AppendLine("using System.Text;");
-                scriptBuilder.AppendLine("using System.Text.RegularExpressions;");
-                scriptBuilder.AppendLine();
-                
-                // Wrap in class for proper C# context
-                scriptBuilder.AppendLine("public class Script");
-                scriptBuilder.AppendLine("{");
-                
-                // Build method signature with parameters
-                scriptBuilder.Append("    public object Calculate(");
-                var parameters = request.Inputs.Select(input => 
-                {
-                    var csharpType = GetCSharpType(input.DataType);
-                    return $"{csharpType} {input.Alias}";
-                });
-                scriptBuilder.Append(string.Join(", ", parameters));
-                scriptBuilder.AppendLine(")");
-                scriptBuilder.AppendLine("    {");
-                
-                // Calculate prefix length before adding user's script
-                var prefixLength = scriptBuilder.Length;
-                
-                // Add user's script inside the method (WITHOUT indentation to avoid offset issues)
-                scriptBuilder.AppendLine(request.Script);
-                
-                // Close the method and class
-                scriptBuilder.AppendLine("    }");
-                scriptBuilder.AppendLine("}");
-                
-                var fullScript = scriptBuilder.ToString();
-                var adjustedPosition = prefixLength + request.Position;
-                
-                var workspace = new AdhocWorkspace(MefHostServices.Create(MefHostServices.DefaultAssemblies));
-                var projectInfo = ProjectInfo.Create(
-                    ProjectId.CreateNewId(),
-                    VersionStamp.Default,
-                    "Script",
-                    "Script",
-                    LanguageNames.CSharp,
-                    metadataReferences: new[]
-                    {
-                        MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(DateTime).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(StringBuilder).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(System.Text.RegularExpressions.Regex).Assembly.Location)
-                    }
-                );
-                
-                var project = workspace.AddProject(projectInfo);
-                var document = project.AddDocument("Script.cs", SourceText.From(fullScript));
-                
-                // Force Roslyn to compile and analyze the document
-                var semanticModel = await document.GetSemanticModelAsync();
-                if (semanticModel == null)
-                {
-                    return Ok(new CompletionResponse());
-                }
-                
-                var completionService = CompletionService.GetService(document);
-                if (completionService == null)
-                {
-                    return Ok(new CompletionResponse());
-                }
-                
-                var completions = await completionService.GetCompletionsAsync(document, adjustedPosition);
-                
-                var items = new List<CompletionSuggestion>();
-                
-                // PRIORITIZE: Add parameters and local variables FIRST (they should appear at top of list)
-                var localSymbols = semanticModel.LookupSymbols(adjustedPosition);
-                var parameterNames = new HashSet<string>();
-                
-                foreach (var symbol in localSymbols)
-                {
-                    // Only add parameters and local variables
-                    if (symbol.Kind == SymbolKind.Parameter || symbol.Kind == SymbolKind.Local)
-                    {
-                        parameterNames.Add(symbol.Name);
-                        items.Add(new CompletionSuggestion
-                        {
-                            Label = symbol.Name,
-                            Kind = symbol.Kind == SymbolKind.Parameter ? "Parameter" : "Variable",
-                            InsertText = symbol.Name,
-                            Detail = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                            Documentation = null
-                        });
-                    }
-                }
-                
-                // Add standard completions (types, keywords, members, etc.) AFTER parameters
-                if (completions != null)
-                {
-                    items.AddRange(completions.ItemsList
-                        .Take(100)
-                        .Where(item => !parameterNames.Contains(item.DisplayText)) // Avoid duplicates
-                        .Select(item => new CompletionSuggestion
-                        {
-                            Label = item.DisplayText,
-                            Kind = GetCompletionKind(item.Tags),
-                            InsertText = item.DisplayText,
-                            Detail = item.InlineDescription,
-                            Documentation = null
-                        }));
-                }
-                
-                return Ok(new CompletionResponse { Items = items });
-            }
-            catch (Exception)
-            {
-                return Ok(new CompletionResponse());
-            }
-        }
-
-        private static string GetCompletionKind(System.Collections.Immutable.ImmutableArray<string> tags)
-        {
-            if (tags.Contains("Class")) return "Class";
-            if (tags.Contains("Method")) return "Method";
-            if (tags.Contains("Property")) return "Property";
-            if (tags.Contains("Field")) return "Field";
-            if (tags.Contains("Namespace")) return "Module";
-            if (tags.Contains("Keyword")) return "Keyword";
-            if (tags.Contains("Local")) return "Variable";
-            if (tags.Contains("Parameter")) return "Variable";
-            return "Text";
         }
 
         private string GetCSharpType(string dataType)
@@ -283,30 +136,4 @@ Calculate({parameters})
         public string? Error { get; set; }
     }
 
-    public class CompletionRequest
-    {
-        public string Script { get; set; } = string.Empty;
-        public int Position { get; set; }
-        public List<CompletionInput> Inputs { get; set; } = new();
-    }
-
-    public class CompletionInput
-    {
-        public string Alias { get; set; } = string.Empty;
-        public string DataType { get; set; } = string.Empty;
-    }
-
-    public class CompletionResponse
-    {
-        public List<CompletionSuggestion> Items { get; set; } = new();
-    }
-
-    public class CompletionSuggestion
-    {
-        public string Label { get; set; } = string.Empty;
-        public string Kind { get; set; } = string.Empty;
-        public string InsertText { get; set; } = string.Empty;
-        public string? Detail { get; set; }
-        public string? Documentation { get; set; }
-    }
 }

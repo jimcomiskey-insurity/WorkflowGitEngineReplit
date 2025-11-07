@@ -1019,7 +1019,33 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     
     try {
       const intelliSenseService = new MonacoIntelliSenseService();
-      await intelliSenseService.initialize(monaco, model);
+      
+      // Calculate line offset introduced by the wrapper
+      // Wrapper format:
+      // Line 1: using System;
+      // Line 2: using System.Linq;
+      // Line 3: (empty)
+      // Line 4: public decimal Calculate(...) {
+      // Line 5+: user's code starts here
+      const LINE_OFFSET = 4;
+      
+      const codeTransformer = (code: string) => {
+        const inputs = this.getScriptInputs();
+        const parameters = inputs.map(input => 
+          `${this.getCSharpType(input.dataType)} ${input.alias}`
+        ).join(', ');
+        
+        // Wrap code with the same structure that backend uses for execution
+        // This ensures IntelliSense context matches runtime context exactly
+        return `using System;
+using System.Linq;
+
+public decimal Calculate(${parameters}) {
+${code}
+}`;
+      };
+      
+      await intelliSenseService.initialize(monaco, model, codeTransformer, LINE_OFFSET);
       console.log('IntelliSage initialized successfully');
     } catch (error) {
       console.error('Failed to initialize IntelliSage:', error);
