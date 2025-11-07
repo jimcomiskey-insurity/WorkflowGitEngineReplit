@@ -1028,6 +1028,9 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           position: offset,
           inputs: completionInputs
         }).toPromise().then(response => {
+          console.log('[Completion Provider] Backend response:', response);
+          console.log('[Completion Provider] Total items from backend:', response?.items?.length);
+          
           const suggestions = response?.items.map(item => ({
             label: item.label,
             kind: this.getMonacoCompletionKind(item.kind),
@@ -1035,6 +1038,12 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             detail: item.detail,
             documentation: item.documentation
           })) || [];
+
+          console.log('[Completion Provider] Suggestions to Monaco:', suggestions.length, suggestions.slice(0, 10));
+          
+          // Check if parameters are in the suggestions
+          const paramSuggestions = suggestions.filter(s => s.label.includes('myvalue'));
+          console.log('[Completion Provider] Parameter suggestions:', paramSuggestions);
 
           return { suggestions };
         }).catch(err => {
