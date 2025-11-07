@@ -2,7 +2,7 @@
 
 ## Overview
 
-This full-stack application manages insurance workflow configurations with integrated Git version control. It allows users to create, edit, and manage multi-phase insurance workflows with tasks, dependencies, role assignments, and automation flags. The system tracks changes, commits modifications, and synchronizes with a central Git repository, providing a robust solution for workflow configuration management. It aims to streamline the process of defining and evolving insurance product workflows, enhancing efficiency and reducing errors in a highly regulated environment.
+This full-stack application manages insurance workflow configurations with integrated Git version control. It supports **multiple insurance programs** (e.g., Auto Insurance, Home Insurance), each with its own isolated workflows, assets, data stores, and Git repositories. Users can create, edit, and manage multi-phase insurance workflows with tasks, dependencies, role assignments, and automation flags. The system tracks changes, commits modifications, and synchronizes with program-specific central repositories, providing a robust solution for workflow configuration management. It aims to streamline the process of defining and evolving insurance product workflows, enhancing efficiency and reducing errors in a highly regulated environment.
 
 ## User Preferences
 
@@ -80,6 +80,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 **Frontend**:
 - Built with Angular 20.3.6 (Standalone Components) using client-side routing.
+- **Multi-Program Architecture**: Program selector in header allows switching between insurance programs, with ProgramStateService managing current program context across all services.
 - **Centralized State Management**: Reactive state management using RxJS BehaviorSubjects via dedicated state services for automatic refresh and UI synchronization.
 - **Pending Changes Badge**: Displays total count of changed files, updating immediately after mutation operations.
 - **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting, vs-dark theme, and dynamic loading. Includes Monaco Diff Editor for comparisons, continuous auto-save, branch-aware editing, and visual Git conflict resolution with color-coded conflict blocks.
@@ -87,31 +88,38 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API.
+- **Multi-Program Architecture**: Each insurance program has isolated Git repositories (`programs/{programId}/central-repo` and `programs/{programId}/user-repos/{userId}`), enabling independent workflows, assets, and data stores per program.
+- **IProgramService Interface**: ProgramService implements IProgramService for better testability and dependency injection, with methods for program CRUD operations and repository path management.
+- **Program-Scoped API Routes**: All API endpoints follow the pattern `/api/users/{userId}/programs/{programId}/{resource}` for consistent multi-program support.
 - **Split-File Persistence**: Workflows, assets, and data stores use split-file structures for granular Git tracking and easier conflict resolution.
-- **Asset File Storage**: Uploaded files stored in deterministic, per-asset directories.
+- **Asset File Storage**: Uploaded files stored in deterministic, per-asset directories within each program's repository.
 - Integrates LibGit2Sharp for all Git operations.
-- Supports multi-user access through isolated, user-specific Git repositories.
+- Supports multi-user access through isolated, user-specific Git repositories per program.
 - Employs RxJS `switchMap` and `merge` for data refreshing and multi-user data isolation.
 - Includes Git status enrichment to identify changes at workflow, phase, task, and asset levels, detecting task reordering and tracking commit SHAs.
 - **NSwag API Client Generation**: Automated generation of strongly-typed C# API clients from the backend's OpenAPI spec, configured for clean method names and proper 2xx status code handling.
 
 ### Feature Specifications
 
--   **Workflow Management**: CRUD operations for workflows, including nested phases and tasks with dependencies, role assignments, and automation flags.
--   **Asset Management**: CRUD operations for assets with metadata and file upload capabilities, supporting rich text editing with Monaco Editor.
--   **Data Store Management**: CRUD operations for data stores with hierarchical structure (DataStore > DataGroup > DataPoint), supporting 13 data point types. Features include a tree-based editor, context menus, and configuration options, with support for repeatable data groups and population methods.
--   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are collaborative, stored globally, and track commit SHAs.
--   **Git Version Control**: Tracks changes, commits, and synchronizes with a central repository. Displays Git status, commit history, branch management, and counts of commits ahead/behind. Includes visual change indicators, a Pending Changes View, master branch protection, and a commit reset feature.
+-   **Program Management**: CRUD operations for insurance programs, with automatic creation of isolated Git repository structure for each program. Default "Auto Insurance" program created on first launch.
+-   **Workflow Management**: CRUD operations for workflows, including nested phases and tasks with dependencies, role assignments, and automation flags. Scoped to specific insurance programs.
+-   **Asset Management**: CRUD operations for assets with metadata and file upload capabilities, supporting rich text editing with Monaco Editor. Scoped to specific insurance programs.
+-   **Data Store Management**: CRUD operations for data stores with hierarchical structure (DataStore > DataGroup > DataPoint), supporting 13 data point types. Features include a tree-based editor, context menus, and configuration options, with support for repeatable data groups and population methods. Scoped to specific insurance programs.
+-   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are collaborative, stored globally per program, and track commit SHAs.
+-   **Git Version Control**: Tracks changes, commits, and synchronizes with program-specific central repositories. Displays Git status, commit history, branch management, and counts of commits ahead/behind. Includes visual change indicators, a Pending Changes View, master branch protection, and a commit reset feature.
 -   **Conflict Resolution**: Monaco-based visual conflict resolution for asset file merge conflicts, with syntax highlighting, color-coded blocks, and one-click resolution.
 -   **Repository Reset**: Utility to reset the system to its initial state.
--   **User Management**: Global user selector with session-based persistence and isolated Git repository clones per user.
+-   **User Management**: Global user selector with session-based persistence and isolated Git repository clones per user per program.
 
 ### System Design Choices
 
+-   **Multi-Program Architecture**: Each insurance program operates in complete isolation with its own Git repositories, enabling independent development and testing of different insurance products. Repository structure: `programs/{programId}/central-repo` for shared state, `programs/{programId}/user-repos/{userId}` for user-specific clones.
 -   **Split-File Persistence**: Workflows, assets, and data stores use split-file structures for improved Git granularity, clearer history, easier conflict resolution, and explicit deletions.
--   **Persistent Storage**: All runtime data is stored in `/home/runner/workflow-data/` for persistence across restarts.
--   **Multi-user Support**: Each user operates within an isolated Git repository cloned from a central one.
--   **API Integration**: Frontend communicates with the backend via Workflow Service, Asset Service, DataStore Service, and Git Service APIs.
+-   **Persistent Storage**: All runtime data is stored in `/home/runner/workflow-data/` for persistence across restarts. Programs stored in `/home/runner/workflow-data/programs/`.
+-   **Multi-user Support**: Each user operates within an isolated Git repository cloned from a program's central repository.
+-   **Program-Scoped APIs**: All backend API endpoints include `programId` in the URL path (`/api/users/{userId}/programs/{programId}/{resource}`) for clear resource scoping and better test isolation.
+-   **Interface-Based Services**: Backend services implement interfaces (e.g., IProgramService) for improved testability and mock-based unit testing.
+-   **API Integration**: Frontend communicates with the backend via Program Service, Workflow Service, Asset Service, DataStore Service, and Git Service APIs, with ProgramStateService managing current program context.
 
 ## External Dependencies
 

@@ -3,13 +3,16 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { WorkflowService, Workflow, ProgramWorkflows, Phase, TaskItem } from './workflow.service';
 import { UserService } from './user.service';
+import { ProgramStateService } from './program-state.service';
 
 describe('WorkflowService', () => {
   let service: WorkflowService;
   let httpMock: HttpTestingController;
   let userServiceMock: jest.Mocked<UserService>;
+  let programStateServiceMock: jest.Mocked<ProgramStateService>;
 
   const mockUserId = 'testUser';
+  const mockProgramId = 'default';
   const mockWorkflow: Workflow = {
     workflowName: 'Test Workflow',
     workflowKey: 'test-workflow',
@@ -42,12 +45,17 @@ describe('WorkflowService', () => {
       getCurrentUser: jest.fn().mockReturnValue(mockUserId)
     } as any;
 
+    programStateServiceMock = {
+      getCurrentProgramId: jest.fn().mockReturnValue(mockProgramId)
+    } as any;
+
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         WorkflowService,
-        { provide: UserService, useValue: userServiceMock }
+        { provide: UserService, useValue: userServiceMock },
+        { provide: ProgramStateService, useValue: programStateServiceMock }
       ]
     });
 
@@ -63,10 +71,6 @@ describe('WorkflowService', () => {
     it('should be created', () => {
       expect(service).toBeTruthy();
     });
-
-    it('should have correct API URL', () => {
-      expect((service as any).apiUrl).toBe('/api/workflows');
-    });
   });
 
   describe('getWorkflows()', () => {
@@ -81,16 +85,17 @@ describe('WorkflowService', () => {
         error: done.fail
       });
 
-      const req = httpMock.expectOne(`/api/workflows?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`);
       expect(req.request.method).toBe('GET');
       req.flush(mockProgramWorkflows);
     });
 
-    it('should include userId query parameter from UserService', () => {
+    it('should include userId and programId from service dependencies', () => {
       service.getWorkflows().subscribe();
 
-      const req = httpMock.expectOne(`/api/workflows?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`);
       expect(userServiceMock.getCurrentUser).toHaveBeenCalled();
+      expect(programStateServiceMock.getCurrentProgramId).toHaveBeenCalled();
       req.flush(mockProgramWorkflows);
     });
 
@@ -106,7 +111,7 @@ describe('WorkflowService', () => {
         error: done.fail
       });
 
-      const req = httpMock.expectOne(`/api/workflows?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`);
       req.flush(emptyWorkflows);
     });
   });
@@ -124,17 +129,17 @@ describe('WorkflowService', () => {
         error: done.fail
       });
 
-      const req = httpMock.expectOne(`/api/workflows/${workflowKey}?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/${workflowKey}`);
       expect(req.request.method).toBe('GET');
       req.flush(mockWorkflow);
     });
 
-    it('should include userId in query parameters', () => {
+    it('should include workflowKey in URL path', () => {
       const workflowKey = 'test-workflow';
       service.getWorkflow(workflowKey).subscribe();
 
-      const req = httpMock.expectOne(`/api/workflows/${workflowKey}?userId=${mockUserId}`);
-      expect(req.request.url).toContain(`userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/${workflowKey}`);
+      expect(req.request.url).toContain(workflowKey);
       req.flush(mockWorkflow);
     });
   });
@@ -156,7 +161,7 @@ describe('WorkflowService', () => {
         error: done.fail
       });
 
-      const req = httpMock.expectOne(`/api/workflows?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(newWorkflow);
       req.flush(newWorkflow);
@@ -165,7 +170,7 @@ describe('WorkflowService', () => {
     it('should send workflow data in request body', () => {
       service.createWorkflow(mockWorkflow).subscribe();
 
-      const req = httpMock.expectOne(`/api/workflows?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`);
       expect(req.request.body).toBe(mockWorkflow);
       req.flush(mockWorkflow);
     });
@@ -188,7 +193,7 @@ describe('WorkflowService', () => {
         error: done.fail
       });
 
-      const req = httpMock.expectOne(`/api/workflows/${workflowKey}?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/${workflowKey}`);
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(updatedWorkflow);
       req.flush(updatedWorkflow);
@@ -198,7 +203,7 @@ describe('WorkflowService', () => {
       const workflowKey = 'specific-key';
       service.updateWorkflow(workflowKey, mockWorkflow).subscribe();
 
-      const req = httpMock.expectOne(`/api/workflows/${workflowKey}?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/${workflowKey}`);
       expect(req.request.url).toContain(workflowKey);
       req.flush(mockWorkflow);
     });
@@ -216,17 +221,18 @@ describe('WorkflowService', () => {
         error: done.fail
       });
 
-      const req = httpMock.expectOne(`/api/workflows/${workflowKey}?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/${workflowKey}`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
 
-    it('should include userId in delete request', () => {
+    it('should include userId and programId in delete request', () => {
       const workflowKey = 'test-workflow';
       service.deleteWorkflow(workflowKey).subscribe();
 
-      const req = httpMock.expectOne(`/api/workflows/${workflowKey}?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/${workflowKey}`);
       expect(userServiceMock.getCurrentUser).toHaveBeenCalled();
+      expect(programStateServiceMock.getCurrentProgramId).toHaveBeenCalled();
       req.flush(null);
     });
   });
@@ -244,7 +250,7 @@ describe('WorkflowService', () => {
         }
       });
 
-      const req = httpMock.expectOne(`/api/workflows?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`);
       req.flush(errorMessage, { status: 500, statusText: 'Server Error' });
     });
 
@@ -259,34 +265,40 @@ describe('WorkflowService', () => {
         }
       });
 
-      const req = httpMock.expectOne(`/api/workflows/${workflowKey}?userId=${mockUserId}`);
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/${workflowKey}`);
       req.flush('Not found', { status: 404, statusText: 'Not Found' });
     });
   });
 
-  describe('User Integration', () => {
-    it('should call UserService.getCurrentUser for all API calls', () => {
+  describe('Service Integration', () => {
+    it('should call UserService.getCurrentUser and ProgramStateService.getCurrentProgramId for all API calls', () => {
       userServiceMock.getCurrentUser.mockClear();
+      programStateServiceMock.getCurrentProgramId.mockClear();
 
       service.getWorkflows().subscribe();
-      httpMock.expectOne(`/api/workflows?userId=${mockUserId}`).flush(mockProgramWorkflows);
+      httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`).flush(mockProgramWorkflows);
       expect(userServiceMock.getCurrentUser).toHaveBeenCalledTimes(1);
+      expect(programStateServiceMock.getCurrentProgramId).toHaveBeenCalledTimes(1);
 
       service.getWorkflow('key').subscribe();
-      httpMock.expectOne(`/api/workflows/key?userId=${mockUserId}`).flush(mockWorkflow);
+      httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/key`).flush(mockWorkflow);
       expect(userServiceMock.getCurrentUser).toHaveBeenCalledTimes(2);
+      expect(programStateServiceMock.getCurrentProgramId).toHaveBeenCalledTimes(2);
 
       service.createWorkflow(mockWorkflow).subscribe();
-      httpMock.expectOne(`/api/workflows?userId=${mockUserId}`).flush(mockWorkflow);
+      httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows`).flush(mockWorkflow);
       expect(userServiceMock.getCurrentUser).toHaveBeenCalledTimes(3);
+      expect(programStateServiceMock.getCurrentProgramId).toHaveBeenCalledTimes(3);
 
       service.updateWorkflow('key', mockWorkflow).subscribe();
-      httpMock.expectOne(`/api/workflows/key?userId=${mockUserId}`).flush(mockWorkflow);
+      httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/key`).flush(mockWorkflow);
       expect(userServiceMock.getCurrentUser).toHaveBeenCalledTimes(4);
+      expect(programStateServiceMock.getCurrentProgramId).toHaveBeenCalledTimes(4);
 
       service.deleteWorkflow('key').subscribe();
-      httpMock.expectOne(`/api/workflows/key?userId=${mockUserId}`).flush(null);
+      httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/workflows/key`).flush(null);
       expect(userServiceMock.getCurrentUser).toHaveBeenCalledTimes(5);
+      expect(programStateServiceMock.getCurrentProgramId).toHaveBeenCalledTimes(5);
     });
   });
 });

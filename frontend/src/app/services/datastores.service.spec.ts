@@ -3,12 +3,18 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { DataStoresService } from './datastores.service';
 import { DataStoreStateService, DataStore, DataGroup, DataPoint } from './datastore-state.service';
+import { ProgramStateService } from './program-state.service';
+import { GitStateService } from './git-state.service';
 
 describe('DataStoresService', () => {
   let service: DataStoresService;
   let httpMock: HttpTestingController;
   let stateService: DataStoreStateService;
+  let programStateServiceMock: jest.Mocked<ProgramStateService>;
+  let gitStateServiceMock: jest.Mocked<GitStateService>;
 
+  const mockUserId = 'user1';
+  const mockProgramId = 'default';
   const mockDataStore: DataStore = {
     id: '1',
     name: 'Test Store',
@@ -18,10 +24,20 @@ describe('DataStoresService', () => {
   };
 
   beforeEach(() => {
+    programStateServiceMock = {
+      getCurrentProgramId: jest.fn().mockReturnValue(mockProgramId)
+    } as any;
+
+    gitStateServiceMock = {
+      refresh: jest.fn()
+    } as any;
+
     TestBed.configureTestingModule({
       providers: [
         DataStoresService,
         DataStoreStateService,
+        { provide: ProgramStateService, useValue: programStateServiceMock },
+        { provide: GitStateService, useValue: gitStateServiceMock },
         provideHttpClient(),
         provideHttpClientTesting()
       ]
@@ -44,12 +60,12 @@ describe('DataStoresService', () => {
     it('should fetch all datastores and update state', () => {
       const mockDataStores: DataStore[] = [mockDataStore];
 
-      service.getAllDataStores('user1').subscribe(dataStores => {
+      service.getAllDataStores(mockUserId).subscribe(dataStores => {
         expect(dataStores).toEqual(mockDataStores);
         expect(stateService.getDataStores()).toEqual(mockDataStores);
       });
 
-      const req = httpMock.expectOne('/api/users/user1/datastores');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores`);
       expect(req.request.method).toBe('GET');
       req.flush(mockDataStores);
     });
@@ -62,9 +78,9 @@ describe('DataStoresService', () => {
         loadingStates.push(loading);
       });
 
-      service.getAllDataStores('user1').subscribe();
+      service.getAllDataStores(mockUserId).subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores`);
       req.flush(mockDataStores);
 
       expect(loadingStates).toContain(true);
@@ -74,12 +90,12 @@ describe('DataStoresService', () => {
 
   describe('getDataStoreById', () => {
     it('should fetch a single datastore by id', () => {
-      service.getDataStoreById('user1', '1').subscribe(dataStore => {
+      service.getDataStoreById(mockUserId, '1').subscribe(dataStore => {
         expect(dataStore).toEqual(mockDataStore);
         expect(stateService.getSelectedDataStore()).toEqual(mockDataStore);
       });
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1`);
       expect(req.request.method).toBe('GET');
       req.flush(mockDataStore);
     });
@@ -92,11 +108,11 @@ describe('DataStoresService', () => {
         description: 'New Description'
       };
 
-      service.createDataStore('user1', newDataStore).subscribe(dataStore => {
+      service.createDataStore(mockUserId, newDataStore).subscribe(dataStore => {
         expect(dataStore).toEqual(mockDataStore);
       });
 
-      const req = httpMock.expectOne('/api/users/user1/datastores');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(newDataStore);
       req.flush(mockDataStore);
@@ -108,9 +124,9 @@ describe('DataStoresService', () => {
         description: 'New Description'
       };
 
-      service.createDataStore('user1', newDataStore).subscribe();
+      service.createDataStore(mockUserId, newDataStore).subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores`);
       req.flush(mockDataStore);
 
       const dataStores = stateService.getDataStores();
@@ -120,11 +136,11 @@ describe('DataStoresService', () => {
 
   describe('updateDataStore', () => {
     it('should update an existing datastore', () => {
-      service.updateDataStore('user1', '1', mockDataStore).subscribe(dataStore => {
+      service.updateDataStore(mockUserId, '1', mockDataStore).subscribe(dataStore => {
         expect(dataStore).toEqual(mockDataStore);
       });
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1`);
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(mockDataStore);
       req.flush(mockDataStore);
@@ -133,9 +149,9 @@ describe('DataStoresService', () => {
 
   describe('deleteDataStore', () => {
     it('should delete a datastore', () => {
-      service.deleteDataStore('user1', '1').subscribe();
+      service.deleteDataStore(mockUserId, '1').subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -157,11 +173,11 @@ describe('DataStoresService', () => {
         childGroups: []
       };
 
-      service.addDataGroup('user1', '1', mockGroup).subscribe(group => {
+      service.addDataGroup(mockUserId, '1', mockGroup).subscribe(group => {
         expect(group).toEqual(mockGroup);
       });
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1/datagroups');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1/datagroups`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(mockGroup);
       req.flush(mockGroup);
@@ -182,9 +198,9 @@ describe('DataStoresService', () => {
         childGroups: []
       };
 
-      service.addDataGroup('user1', '1', mockGroup, 'parent1').subscribe();
+      service.addDataGroup(mockUserId, '1', mockGroup, 'parent1').subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1/datagroups?parentGroupId=parent1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1/datagroups?parentGroupId=parent1`);
       expect(req.request.method).toBe('POST');
       req.flush(mockGroup);
     });
@@ -204,11 +220,11 @@ describe('DataStoresService', () => {
         }
       };
 
-      service.addDataPoint('user1', '1', 'group1', mockPoint).subscribe(point => {
+      service.addDataPoint(mockUserId, '1', 'group1', mockPoint).subscribe(point => {
         expect(point).toEqual(mockPoint);
       });
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1/datagroups/group1/datapoints');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1/datagroups/group1/datapoints`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(mockPoint);
       req.flush(mockPoint);
@@ -231,9 +247,9 @@ describe('DataStoresService', () => {
         childGroups: []
       };
 
-      service.updateDataGroup('user1', '1', 'group1', mockGroup).subscribe();
+      service.updateDataGroup(mockUserId, '1', 'group1', mockGroup).subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1/datagroups/group1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1/datagroups/group1`);
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(mockGroup);
       req.flush(null);
@@ -254,9 +270,9 @@ describe('DataStoresService', () => {
         }
       };
 
-      service.updateDataPoint('user1', '1', 'point1', mockPoint).subscribe();
+      service.updateDataPoint(mockUserId, '1', 'point1', mockPoint).subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1/datapoints/point1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1/datapoints/point1`);
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(mockPoint);
       req.flush(null);
@@ -265,9 +281,9 @@ describe('DataStoresService', () => {
 
   describe('deleteDataGroup', () => {
     it('should delete a data group', () => {
-      service.deleteDataGroup('user1', '1', 'group1').subscribe();
+      service.deleteDataGroup(mockUserId, '1', 'group1').subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1/datagroups/group1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1/datagroups/group1`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -275,9 +291,9 @@ describe('DataStoresService', () => {
 
   describe('deleteDataPoint', () => {
     it('should delete a data point', () => {
-      service.deleteDataPoint('user1', '1', 'point1').subscribe();
+      service.deleteDataPoint(mockUserId, '1', 'point1').subscribe();
 
-      const req = httpMock.expectOne('/api/users/user1/datastores/1/datapoints/point1');
+      const req = httpMock.expectOne(`/api/users/${mockUserId}/programs/${mockProgramId}/datastores/1/datapoints/point1`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
