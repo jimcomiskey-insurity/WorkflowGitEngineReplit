@@ -2,9 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace WorkflowConfig.Api.Controllers
@@ -70,6 +75,109 @@ Calculate({parameters})
             }
         }
 
+        [HttpPost("completions")]
+        [OpenApiOperation("Get Code Completions")]
+        [ProducesResponseType(typeof(CompletionResponse), 200)]
+        public async Task<IActionResult> GetCompletions(string userId, [FromBody] CompletionRequest request)
+        {
+            try
+            {
+                var scriptBuilder = new StringBuilder();
+                
+                foreach (var input in request.Inputs)
+                {
+                    var csharpType = GetCSharpType(input.DataType);
+                    scriptBuilder.AppendLine($"{csharpType} {input.Alias};");
+                }
+                
+                scriptBuilder.AppendLine();
+                scriptBuilder.Append(request.Script);
+                
+                var fullScript = scriptBuilder.ToString();
+                var adjustedPosition = request.Position + (fullScript.Length - request.Script.Length);
+                
+                var workspace = new AdhocWorkspace(MefHostServices.Create(MefHostServices.DefaultAssemblies));
+                var projectInfo = ProjectInfo.Create(
+                    ProjectId.CreateNewId(),
+                    VersionStamp.Default,
+                    "Script",
+                    "Script",
+                    LanguageNames.CSharp,
+                    metadataReferences: new[]
+                    {
+                        MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(DateTime).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(StringBuilder).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(System.Text.RegularExpressions.Regex).Assembly.Location)
+                    }
+                );
+                
+                var project = workspace.AddProject(projectInfo);
+                var document = project.AddDocument("Script.csx", SourceText.From(fullScript));
+                
+                var completionService = CompletionService.GetService(document);
+                if (completionService == null)
+                {
+                    return Ok(new CompletionResponse());
+                }
+                
+                var completions = await completionService.GetCompletionsAsync(document, adjustedPosition);
+                
+                if (completions == null)
+                {
+                    return Ok(new CompletionResponse());
+                }
+                
+                var items = completions.ItemsList
+                    .Take(100)
+                    .Select(item => new CompletionSuggestion
+                    {
+                        Label = item.DisplayText,
+                        Kind = GetCompletionKind(item.Tags),
+                        InsertText = item.DisplayText,
+                        Detail = item.InlineDescription,
+                        Documentation = null
+                    })
+                    .ToList();
+                
+                return Ok(new CompletionResponse { Items = items });
+            }
+            catch (Exception)
+            {
+                return Ok(new CompletionResponse());
+            }
+        }
+
+        private static string GetCompletionKind(System.Collections.Immutable.ImmutableArray<string> tags)
+        {
+            if (tags.Contains("Class")) return "Class";
+            if (tags.Contains("Method")) return "Method";
+            if (tags.Contains("Property")) return "Property";
+            if (tags.Contains("Field")) return "Field";
+            if (tags.Contains("Namespace")) return "Module";
+            if (tags.Contains("Keyword")) return "Keyword";
+            if (tags.Contains("Local")) return "Variable";
+            if (tags.Contains("Parameter")) return "Variable";
+            return "Text";
+        }
+
+        private string GetCSharpType(string dataType)
+        {
+            return dataType.ToLower() switch
+            {
+                "string" or "email" or "phone" or "url" or "zipcode" => "string",
+                "integer" or "year" => "int?",
+                "decimal" or "money" => "decimal?",
+                "date" or "timestamp" => "DateTime?",
+                "yes-no" => "string",
+                "list of strings" => "List<string>",
+                _ => "string"
+            };
+        }
+
         private string FormatParameter(string alias, object? value)
         {
             if (value == null) return "null";
@@ -120,5 +228,32 @@ Calculate({parameters})
         public string? Result { get; set; }
         public string? ResultType { get; set; }
         public string? Error { get; set; }
+    }
+
+    public class CompletionRequest
+    {
+        public string Script { get; set; } = string.Empty;
+        public int Position { get; set; }
+        public List<CompletionInput> Inputs { get; set; } = new();
+    }
+
+    public class CompletionInput
+    {
+        public string Alias { get; set; } = string.Empty;
+        public string DataType { get; set; } = string.Empty;
+    }
+
+    public class CompletionResponse
+    {
+        public List<CompletionSuggestion> Items { get; set; } = new();
+    }
+
+    public class CompletionSuggestion
+    {
+        public string Label { get; set; } = string.Empty;
+        public string Kind { get; set; } = string.Empty;
+        public string InsertText { get; set; } = string.Empty;
+        public string? Detail { get; set; }
+        public string? Documentation { get; set; }
     }
 }

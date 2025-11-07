@@ -21,6 +21,29 @@ export interface ScriptExecutionResult {
   error?: string;
 }
 
+export interface CompletionInput {
+  alias: string;
+  dataType: string;
+}
+
+export interface CompletionRequest {
+  script: string;
+  position: number;
+  inputs: CompletionInput[];
+}
+
+export interface CompletionSuggestion {
+  label: string;
+  kind: string;
+  insertText: string;
+  detail?: string;
+  documentation?: string;
+}
+
+export interface CompletionResponse {
+  items: CompletionSuggestion[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -31,6 +54,13 @@ export class ScriptExecutionService {
   executeScript(userId: string, request: ScriptExecutionRequest): Observable<ScriptExecutionResult> {
     return this.http.post<ScriptExecutionResult>(
       `${this.apiUrl}/${userId}/script/execute`,
+      request
+    );
+  }
+
+  getCompletions(userId: string, request: CompletionRequest): Observable<CompletionResponse> {
+    return this.http.post<CompletionResponse>(
+      `${this.apiUrl}/${userId}/script/completions`,
       request
     );
   }

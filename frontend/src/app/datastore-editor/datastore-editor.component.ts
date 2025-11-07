@@ -981,7 +981,60 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           this.savePoint();
         }
       });
+
+      // Register completion provider for C# IntelliSense
+      this.registerCompletionProvider();
     });
+  }
+
+  private registerCompletionProvider(): void {
+    const monaco = (window as any).monaco;
+    
+    monaco.languages.registerCompletionItemProvider('csharp', {
+      provideCompletionItems: (model: any, position: any) => {
+        const script = model.getValue();
+        const offset = model.getOffsetAt(position);
+        
+        const completionInputs = this.getScriptInputs().map(input => ({
+          alias: input.alias,
+          dataType: input.dataType
+        }));
+
+        return this.scriptExecutionService.getCompletions(this.currentUser, {
+          script,
+          position: offset,
+          inputs: completionInputs
+        }).toPromise().then(response => {
+          const suggestions = response?.items.map(item => ({
+            label: item.label,
+            kind: this.getMonacoCompletionKind(item.kind),
+            insertText: item.insertText,
+            detail: item.detail,
+            documentation: item.documentation
+          })) || [];
+
+          return { suggestions };
+        }).catch(() => {
+          return { suggestions: [] };
+        });
+      }
+    });
+  }
+
+  private getMonacoCompletionKind(kind: string): any {
+    const monaco = (window as any).monaco;
+    const CompletionItemKind = monaco.languages.CompletionItemKind;
+    
+    switch (kind) {
+      case 'Method': return CompletionItemKind.Method;
+      case 'Property': return CompletionItemKind.Property;
+      case 'Field': return CompletionItemKind.Field;
+      case 'Class': return CompletionItemKind.Class;
+      case 'Module': return CompletionItemKind.Module;
+      case 'Keyword': return CompletionItemKind.Keyword;
+      case 'Variable': return CompletionItemKind.Variable;
+      default: return CompletionItemKind.Text;
+    }
   }
 
   getScriptInputs(): ScriptInput[] {

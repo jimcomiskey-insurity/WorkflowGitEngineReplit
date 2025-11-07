@@ -1,0 +1,85 @@
+[HttpPost("completions")]
+    public async Task<ActionResult<CompletionResponse>> GetCompletions([FromBody] CompletionRequest request)
+    {
+        try
+        {
+            var scriptBuilder = new StringBuilder();
+            
+            foreach (var dataPoint in request.DataPoints)
+            {
+                scriptBuilder.AppendLine($"{dataPoint.DataType} {dataPoint.Alias};");
+            }
+            
+            scriptBuilder.AppendLine();
+            scriptBuilder.Append(request.Script);
+            
+            var fullScript = scriptBuilder.ToString();
+            var adjustedPosition = request.Position + (fullScript.Length - request.Script.Length);
+            
+            var workspace = new AdhocWorkspace();
+            var projectInfo = ProjectInfo.Create(
+                ProjectId.CreateNewId(),
+                VersionStamp.Default,
+                "Script",
+                "Script",
+                LanguageNames.CSharp,
+                metadataReferences: new[]
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Console).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.DateTime).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Text.StringBuilder).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Text.RegularExpressions.Regex).Assembly.Location)
+                }
+            );
+            
+            var project = workspace.AddProject(projectInfo);
+            var document = project.AddDocument("Script.csx", SourceText.From(fullScript));
+            
+            var completionService = CompletionService.GetService(document);
+            if (completionService == null)
+            {
+                return Ok(new CompletionResponse());
+            }
+            
+            var completions = await completionService.GetCompletionsAsync(document, adjustedPosition);
+            
+            if (completions == null)
+            {
+                return Ok(new CompletionResponse());
+            }
+            
+            var items = completions.ItemsList
+                .Take(100)
+                .Select(item => new CompletionSuggestion
+                {
+                    Label = item.DisplayText,
+                    Kind = GetCompletionKind(item.Tags),
+                    InsertText = item.DisplayText,
+                    Detail = item.InlineDescription,
+                    Documentation = null
+                })
+                .ToList();
+            
+            return Ok(new CompletionResponse { Items = items });
+        }
+        catch (Exception)
+        {
+            return Ok(new CompletionResponse());
+        }
+    }
+    
+    private static string GetCompletionKind(System.Collections.Immutable.ImmutableArray<string> tags)
+    {
+        if (tags.Contains("Class")) return "Class";
+        if (tags.Contains("Method")) return "Method";
+        if (tags.Contains("Property")) return "Property";
+        if (tags.Contains("Field")) return "Field";
+        if (tags.Contains("Namespace")) return "Module";
+        if (tags.Contains("Keyword")) return "Keyword";
+        if (tags.Contains("Local")) return "Variable";
+        if (tags.Contains("Parameter")) return "Variable";
+        return "Text";
+    }
