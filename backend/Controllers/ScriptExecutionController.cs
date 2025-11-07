@@ -15,14 +15,14 @@ using System.Threading.Tasks;
 namespace WorkflowConfig.Api.Controllers
 {
     [ApiController]
-    [Route("api/users/{userId}/script")]
+    [Route("api/users/{userId}/programs/{programId}/script")]
     public class ScriptExecutionController : ControllerBase
     {
         [HttpPost("execute")]
         [OpenApiOperation("Execute Script")]
         [ProducesResponseType(typeof(ScriptExecutionResult), 200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> ExecuteScript([FromRoute] string userId, [FromBody] ScriptExecutionRequest request)
+        public async Task<IActionResult> ExecuteScript([FromRoute] string userId, [FromRoute] string programId, [FromBody] ScriptExecutionRequest request)
         {
             try
             {
@@ -89,7 +89,7 @@ Calculate({parameters})
         [HttpPost("completions")]
         [OpenApiOperation("Get Code Completions")]
         [ProducesResponseType(typeof(CompletionResponse), 200)]
-        public async Task<IActionResult> GetCompletions([FromRoute] string userId, [FromBody] CompletionRequest request)
+        public async Task<IActionResult> GetCompletions([FromRoute] string userId, [FromRoute] string programId, [FromBody] CompletionRequest request)
         {
             try
             {

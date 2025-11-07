@@ -477,21 +477,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body);
+        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, string programId, ScriptExecutionRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, string programId, ScriptExecutionRequest body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body);
+        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, string programId, CompletionRequest body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, string programId, CompletionRequest body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -5082,18 +5082,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body)
+        public virtual System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, string programId, ScriptExecutionRequest body)
         {
-            return ExecuteScriptAsync(userId, body, System.Threading.CancellationToken.None);
+            return ExecuteScriptAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, string programId, ScriptExecutionRequest body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -5110,9 +5113,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/script/execute"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/script/execute"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/script/execute");
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -5179,18 +5184,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body)
+        public virtual System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, string programId, CompletionRequest body)
         {
-            return GetCompletionsAsync(userId, body, System.Threading.CancellationToken.None);
+            return GetCompletionsAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, string programId, CompletionRequest body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -5207,9 +5215,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/script/completions"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/script/completions"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/script/completions");
 
                     PrepareRequest(client_, request_, urlBuilder_);

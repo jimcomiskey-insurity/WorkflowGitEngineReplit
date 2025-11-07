@@ -2,7 +2,6 @@ using Reqnroll;
 using FluentAssertions;
 using WorkflowConfig.E2E.Tests.Support;
 using WorkflowConfig.E2E.Tests.Generated;
-using WorkflowConfig.E2E.Tests.Generated.Contracts;
 
 namespace WorkflowConfig.E2E.Tests.StepDefinitions;
 
