@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserService } from './user.service';
+import { ProgramStateService } from './program-state.service';
 
 export interface TaskItem {
   taskId?: string;
@@ -37,32 +38,37 @@ export interface ProgramWorkflows {
   providedIn: 'root'
 })
 export class WorkflowService {
-  private apiUrl = '/api/workflows';
-
-  constructor(private http: HttpClient, private userService: UserService) { }
+  private http = inject(HttpClient);
+  private userService = inject(UserService);
+  private programStateService = inject(ProgramStateService);
 
   getWorkflows(): Observable<ProgramWorkflows> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<ProgramWorkflows>(`${this.apiUrl}?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<ProgramWorkflows>(`/api/users/${userId}/programs/${programId}/workflows`);
   }
 
   getWorkflow(key: string): Observable<Workflow> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<Workflow>(`${this.apiUrl}/${key}?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<Workflow>(`/api/users/${userId}/programs/${programId}/workflows/${key}`);
   }
 
   createWorkflow(workflow: Workflow): Observable<Workflow> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post<Workflow>(`${this.apiUrl}?userId=${userId}`, workflow);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post<Workflow>(`/api/users/${userId}/programs/${programId}/workflows`, workflow);
   }
 
   updateWorkflow(key: string, workflow: Workflow): Observable<Workflow> {
     const userId = this.userService.getCurrentUser();
-    return this.http.put<Workflow>(`${this.apiUrl}/${key}?userId=${userId}`, workflow);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.put<Workflow>(`/api/users/${userId}/programs/${programId}/workflows/${key}`, workflow);
   }
 
   deleteWorkflow(key: string): Observable<void> {
     const userId = this.userService.getCurrentUser();
-    return this.http.delete<void>(`${this.apiUrl}/${key}?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.delete<void>(`/api/users/${userId}/programs/${programId}/workflows/${key}`);
   }
 }

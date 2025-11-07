@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserService } from './user.service';
+import { ProgramStateService } from './program-state.service';
 
 export interface Asset {
   id: string;
@@ -23,61 +24,71 @@ export interface ProgramAssets {
   providedIn: 'root'
 })
 export class AssetService {
-  private apiUrl = '/api/assets';
-
-  constructor(private http: HttpClient, private userService: UserService) { }
+  private http = inject(HttpClient);
+  private userService = inject(UserService);
+  private programStateService = inject(ProgramStateService);
 
   getAssets(): Observable<ProgramAssets> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<ProgramAssets>(`${this.apiUrl}?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<ProgramAssets>(`/api/users/${userId}/programs/${programId}/assets`);
   }
 
   getAsset(id: string): Observable<Asset> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<Asset>(`${this.apiUrl}/${id}?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<Asset>(`/api/users/${userId}/programs/${programId}/assets/${id}`);
   }
 
   createAsset(asset: Asset): Observable<Asset> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post<Asset>(`${this.apiUrl}?userId=${userId}`, asset);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post<Asset>(`/api/users/${userId}/programs/${programId}/assets`, asset);
   }
 
   updateAsset(id: string, asset: Asset): Observable<Asset> {
     const userId = this.userService.getCurrentUser();
-    return this.http.put<Asset>(`${this.apiUrl}/${id}?userId=${userId}`, asset);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.put<Asset>(`/api/users/${userId}/programs/${programId}/assets/${id}`, asset);
   }
 
   deleteAsset(id: string): Observable<void> {
     const userId = this.userService.getCurrentUser();
-    return this.http.delete<void>(`${this.apiUrl}/${id}?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.delete<void>(`/api/users/${userId}/programs/${programId}/assets/${id}`);
   }
 
   uploadFile(id: string, file: File): Observable<Asset> {
     const userId = this.userService.getCurrentUser();
+    const programId = this.programStateService.getCurrentProgramId();
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<Asset>(`${this.apiUrl}/${id}/file?userId=${userId}`, formData);
+    return this.http.post<Asset>(`/api/users/${userId}/programs/${programId}/assets/${id}/file`, formData);
   }
 
   downloadFile(id: string): Observable<Blob> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get(`${this.apiUrl}/${id}/file?userId=${userId}`, { 
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get(`/api/users/${userId}/programs/${programId}/assets/${id}/file`, { 
       responseType: 'blob' 
     });
   }
 
   getFileContent(id: string): Observable<{ content: string }> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<{ content: string }>(`${this.apiUrl}/${id}/file/content?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<{ content: string }>(`/api/users/${userId}/programs/${programId}/assets/${id}/file/content`);
   }
 
   updateFileContent(id: string, content: string): Observable<Asset> {
     const userId = this.userService.getCurrentUser();
-    return this.http.put<Asset>(`${this.apiUrl}/${id}/file/content?userId=${userId}`, { content });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.put<Asset>(`/api/users/${userId}/programs/${programId}/assets/${id}/file/content`, { content });
   }
 
   deleteFile(id: string): Observable<void> {
     const userId = this.userService.getCurrentUser();
-    return this.http.delete<void>(`${this.apiUrl}/${id}/file?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.delete<void>(`/api/users/${userId}/programs/${programId}/assets/${id}/file`);
   }
 }

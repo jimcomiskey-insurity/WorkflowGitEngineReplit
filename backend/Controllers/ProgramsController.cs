@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using WorkflowConfig.Api.Models;
 using WorkflowConfig.Api.Services;
+using ProgramModel = WorkflowConfig.Api.Models.Program;
 
 namespace WorkflowConfig.Api.Controllers;
 
 [ApiController]
-[Route("api/programs")]
+[Route("api/users/{userId}/programs")]
 public class ProgramsController : ControllerBase
 {
     private readonly ProgramService _programService;
@@ -18,7 +19,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<List<Models.Program>> GetAllPrograms()
+    public ActionResult<List<ProgramModel>> GetAllPrograms(string userId)
     {
         try
         {
@@ -33,7 +34,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpGet("{programId}")]
-    public ActionResult<Models.Program> GetProgram(string programId)
+    public ActionResult<ProgramModel> GetProgram(string userId, string programId)
     {
         try
         {
@@ -52,7 +53,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Models.Program> CreateProgram([FromBody] Models.Program program)
+    public ActionResult<ProgramModel> CreateProgram(string userId, [FromBody] ProgramModel program)
     {
         try
         {
@@ -71,7 +72,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpPut("{programId}")]
-    public ActionResult<Models.Program> UpdateProgram(string programId, [FromBody] Models.Program program)
+    public ActionResult<ProgramModel> UpdateProgram(string userId, string programId, [FromBody] ProgramModel program)
     {
         try
         {
@@ -90,7 +91,7 @@ public class ProgramsController : ControllerBase
     }
 
     [HttpDelete("{programId}")]
-    public IActionResult DeleteProgram(string programId)
+    public IActionResult DeleteProgram(string userId, string programId)
     {
         try
         {

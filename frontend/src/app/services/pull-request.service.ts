@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Workflow } from './workflow.service';
+import { ProgramStateService } from './program-state.service';
 
 export interface PullRequest {
   number: number;
@@ -69,63 +70,63 @@ export interface BranchComparison {
   providedIn: 'root'
 })
 export class PullRequestService {
-  private apiUrl = '/api/pull-requests';
-
-  constructor(private http: HttpClient) { }
+  private http = inject(HttpClient);
+  private programStateService = inject(ProgramStateService);
 
   getPullRequests(userId: string, status?: string): Observable<PullRequest[]> {
-    let params = new HttpParams().set('userId', userId);
+    const programId = this.programStateService.getCurrentProgramId();
+    let params = new HttpParams();
     if (status) {
       params = params.set('status', status);
     }
-    return this.http.get<PullRequest[]>(this.apiUrl, { params });
+    return this.http.get<PullRequest[]>(`/api/users/${userId}/programs/${programId}/pull-requests`, { params });
   }
 
   getPullRequest(userId: string, number: number): Observable<PullRequest> {
-    const params = new HttpParams().set('userId', userId);
-    return this.http.get<PullRequest>(`${this.apiUrl}/${number}`, { params });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<PullRequest>(`/api/users/${userId}/programs/${programId}/pull-requests/${number}`);
   }
 
   getBranchComparison(userId: string, number: number): Observable<BranchComparison> {
-    const params = new HttpParams().set('userId', userId);
-    return this.http.get<BranchComparison>(`${this.apiUrl}/${number}/comparison`, { params });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<BranchComparison>(`/api/users/${userId}/programs/${programId}/pull-requests/${number}/comparison`);
   }
 
   getPullRequestSuggestion(sourceBranch: string, targetBranch: string): Observable<PullRequestSuggestion> {
     const params = new HttpParams()
       .set('sourceBranch', sourceBranch)
       .set('targetBranch', targetBranch);
-    return this.http.get<PullRequestSuggestion>(`${this.apiUrl}/suggestion`, { params });
+    return this.http.get<PullRequestSuggestion>(`/api/pull-requests/suggestion`, { params });
   }
 
   createPullRequest(userId: string, request: CreatePullRequestRequest): Observable<PullRequest> {
-    const params = new HttpParams().set('userId', userId);
-    return this.http.post<PullRequest>(this.apiUrl, request, { params });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post<PullRequest>(`/api/users/${userId}/programs/${programId}/pull-requests`, request);
   }
 
   mergePullRequest(userId: string, number: number): Observable<PullRequest> {
-    const params = new HttpParams().set('userId', userId);
-    return this.http.post<PullRequest>(`${this.apiUrl}/${number}/merge`, {}, { params });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post<PullRequest>(`/api/users/${userId}/programs/${programId}/pull-requests/${number}/merge`, {});
   }
 
   closePullRequest(userId: string, number: number): Observable<PullRequest> {
-    const params = new HttpParams().set('userId', userId);
-    return this.http.post<PullRequest>(`${this.apiUrl}/${number}/close`, {}, { params });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post<PullRequest>(`/api/users/${userId}/programs/${programId}/pull-requests/${number}/close`, {});
   }
 
   compareBranches(userId: string, sourceBranch: string, targetBranch: string): Observable<BranchComparison> {
+    const programId = this.programStateService.getCurrentProgramId();
     const params = new HttpParams()
-      .set('userId', userId)
       .set('sourceBranch', sourceBranch)
       .set('targetBranch', targetBranch);
-    return this.http.get<BranchComparison>('/api/git/compare-branches', { params });
+    return this.http.get<BranchComparison>(`/api/users/${userId}/programs/${programId}/git/compare-branches`, { params });
   }
 
   getFileAtCommit(userId: string, commitSha: string, filePath: string): Observable<{ content: string }> {
+    const programId = this.programStateService.getCurrentProgramId();
     const params = new HttpParams()
-      .set('userId', userId)
       .set('commitSha', commitSha)
       .set('filePath', filePath);
-    return this.http.get<{ content: string }>('/api/git/file-at-commit', { params });
+    return this.http.get<{ content: string }>(`/api/users/${userId}/programs/${programId}/git/file-at-commit`, { params });
   }
 }

@@ -1,14 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { tap, shareReplay, switchMap, map, startWith } from 'rxjs/operators';
+import { tap, switchMap, map, startWith } from 'rxjs/operators';
 import { UserService } from './user.service';
 import { GitEventService } from './git-event.service';
-import { Workflow } from './workflow.service';
-
-export interface ProgramWorkflows {
-  workflows: Workflow[];
-}
+import { WorkflowService, Workflow } from './workflow.service';
 
 /**
  * Centralized state management service for Workflow operations.
@@ -23,8 +18,6 @@ export interface ProgramWorkflows {
   providedIn: 'root'
 })
 export class WorkflowStateService {
-  private apiUrl = '/api/workflows';
-
   // Internal BehaviorSubjects that hold the current state
   private workflowsSubject = new BehaviorSubject<Workflow[]>([]);
 
@@ -36,7 +29,7 @@ export class WorkflowStateService {
   public readonly pendingChangesCount$: Observable<number>;
 
   constructor(
-    private http: HttpClient,
+    private workflowService: WorkflowService,
     private userService: UserService,
     private gitEventService: GitEventService
   ) {
@@ -57,9 +50,9 @@ export class WorkflowStateService {
     // Note: We don't use shareReplay here because it would cache the HTTP response
     // and prevent fresh fetches when refresh() is called
     this.workflows$ = userWithRefresh$.pipe(
-      tap(userId => console.log('[WorkflowStateService] Fetching workflows for user:', userId)),
-      switchMap(userId => 
-        this.http.get<ProgramWorkflows>(`${this.apiUrl}?userId=${userId}`)
+      tap(() => console.log('[WorkflowStateService] Fetching workflows')),
+      switchMap(() => 
+        this.workflowService.getWorkflows()
       ),
       map(response => response.workflows),
       tap(workflows => {
@@ -118,24 +111,21 @@ export class WorkflowStateService {
    * Get a specific workflow by key (from current state)
    */
   public getWorkflow(key: string): Observable<Workflow> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.get<Workflow>(`${this.apiUrl}/${key}?userId=${userId}`);
+    return this.workflowService.getWorkflow(key);
   }
 
   // ===== Mutation Methods =====
   // All mutation methods automatically refresh state after successful operations
 
   createWorkflow(workflow: Workflow): Observable<Workflow> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post<Workflow>(`${this.apiUrl}?userId=${userId}`, workflow).pipe(
+    return this.workflowService.createWorkflow(workflow).pipe(
       tap(() => this.refresh())
     );
   }
 
   updateWorkflow(key: string, workflow: Workflow): Observable<Workflow> {
-    const userId = this.userService.getCurrentUser();
     console.log('[WorkflowStateService] Updating workflow:', key);
-    return this.http.put<Workflow>(`${this.apiUrl}/${key}?userId=${userId}`, workflow).pipe(
+    return this.workflowService.updateWorkflow(key, workflow).pipe(
       tap(() => {
         console.log('[WorkflowStateService] Workflow updated, triggering refresh');
         this.refresh();
@@ -144,8 +134,7 @@ export class WorkflowStateService {
   }
 
   deleteWorkflow(key: string): Observable<void> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.delete<void>(`${this.apiUrl}/${key}?userId=${userId}`).pipe(
+    return this.workflowService.deleteWorkflow(key).pipe(
       tap(() => this.refresh())
     );
   }

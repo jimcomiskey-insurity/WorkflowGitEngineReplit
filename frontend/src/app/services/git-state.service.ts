@@ -1,14 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, merge } from 'rxjs';
 import { tap, switchMap, map, startWith } from 'rxjs/operators';
 import { UserService } from './user.service';
 import { GitEventService } from './git-event.service';
-import { GitStatus, CommitInfo } from './git.service';
-
-export interface LastPushedCommitResponse {
-  commitSha: string | null;
-}
+import { GitService, GitStatus, CommitInfo } from './git.service';
 
 /**
  * Centralized state management service for Git operations.
@@ -23,8 +18,6 @@ export interface LastPushedCommitResponse {
   providedIn: 'root'
 })
 export class GitStateService {
-  private apiUrl = '/api/git';
-
   // Internal BehaviorSubjects that hold the current state
   private gitStatusSubject = new BehaviorSubject<GitStatus | null>(null);
   private commitsSubject = new BehaviorSubject<CommitInfo[]>([]);
@@ -41,7 +34,7 @@ export class GitStateService {
   public readonly lastPushedCommit$: Observable<string | null>;
 
   constructor(
-    private http: HttpClient,
+    private gitService: GitService,
     private userService: UserService,
     private gitEventService: GitEventService
   ) {
@@ -61,9 +54,9 @@ export class GitStateService {
 
     // Git status stream - refreshes on any trigger
     this.gitStatus$ = refreshTriggers$.pipe(
-      switchMap(userId => {
-        console.log('[GitStateService] Fetching Git status for user:', userId);
-        return this.http.get<GitStatus>(`${this.apiUrl}/status?userId=${userId}`);
+      switchMap(() => {
+        console.log('[GitStateService] Fetching Git status');
+        return this.gitService.getStatus();
       }),
       tap(status => {
         console.log('[GitStateService] Received Git status, isDirty:', status.isDirty);
@@ -73,24 +66,24 @@ export class GitStateService {
 
     // Commits stream - refreshes on any trigger
     this.commits$ = refreshTriggers$.pipe(
-      switchMap(userId => 
-        this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${userId}&count=20`)
+      switchMap(() => 
+        this.gitService.getCommits(20)
       ),
       tap(commits => this.commitsSubject.next(commits))
     );
 
     // Branches stream - refreshes on any trigger
     this.branches$ = refreshTriggers$.pipe(
-      switchMap(userId => 
-        this.http.get<string[]>(`${this.apiUrl}/branches?userId=${userId}`)
+      switchMap(() => 
+        this.gitService.getBranches()
       ),
       tap(branches => this.branchesSubject.next(branches))
     );
 
     // Last pushed commit stream - refreshes on any trigger
     this.lastPushedCommit$ = refreshTriggers$.pipe(
-      switchMap(userId => 
-        this.http.get<LastPushedCommitResponse>(`${this.apiUrl}/last-pushed-commit?userId=${userId}`)
+      switchMap(() => 
+        this.gitService.getLastPushedCommit()
       ),
       map(response => response.commitSha),
       tap(commitSha => this.lastPushedCommitSubject.next(commitSha))
@@ -137,56 +130,53 @@ export class GitStateService {
   // All mutation methods automatically refresh state after successful operations
 
   commit(message: string): Observable<any> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/commit?userId=${userId}`, { message }).pipe(
+    return this.gitService.commit({ 
+      message, 
+      authorName: 'User', 
+      authorEmail: 'user@example.com' 
+    }).pipe(
       tap(() => this.refresh())
     );
   }
 
   push(): Observable<any> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/push?userId=${userId}`, {}).pipe(
+    return this.gitService.push().pipe(
       tap(() => this.refresh())
     );
   }
 
   pull(): Observable<any> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/pull?userId=${userId}`, {}).pipe(
+    return this.gitService.pull().pipe(
       tap(() => this.refresh())
     );
   }
 
   discard(): Observable<any> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/discard?userId=${userId}`, {}).pipe(
+    return this.gitService.discard().pipe(
       tap(() => this.refresh())
     );
   }
 
   createBranch(branchName: string): Observable<any> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/branches?userId=${userId}`, { branchName }).pipe(
+    return this.gitService.createBranch(branchName).pipe(
       tap(() => this.refresh())
     );
   }
 
   switchBranch(branchName: string): Observable<any> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/branches/switch?userId=${userId}`, { branchName }).pipe(
+    return this.gitService.switchBranch(branchName).pipe(
       tap(() => this.refresh())
     );
   }
 
   resetToCommit(commitSha: string): Observable<any> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/reset-to-commit?userId=${userId}`, { commitSha }).pipe(
+    return this.gitService.resetToCommit(commitSha).pipe(
       tap(() => this.refresh())
     );
   }
 
   resetAllRepositories(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset`, {}).pipe(
+    return this.gitService.resetAllRepositories().pipe(
       tap(() => this.refresh())
     );
   }

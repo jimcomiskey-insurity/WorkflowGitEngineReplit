@@ -7,7 +7,9 @@ import { takeUntil, map } from 'rxjs/operators';
 import { WorkflowStateService } from './services/workflow-state.service';
 import { UserService } from './services/user.service';
 import { GitStateService } from './services/git-state.service';
+import { ProgramStateService } from './services/program-state.service';
 import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
+import { Program } from './models/program.model';
 
 @Component({
   selector: 'app-root',
@@ -32,6 +34,12 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
               </svg>
               <span>API Docs</span>
             </a>
+            <div class="program-selector">
+              <label for="program-select">Program:</label>
+              <select id="program-select" [(ngModel)]="currentProgramId" (change)="onProgramChange()">
+                <option *ngFor="let program of programs" [value]="program.id">{{ program.name }}</option>
+              </select>
+            </div>
             <div class="user-selector">
               <label for="user-select">User:</label>
               <select id="user-select" [(ngModel)]="currentUser" (change)="onUserChange()">
@@ -170,18 +178,21 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
       white-space: nowrap;
     }
 
+    .program-selector,
     .user-selector {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
+    .program-selector label,
     .user-selector label {
       font-size: 14px;
       color: var(--text-secondary);
       font-weight: 500;
     }
 
+    .program-selector select,
     .user-selector select {
       padding: 6px 12px;
       background-color: var(--bg-tertiary);
@@ -194,11 +205,13 @@ import { GitToolbarComponent } from './git-toolbar/git-toolbar.component';
       transition: all 0.2s;
     }
 
+    .program-selector select:hover,
     .user-selector select:hover {
       background-color: var(--bg-hover);
       border-color: var(--accent-blue);
     }
 
+    .program-selector select:focus,
     .user-selector select:focus {
       outline: none;
       border-color: var(--accent-blue);
@@ -342,17 +355,21 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'Insurance Workflow Configuration';
   pendingChangesCount = 0;
   currentUser: string;
+  currentProgramId: string;
   availableUsers: string[];
+  programs: Program[] = [];
   swaggerUrl: string;
   private destroy$ = new Subject<void>();
 
   constructor(
     private workflowStateService: WorkflowStateService,
     private userService: UserService,
-    private gitStateService: GitStateService
+    private gitStateService: GitStateService,
+    private programStateService: ProgramStateService
   ) {
     this.currentUser = this.userService.getCurrentUser();
     this.availableUsers = this.userService.getAvailableUsers();
+    this.currentProgramId = this.programStateService.getCurrentProgramId();
     
     // Use relative URL - the Angular dev proxy will route to the backend
     // In production/Replit, this will be handled by the infrastructure
@@ -360,6 +377,18 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Load programs
+    this.programStateService.loadPrograms(this.currentUser);
+    
+    // Subscribe to programs list
+    this.programStateService.programs$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (programs) => {
+          this.programs = programs;
+        }
+      });
+    
     // Subscribe to Git status to count all pending changes (workflows + assets + other files)
     // This automatically updates when any file changes
     this.gitStateService.gitStatus$
@@ -391,5 +420,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onUserChange() {
     this.userService.setCurrentUser(this.currentUser);
+    this.programStateService.loadPrograms(this.currentUser);
+  }
+
+  onProgramChange() {
+    this.programStateService.setCurrentProgramId(this.currentProgramId);
+    window.location.reload();
   }
 }

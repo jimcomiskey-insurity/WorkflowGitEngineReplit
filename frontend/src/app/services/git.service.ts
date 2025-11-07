@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserService } from './user.service';
+import { ProgramStateService } from './program-state.service';
 
 export interface GitStatus {
   added: string[];
@@ -32,66 +33,77 @@ export interface CommitInfo {
   providedIn: 'root'
 })
 export class GitService {
-  private apiUrl = '/api/git';
-
-  constructor(private http: HttpClient, private userService: UserService) { }
+  private http = inject(HttpClient);
+  private userService = inject(UserService);
+  private programStateService = inject(ProgramStateService);
 
   getStatus(): Observable<GitStatus> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<GitStatus>(`${this.apiUrl}/status?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<GitStatus>(`/api/users/${userId}/programs/${programId}/git/status`);
   }
 
   commit(request: CommitRequest): Observable<any> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/commit?userId=${userId}`, request);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post(`/api/users/${userId}/programs/${programId}/git/commit`, request);
   }
 
   discard(): Observable<any> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/discard?userId=${userId}`, {});
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post(`/api/users/${userId}/programs/${programId}/git/discard`, {});
   }
 
   pull(): Observable<any> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/pull?userId=${userId}`, {});
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post(`/api/users/${userId}/programs/${programId}/git/pull`, {});
   }
 
   push(): Observable<any> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/push?userId=${userId}`, {});
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post(`/api/users/${userId}/programs/${programId}/git/push`, {});
   }
 
   getBranches(): Observable<string[]> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<string[]>(`${this.apiUrl}/branches?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<string[]>(`/api/users/${userId}/programs/${programId}/git/branches`);
   }
 
   createBranch(branchName: string): Observable<any> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/branches?userId=${userId}`, { branchName });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post(`/api/users/${userId}/programs/${programId}/git/branches`, { branchName });
   }
 
   switchBranch(branchName: string): Observable<any> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/branches/switch?userId=${userId}`, { branchName });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post(`/api/users/${userId}/programs/${programId}/git/branches/switch`, { branchName });
   }
 
   getCommits(count: number = 20): Observable<CommitInfo[]> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<CommitInfo[]>(`${this.apiUrl}/commits?userId=${userId}&count=${count}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<CommitInfo[]>(`/api/users/${userId}/programs/${programId}/git/commits?count=${count}`);
   }
 
   getLastPushedCommit(): Observable<{ commitSha: string | null; message?: string }> {
     const userId = this.userService.getCurrentUser();
-    return this.http.get<{ commitSha: string | null; message?: string }>(`${this.apiUrl}/last-pushed-commit?userId=${userId}`);
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.get<{ commitSha: string | null; message?: string }>(`/api/users/${userId}/programs/${programId}/git/last-pushed-commit`);
   }
 
   resetToCommit(commitSha: string): Observable<any> {
     const userId = this.userService.getCurrentUser();
-    return this.http.post(`${this.apiUrl}/reset-to-commit?userId=${userId}`, { commitSha });
+    const programId = this.programStateService.getCurrentProgramId();
+    return this.http.post(`/api/users/${userId}/programs/${programId}/git/reset-to-commit`, { commitSha });
   }
 
   resetAllRepositories(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset`, {});
+    return this.http.post(`/api/git/reset`, {});
   }
 }

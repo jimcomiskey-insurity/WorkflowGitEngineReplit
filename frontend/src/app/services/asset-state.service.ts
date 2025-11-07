@@ -1,21 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { tap, shareReplay, switchMap, map, startWith } from 'rxjs/operators';
+import { tap, switchMap, map, startWith } from 'rxjs/operators';
 import { UserService } from './user.service';
 import { GitEventService } from './git-event.service';
-import { Asset } from './asset.service';
-
-export interface ProgramAssets {
-  assets: Asset[];
-}
+import { AssetService, Asset } from './asset.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AssetStateService {
-  private apiUrl = '/api/assets';
-
   private assetsSubject = new BehaviorSubject<Asset[]>([]);
   private refreshTrigger$ = new BehaviorSubject<void>(undefined);
 
@@ -23,7 +16,7 @@ export class AssetStateService {
   public readonly pendingChangesCount$: Observable<number>;
 
   constructor(
-    private http: HttpClient,
+    private assetService: AssetService,
     private userService: UserService,
     private gitEventService: GitEventService
   ) {
@@ -36,9 +29,9 @@ export class AssetStateService {
     );
 
     this.assets$ = userWithRefresh$.pipe(
-      tap(userId => console.log('[AssetStateService] Fetching assets for user:', userId)),
-      switchMap(userId => 
-        this.http.get<ProgramAssets>(`${this.apiUrl}?userId=${userId}`)
+      tap(() => console.log('[AssetStateService] Fetching assets')),
+      switchMap(() => 
+        this.assetService.getAssets()
       ),
       map(response => response.assets),
       tap(assets => {
@@ -72,14 +65,12 @@ export class AssetStateService {
   }
 
   public getAsset(id: string): Observable<Asset> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.get<Asset>(`${this.apiUrl}/${id}?userId=${userId}`);
+    return this.assetService.getAsset(id);
   }
 
   public createAsset(asset: Asset): Observable<Asset> {
     console.log('[AssetStateService] Creating asset:', asset.name);
-    const userId = this.userService.getCurrentUser();
-    return this.http.post<Asset>(`${this.apiUrl}?userId=${userId}`, asset).pipe(
+    return this.assetService.createAsset(asset).pipe(
       tap(() => {
         console.log('[AssetStateService] Asset created, triggering refresh');
         this.refresh();
@@ -89,8 +80,7 @@ export class AssetStateService {
 
   public updateAsset(id: string, asset: Asset): Observable<Asset> {
     console.log('[AssetStateService] Updating asset:', id);
-    const userId = this.userService.getCurrentUser();
-    return this.http.put<Asset>(`${this.apiUrl}/${id}?userId=${userId}`, asset).pipe(
+    return this.assetService.updateAsset(id, asset).pipe(
       tap(() => {
         console.log('[AssetStateService] Asset updated, triggering refresh');
         this.refresh();
@@ -100,8 +90,7 @@ export class AssetStateService {
 
   public deleteAsset(id: string): Observable<void> {
     console.log('[AssetStateService] Deleting asset:', id);
-    const userId = this.userService.getCurrentUser();
-    return this.http.delete<void>(`${this.apiUrl}/${id}?userId=${userId}`).pipe(
+    return this.assetService.deleteAsset(id).pipe(
       tap(() => {
         console.log('[AssetStateService] Asset deleted, triggering refresh');
         this.refresh();
@@ -111,10 +100,7 @@ export class AssetStateService {
 
   public uploadFile(id: string, file: File): Observable<Asset> {
     console.log('[AssetStateService] Uploading file for asset:', id);
-    const userId = this.userService.getCurrentUser();
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<Asset>(`${this.apiUrl}/${id}/file?userId=${userId}`, formData).pipe(
+    return this.assetService.uploadFile(id, file).pipe(
       tap(() => {
         console.log('[AssetStateService] File uploaded, triggering refresh');
         this.refresh();
@@ -123,19 +109,16 @@ export class AssetStateService {
   }
 
   public getFileContent(id: string): Observable<{ content: string }> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.get<{ content: string }>(`${this.apiUrl}/${id}/file/content?userId=${userId}`);
+    return this.assetService.getFileContent(id);
   }
 
   public getCommittedFileContent(id: string): Observable<{ content: string }> {
-    const userId = this.userService.getCurrentUser();
-    return this.http.get<{ content: string }>(`${this.apiUrl}/${id}/file/content/committed?userId=${userId}`);
+    return this.assetService.getFileContent(id);
   }
 
   public updateFileContent(id: string, content: string): Observable<Asset> {
     console.log('[AssetStateService] Updating file content for asset:', id);
-    const userId = this.userService.getCurrentUser();
-    return this.http.put<Asset>(`${this.apiUrl}/${id}/file/content?userId=${userId}`, { content }).pipe(
+    return this.assetService.updateFileContent(id, content).pipe(
       tap(() => {
         console.log('[AssetStateService] File content updated, triggering refresh');
         this.refresh();
@@ -145,8 +128,7 @@ export class AssetStateService {
 
   public deleteFile(id: string): Observable<void> {
     console.log('[AssetStateService] Deleting file for asset:', id);
-    const userId = this.userService.getCurrentUser();
-    return this.http.delete<void>(`${this.apiUrl}/${id}/file?userId=${userId}`).pipe(
+    return this.assetService.deleteFile(id).pipe(
       tap(() => {
         console.log('[AssetStateService] File deleted, triggering refresh');
         this.refresh();

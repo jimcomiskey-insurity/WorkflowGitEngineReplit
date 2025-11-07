@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ProgramStateService } from './program-state.service';
 
 export interface ScriptInputValue {
   alias: string;
@@ -49,18 +50,20 @@ export interface CompletionResponse {
 })
 export class ScriptExecutionService {
   private http = inject(HttpClient);
-  private apiUrl = '/api/users';
+  private programStateService = inject(ProgramStateService);
 
   executeScript(userId: string, request: ScriptExecutionRequest): Observable<ScriptExecutionResult> {
+    const programId = this.programStateService.getCurrentProgramId();
     return this.http.post<ScriptExecutionResult>(
-      `${this.apiUrl}/${userId}/script/execute`,
+      `/api/users/${userId}/programs/${programId}/script/execute`,
       request
     );
   }
 
   getCompletions(userId: string, request: CompletionRequest): Observable<CompletionResponse> {
+    const programId = this.programStateService.getCurrentProgramId();
     return this.http.post<CompletionResponse>(
-      `${this.apiUrl}/${userId}/script/completions`,
+      `/api/users/${userId}/programs/${programId}/script/completions`,
       request
     );
   }
