@@ -991,7 +991,10 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           suggest: {
             showKeywords: true,
             showSnippets: true,
-            showWords: false
+            showWords: false,
+            filterGraceful: true,  // Enable fuzzy matching (match anywhere in word, not just prefix)
+            snippetsPreventQuickSuggestions: false,
+            localityBonus: true    // Boost suggestions that are contextually relevant
           }
         }
       );
@@ -1057,6 +1060,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
               detail: item.detail,
               documentation: item.documentation,
               sortText: sortText,  // Controls ordering (parameters at top)
+              filterText: item.label,  // What Monaco matches against when filtering
               range: range         // REQUIRED: tells Monaco what text to replace
             };
           }) || [];
