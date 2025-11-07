@@ -1151,12 +1151,12 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
   getCSharpType(dataType: string): string {
     const typeMap: { [key: string]: string } = {
       'String': 'string',
-      'Integer': 'int',
-      'Decimal': 'decimal',
-      'Money': 'decimal',
-      'Date': 'DateTime',
-      'Timestamp': 'DateTime',
-      'Year': 'int',
+      'Integer': 'int?',
+      'Decimal': 'decimal?',
+      'Money': 'decimal?',
+      'Date': 'DateTime?',
+      'Timestamp': 'DateTime?',
+      'Year': 'int?',
       'YesNo': 'string',
       'Email': 'string',
       'Phone': 'string',
