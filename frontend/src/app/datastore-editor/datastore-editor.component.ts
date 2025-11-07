@@ -1019,7 +1019,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     
     const disposable = monaco.languages.registerCompletionItemProvider('csharp', {
       triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
-      provideCompletionItems: (model: any, position: any) => {
+      provideCompletionItems: async (model: any, position: any) => {
         console.log('[PROVIDER CALLED] Monaco is calling our completion provider!');
         console.log('[PROVIDER CALLED] Position:', position, 'Model language:', model.getLanguageId());
         
@@ -1054,11 +1054,12 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
         
         console.log('[TEST] Adding hardcoded test suggestion:', testSuggestion);
         
-        return this.scriptExecutionService.getCompletions(this.currentUser, {
-          script,
-          position: offset,
-          inputs: completionInputs
-        }).toPromise().then(response => {
+        try {
+          const response = await this.scriptExecutionService.getCompletions(this.currentUser, {
+            script,
+            position: offset,
+            inputs: completionInputs
+          }).toPromise();
           console.log('[Completion Provider] Backend response:', response);
           console.log('[Completion Provider] Total items from backend:', response?.items?.length);
           
@@ -1108,10 +1109,10 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             suggestions: suggestions,
             incomplete: false  // Tell Monaco this is the complete list
           };
-        }).catch(err => {
+        } catch (err) {
           console.error('[Completion Provider] Error:', err);
           return { suggestions: [] };
-        });
+        }
       }
     });
   }
