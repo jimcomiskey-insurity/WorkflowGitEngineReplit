@@ -1014,12 +1014,12 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
 
   private registerCompletionProvider(): void {
     const monaco = (window as any).monaco;
-    const self = this;  // Preserve context for use in provider
+    const self = this;
     
     monaco.languages.registerCompletionItemProvider('csharp', {
       triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
-      provideCompletionItems: (model: any, position: any) => {
-        console.log('[COMPLETION] Provider called!');
+      provideCompletionItems: async (model: any, position: any) => {
+        console.log('[COMPLETION] Provider called');
         
         const word = model.getWordUntilPosition(position);
         const range = {
@@ -1034,50 +1034,45 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           dataType: input.dataType
         }));
         
-        console.log('[COMPLETION] Inputs:', completionInputs);
-
-        // Return a NEW promise (not toPromise()) to ensure proper handling
-        return new Promise((resolve) => {
-          const script = model.getValue();
-          const offset = model.getOffsetAt(position);
-          
-          self.scriptExecutionService.getCompletions(self.currentUser, {
-            script,
-            position: offset,
+        console.log('[COMPLETION] Requesting completions...');
+        
+        try {
+          const request = {
+            script: model.getValue(),
+            position: model.getOffsetAt(position),
             inputs: completionInputs
-          }).subscribe({
-            next: (response) => {
-              console.log('[COMPLETION] Backend returned', response?.items?.length, 'items');
-              
-              if (response?.items?.length > 0) {
-                console.log('[COMPLETION] First 3:', response.items.slice(0, 3).map(i => i.label));
-              }
-              
-              const suggestions = response?.items.map((item, index) => {
-                const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
-                const sortText = isParameter ? `000${String(index).padStart(4, '0')}` : `999${String(index).padStart(4, '0')}`;
-                
-                return {
-                  label: item.label,
-                  kind: self.getMonacoCompletionKind(item.kind),
-                  insertText: item.insertText,
-                  detail: item.detail,
-                  documentation: item.documentation,
-                  sortText: sortText,
-                  filterText: item.label,
-                  range: range
-                };
-              }) || [];
+          };
+          
+          const response = await self.scriptExecutionService.getCompletions(self.currentUser, request).toPromise();
+          
+          console.log('[COMPLETION] Received', response?.items?.length, 'items from backend');
+          
+          const suggestions = response?.items.map((item, index) => {
+            const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
+            const sortText = isParameter ? `000${String(index).padStart(4, '0')}` : `999${String(index).padStart(4, '0')}`;
+            
+            return {
+              label: item.label,
+              kind: self.getMonacoCompletionKind(item.kind),
+              insertText: item.insertText,
+              detail: item.detail,
+              documentation: item.documentation,
+              sortText: sortText,
+              filterText: item.label,
+              range: range
+            };
+          }) || [];
 
-              console.log('[COMPLETION] Resolving with', suggestions.length, 'suggestions');
-              resolve({ suggestions: suggestions });
-            },
-            error: (err) => {
-              console.error('[COMPLETION] Error:', err);
-              resolve({ suggestions: [] });
-            }
-          });
-        });
+          console.log('[COMPLETION] Returning', suggestions.length, 'suggestions');
+          if (suggestions.length > 0) {
+            console.log('[COMPLETION] First 3:', suggestions.slice(0, 3).map(s => s.label));
+          }
+          
+          return { suggestions: suggestions };
+        } catch (err) {
+          console.error('[COMPLETION] Error:', err);
+          return { suggestions: [] };
+        }
       }
     });
   }
