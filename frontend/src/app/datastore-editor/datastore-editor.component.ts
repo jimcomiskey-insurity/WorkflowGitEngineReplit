@@ -1139,6 +1139,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
       case 'Module': return CompletionItemKind.Module;
       case 'Keyword': return CompletionItemKind.Keyword;
       case 'Variable': return CompletionItemKind.Variable;
+      case 'Parameter': return CompletionItemKind.Variable;  // Parameters shown as variables
       default: return CompletionItemKind.Text;
     }
   }
