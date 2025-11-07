@@ -83,7 +83,7 @@ The frontend features a modern dark theme with a redesigned layout, including a 
 - **Centralized State Management**: Reactive state management using RxJS BehaviorSubjects via dedicated state services for automatic refresh and UI synchronization.
 - **Pending Changes Badge**: Displays total count of changed files, updating immediately after mutation operations.
 - **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting, vs-dark theme, and dynamic loading. Includes Monaco Diff Editor for comparisons, continuous auto-save, branch-aware editing, and visual Git conflict resolution with color-coded conflict blocks.
-- **C# IntelliSense**: Monaco editor C# completion powered by Roslyn, providing type/member/keyword suggestions, method parameters, and local variables.
+- **C# IntelliSense**: Monaco editor C# IntelliSense powered by IntelliSage (Blazor WASM running Roslyn client-side via iframe at intellisage.vercel.app). Provides full IntelliSense features including completions, signature help, hover documentation, and diagnostics. Uses code transformation to inject calculation parameters (matches backend execution context) with bidirectional position mapping (LINE_OFFSET=4) for accurate cursor/diagnostic alignment.
 
 **Backend**:
 - Developed using ASP.NET Core 8.0 Web API.
