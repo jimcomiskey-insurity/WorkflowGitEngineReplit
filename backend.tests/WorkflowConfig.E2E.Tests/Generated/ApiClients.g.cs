@@ -4,8 +4,6 @@
 // </auto-generated>
 //----------------------
 
-using WorkflowConfig.E2E.Tests.Generated.Contracts;
-
 #pragma warning disable 108 // Disable "CS0108 '{derivedDto}.ToJson()' hides inherited member '{dtoBase}.ToJson()'. Use the new keyword if hiding was intended."
 #pragma warning disable 114 // Disable "CS0114 '{derivedDto}.RaisePropertyChanged(String)' hides inherited member 'dtoBase.RaisePropertyChanged(String)'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword."
 #pragma warning disable 472 // Disable "CS0472 The result of the expression is always 'false' since a value of type 'Int32' is never equal to 'null' of type 'Int32?'
@@ -23,6 +21,524 @@ using WorkflowConfig.E2E.Tests.Generated.Contracts;
 namespace WorkflowConfig.E2E.Tests.Generated
 {
     using System = global::System;
+
+    [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial interface IApiClient
+    {
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetAssetsAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetAssetsAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateAssetAsync(string userId, string programId, Asset body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateAssetAsync(string userId, string programId, Asset body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetAssetAsync(string userId, string programId, System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetAssetAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateAssetAsync(string userId, string programId, System.Guid id, Asset body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateAssetAsync(string userId, string programId, System.Guid id, Asset body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteAssetAsync(string userId, string programId, System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteAssetAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UploadFileAsync(string userId, string programId, System.Guid id, FileParameter file);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UploadFileAsync(string userId, string programId, System.Guid id, FileParameter file, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DownloadFileAsync(string userId, string programId, System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DownloadFileAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteFileAsync(string userId, string programId, System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteFileAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetFileContentAsync(string userId, string programId, System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetFileContentAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateFileContentAsync(string userId, string programId, System.Guid id, FileContentUpdate body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateFileContentAsync(string userId, string programId, System.Guid id, FileContentUpdate body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetCommittedFileContentAsync(string userId, string programId, System.Guid id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetCommittedFileContentAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, string programId, DataStore body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, string programId, DataStore body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string programId, string id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string programId, string id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string programId, string id, DataStore body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string programId, string id, DataStore body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string programId, string id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string programId, string id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string programId, string dataStoreId, string parentGroupId, DataGroup body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string programId, string dataStoreId, string parentGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataPoint body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataPoint body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataGroup body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId, DataPoint body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId, DataPoint body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetStatusAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetStatusAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CommitAsync(string userId, string programId, CommitRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CommitAsync(string userId, string programId, CommitRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DiscardAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DiscardAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task PullAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task PullAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task PushAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task PushAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetBranchesAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetBranchesAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateBranchAsync(string userId, string programId, BranchRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateBranchAsync(string userId, string programId, BranchRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SwitchBranchAsync(string userId, string programId, BranchRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task SwitchBranchAsync(string userId, string programId, BranchRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetCommitsAsync(string userId, string programId, int? count);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetCommitsAsync(string userId, string programId, int? count, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task ResetToCommitAsync(string userId, string programId, ResetToCommitRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task ResetToCommitAsync(string userId, string programId, ResetToCommitRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CompareBranchesAsync(string userId, string programId, string sourceBranch, string targetBranch);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CompareBranchesAsync(string userId, string programId, string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string programId, string commitSha, string filePath);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string programId, string commitSha, string filePath, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task ResetRepositoriesAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task ResetRepositoriesAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Program>> GetAllProgramsAsync(string userId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Program>> GetAllProgramsAsync(string userId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Program> CreateProgramAsync(string userId, Program body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Program> CreateProgramAsync(string userId, Program body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Program> GetProgramAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Program> GetProgramAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Program> UpdateProgramAsync(string userId, string programId, Program body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<Program> UpdateProgramAsync(string userId, string programId, Program body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteProgramAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteProgramAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string programId, string status);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string programId, string status, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, string programId, CreatePullRequestRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, string programId, CreatePullRequestRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, string programId, int number);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, string programId, int number);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string userId, string programId, string sourceBranch, string targetBranch);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string userId, string programId, string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, string programId, int number);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, string programId, int number);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, string programId, int number, ResolveConflictsRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, string programId, int number, ResolveConflictsRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, string programId, int number);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetWorkflowsAsync(string userId, string programId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetWorkflowsAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateWorkflowAsync(string userId, string programId, Workflow body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task CreateWorkflowAsync(string userId, string programId, Workflow body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetWorkflowAsync(string userId, string programId, string workflowKey);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task GetWorkflowAsync(string userId, string programId, string workflowKey, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateWorkflowAsync(string userId, string programId, string workflowKey, Workflow body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpdateWorkflowAsync(string userId, string programId, string workflowKey, Workflow body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteWorkflowAsync(string userId, string programId, string workflowKey);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteWorkflowAsync(string userId, string programId, string workflowKey, System.Threading.CancellationToken cancellationToken);
+
+    }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class ApiClient : IApiClient
@@ -74,16 +590,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetAssetsAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetAssetsAsync(string userId, string programId)
         {
-            return GetAssetsAsync(userId, System.Threading.CancellationToken.None);
+            return GetAssetsAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetAssetsAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetAssetsAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -94,14 +616,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets"
-                    urlBuilder_.Append("api/Assets");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -152,16 +672,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CreateAssetAsync(string userId, Asset body)
+        public virtual System.Threading.Tasks.Task CreateAssetAsync(string userId, string programId, Asset body)
         {
-            return CreateAssetAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateAssetAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CreateAssetAsync(string userId, Asset body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CreateAssetAsync(string userId, string programId, Asset body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -176,14 +702,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets"
-                    urlBuilder_.Append("api/Assets");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -234,16 +758,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetAssetAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task GetAssetAsync(string userId, string programId, System.Guid id)
         {
-            return GetAssetAsync(id, userId, System.Threading.CancellationToken.None);
+            return GetAssetAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetAssetAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetAssetAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -257,15 +787,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -316,16 +844,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UpdateAssetAsync(System.Guid id, string userId, Asset body)
+        public virtual System.Threading.Tasks.Task UpdateAssetAsync(string userId, string programId, System.Guid id, Asset body)
         {
-            return UpdateAssetAsync(id, userId, body, System.Threading.CancellationToken.None);
+            return UpdateAssetAsync(userId, programId, id, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UpdateAssetAsync(System.Guid id, string userId, Asset body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateAssetAsync(string userId, string programId, System.Guid id, Asset body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -343,15 +877,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -402,16 +934,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteAssetAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task DeleteAssetAsync(string userId, string programId, System.Guid id)
         {
-            return DeleteAssetAsync(id, userId, System.Threading.CancellationToken.None);
+            return DeleteAssetAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteAssetAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteAssetAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -425,15 +963,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -484,16 +1020,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UploadFileAsync(System.Guid id, string userId, FileParameter file)
+        public virtual System.Threading.Tasks.Task UploadFileAsync(string userId, string programId, System.Guid id, FileParameter file)
         {
-            return UploadFileAsync(id, userId, file, System.Threading.CancellationToken.None);
+            return UploadFileAsync(userId, programId, id, file, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UploadFileAsync(System.Guid id, string userId, FileParameter file, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UploadFileAsync(string userId, string programId, System.Guid id, FileParameter file, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -522,16 +1064,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}/file"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}/file"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/file");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -582,16 +1122,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DownloadFileAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task DownloadFileAsync(string userId, string programId, System.Guid id)
         {
-            return DownloadFileAsync(id, userId, System.Threading.CancellationToken.None);
+            return DownloadFileAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DownloadFileAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DownloadFileAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -605,16 +1151,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}/file"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}/file"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/file");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -665,16 +1209,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteFileAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task DeleteFileAsync(string userId, string programId, System.Guid id)
         {
-            return DeleteFileAsync(id, userId, System.Threading.CancellationToken.None);
+            return DeleteFileAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteFileAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteFileAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -688,16 +1238,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}/file"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}/file"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/file");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -748,16 +1296,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetFileContentAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task GetFileContentAsync(string userId, string programId, System.Guid id)
         {
-            return GetFileContentAsync(id, userId, System.Threading.CancellationToken.None);
+            return GetFileContentAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetFileContentAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetFileContentAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -771,16 +1325,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}/file/content"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}/file/content"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/file/content");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -831,16 +1383,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UpdateFileContentAsync(System.Guid id, string userId, FileContentUpdate body)
+        public virtual System.Threading.Tasks.Task UpdateFileContentAsync(string userId, string programId, System.Guid id, FileContentUpdate body)
         {
-            return UpdateFileContentAsync(id, userId, body, System.Threading.CancellationToken.None);
+            return UpdateFileContentAsync(userId, programId, id, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UpdateFileContentAsync(System.Guid id, string userId, FileContentUpdate body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateFileContentAsync(string userId, string programId, System.Guid id, FileContentUpdate body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -858,16 +1416,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}/file/content"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}/file/content"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/file/content");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -918,16 +1474,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetCommittedFileContentAsync(System.Guid id, string userId)
+        public virtual System.Threading.Tasks.Task GetCommittedFileContentAsync(string userId, string programId, System.Guid id)
         {
-            return GetCommittedFileContentAsync(id, userId, System.Threading.CancellationToken.None);
+            return GetCommittedFileContentAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetCommittedFileContentAsync(System.Guid id, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetCommittedFileContentAsync(string userId, string programId, System.Guid id, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
@@ -941,16 +1503,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Assets/{id}/file/content/committed"
-                    urlBuilder_.Append("api/Assets/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Assets/{id}/file/content/committed"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Assets/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/file/content/committed");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -1001,18 +1561,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId, string programId)
         {
-            return GetAllDataStoresAsync(userId, System.Threading.CancellationToken.None);
+            return GetAllDataStoresAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DataStore>> GetAllDataStoresAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1025,9 +1588,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores");
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -1084,18 +1649,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, DataStore body)
+        public virtual System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, string programId, DataStore body)
         {
-            return CreateDataStoreAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateDataStoreAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, DataStore body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataStore> CreateDataStoreAsync(string userId, string programId, DataStore body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1112,9 +1680,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores");
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -1181,18 +1751,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string id)
+        public virtual System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string programId, string id)
         {
-            return GetDataStoreByIdAsync(userId, id, System.Threading.CancellationToken.None);
+            return GetDataStoreByIdAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataStore> GetDataStoreByIdAsync(string userId, string programId, string id, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1208,9 +1781,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{id}"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{id}"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -1268,18 +1843,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string id, DataStore body)
+        public virtual System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string programId, string id, DataStore body)
         {
-            return UpdateDataStoreAsync(userId, id, body, System.Threading.CancellationToken.None);
+            return UpdateDataStoreAsync(userId, programId, id, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string id, DataStore body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataStore> UpdateDataStoreAsync(string userId, string programId, string id, DataStore body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1299,9 +1877,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{id}"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{id}"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -1359,18 +1939,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string id)
+        public virtual System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string programId, string id)
         {
-            return DeleteDataStoreAsync(userId, id, System.Threading.CancellationToken.None);
+            return DeleteDataStoreAsync(userId, programId, id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteDataStoreAsync(string userId, string programId, string id, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1385,9 +1968,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{id}"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{id}"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -1440,18 +2025,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string dataStoreId, string parentGroupId, DataGroup body)
+        public virtual System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string programId, string dataStoreId, string parentGroupId, DataGroup body)
         {
-            return AddDataGroupAsync(userId, dataStoreId, parentGroupId, body, System.Threading.CancellationToken.None);
+            return AddDataGroupAsync(userId, programId, dataStoreId, parentGroupId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string dataStoreId, string parentGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataGroup> AddDataGroupAsync(string userId, string programId, string dataStoreId, string parentGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (dataStoreId == null)
                 throw new System.ArgumentNullException("dataStoreId");
@@ -1471,9 +2059,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{dataStoreId}/datagroups"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{dataStoreId}/datagroups"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(dataStoreId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/datagroups");
@@ -1538,18 +2128,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string dataStoreId, string dataGroupId, DataPoint body)
+        public virtual System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataPoint body)
         {
-            return AddDataPointAsync(userId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
+            return AddDataPointAsync(userId, programId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string dataStoreId, string dataGroupId, DataPoint body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DataPoint> AddDataPointAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataPoint body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (dataStoreId == null)
                 throw new System.ArgumentNullException("dataStoreId");
@@ -1572,9 +2165,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{dataStoreId}/datagroups/{dataGroupId}/datapoints"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{dataStoreId}/datagroups/{dataGroupId}/datapoints"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(dataStoreId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/datagroups/");
@@ -1635,18 +2230,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string dataStoreId, string dataGroupId, DataGroup body)
+        public virtual System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataGroup body)
         {
-            return UpdateDataGroupAsync(userId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
+            return UpdateDataGroupAsync(userId, programId, dataStoreId, dataGroupId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string dataStoreId, string dataGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId, DataGroup body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (dataStoreId == null)
                 throw new System.ArgumentNullException("dataStoreId");
@@ -1668,9 +2266,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{dataStoreId}/datagroups/{dataGroupId}"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{dataStoreId}/datagroups/{dataGroupId}"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(dataStoreId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/datagroups/");
@@ -1725,18 +2325,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string dataStoreId, string dataGroupId)
+        public virtual System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId)
         {
-            return DeleteDataGroupAsync(userId, dataStoreId, dataGroupId, System.Threading.CancellationToken.None);
+            return DeleteDataGroupAsync(userId, programId, dataStoreId, dataGroupId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string dataStoreId, string dataGroupId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteDataGroupAsync(string userId, string programId, string dataStoreId, string dataGroupId, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (dataStoreId == null)
                 throw new System.ArgumentNullException("dataStoreId");
@@ -1754,9 +2357,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{dataStoreId}/datagroups/{dataGroupId}"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{dataStoreId}/datagroups/{dataGroupId}"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(dataStoreId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/datagroups/");
@@ -1811,18 +2416,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string dataStoreId, string dataPointId, DataPoint body)
+        public virtual System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId, DataPoint body)
         {
-            return UpdateDataPointAsync(userId, dataStoreId, dataPointId, body, System.Threading.CancellationToken.None);
+            return UpdateDataPointAsync(userId, programId, dataStoreId, dataPointId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string dataStoreId, string dataPointId, DataPoint body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId, DataPoint body, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (dataStoreId == null)
                 throw new System.ArgumentNullException("dataStoreId");
@@ -1844,9 +2452,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{dataStoreId}/datapoints/{dataPointId}"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{dataStoreId}/datapoints/{dataPointId}"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(dataStoreId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/datapoints/");
@@ -1901,18 +2511,21 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string dataStoreId, string dataPointId)
+        public virtual System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId)
         {
-            return DeleteDataPointAsync(userId, dataStoreId, dataPointId, System.Threading.CancellationToken.None);
+            return DeleteDataPointAsync(userId, programId, dataStoreId, dataPointId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string dataStoreId, string dataPointId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteDataPointAsync(string userId, string programId, string dataStoreId, string dataPointId, System.Threading.CancellationToken cancellationToken)
         {
             if (userId == null)
                 throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
 
             if (dataStoreId == null)
                 throw new System.ArgumentNullException("dataStoreId");
@@ -1930,9 +2543,11 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/users/{userId}/DataStores/{dataStoreId}/datapoints/{dataPointId}"
+                    // Operation Path: "api/users/{userId}/programs/{programId}/DataStores/{dataStoreId}/datapoints/{dataPointId}"
                     urlBuilder_.Append("api/users/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/DataStores/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(dataStoreId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/datapoints/");
@@ -1987,16 +2602,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetStatusAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetStatusAsync(string userId, string programId)
         {
-            return GetStatusAsync(userId, System.Threading.CancellationToken.None);
+            return GetStatusAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetStatusAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetStatusAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2007,14 +2628,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/status"
-                    urlBuilder_.Append("api/Git/status");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/status"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/status");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2065,16 +2684,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CommitAsync(string userId, CommitRequest body)
+        public virtual System.Threading.Tasks.Task CommitAsync(string userId, string programId, CommitRequest body)
         {
-            return CommitAsync(userId, body, System.Threading.CancellationToken.None);
+            return CommitAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CommitAsync(string userId, CommitRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CommitAsync(string userId, string programId, CommitRequest body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2089,14 +2714,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/commit"
-                    urlBuilder_.Append("api/Git/commit");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/commit"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/commit");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2147,16 +2770,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DiscardAsync(string userId)
+        public virtual System.Threading.Tasks.Task DiscardAsync(string userId, string programId)
         {
-            return DiscardAsync(userId, System.Threading.CancellationToken.None);
+            return DiscardAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DiscardAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DiscardAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2168,14 +2797,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/discard"
-                    urlBuilder_.Append("api/Git/discard");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/discard"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/discard");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2226,16 +2853,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task PullAsync(string userId)
+        public virtual System.Threading.Tasks.Task PullAsync(string userId, string programId)
         {
-            return PullAsync(userId, System.Threading.CancellationToken.None);
+            return PullAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task PullAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task PullAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2247,14 +2880,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/pull"
-                    urlBuilder_.Append("api/Git/pull");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/pull"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/pull");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2305,16 +2936,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task PushAsync(string userId)
+        public virtual System.Threading.Tasks.Task PushAsync(string userId, string programId)
         {
-            return PushAsync(userId, System.Threading.CancellationToken.None);
+            return PushAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task PushAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task PushAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2326,14 +2963,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/push"
-                    urlBuilder_.Append("api/Git/push");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/push"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/push");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2384,16 +3019,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetBranchesAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetBranchesAsync(string userId, string programId)
         {
-            return GetBranchesAsync(userId, System.Threading.CancellationToken.None);
+            return GetBranchesAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetBranchesAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetBranchesAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2404,14 +3045,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/branches"
-                    urlBuilder_.Append("api/Git/branches");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/branches"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/branches");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2462,16 +3101,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CreateBranchAsync(string userId, BranchRequest body)
+        public virtual System.Threading.Tasks.Task CreateBranchAsync(string userId, string programId, BranchRequest body)
         {
-            return CreateBranchAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateBranchAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CreateBranchAsync(string userId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CreateBranchAsync(string userId, string programId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2486,14 +3131,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/branches"
-                    urlBuilder_.Append("api/Git/branches");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/branches"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/branches");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2544,16 +3187,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task SwitchBranchAsync(string userId, BranchRequest body)
+        public virtual System.Threading.Tasks.Task SwitchBranchAsync(string userId, string programId, BranchRequest body)
         {
-            return SwitchBranchAsync(userId, body, System.Threading.CancellationToken.None);
+            return SwitchBranchAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task SwitchBranchAsync(string userId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task SwitchBranchAsync(string userId, string programId, BranchRequest body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2568,14 +3217,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/branches/switch"
-                    urlBuilder_.Append("api/Git/branches/switch");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/branches/switch"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/branches/switch");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2626,16 +3273,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetCommitsAsync(string userId, int? count)
+        public virtual System.Threading.Tasks.Task GetCommitsAsync(string userId, string programId, int? count)
         {
-            return GetCommitsAsync(userId, count, System.Threading.CancellationToken.None);
+            return GetCommitsAsync(userId, programId, count, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetCommitsAsync(string userId, int? count, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetCommitsAsync(string userId, string programId, int? count, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2646,13 +3299,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/commits"
-                    urlBuilder_.Append("api/Git/commits");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/commits"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/commits");
                     urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
                     if (count != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("count")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(count, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
@@ -2708,16 +3361,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId, string programId)
         {
-            return GetLastPushedCommitAsync(userId, System.Threading.CancellationToken.None);
+            return GetLastPushedCommitAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetLastPushedCommitAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2728,14 +3387,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/last-pushed-commit"
-                    urlBuilder_.Append("api/Git/last-pushed-commit");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/last-pushed-commit"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/last-pushed-commit");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2786,16 +3443,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ResetToCommitAsync(string userId, ResetToCommitRequest body)
+        public virtual System.Threading.Tasks.Task ResetToCommitAsync(string userId, string programId, ResetToCommitRequest body)
         {
-            return ResetToCommitAsync(userId, body, System.Threading.CancellationToken.None);
+            return ResetToCommitAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ResetToCommitAsync(string userId, ResetToCommitRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task ResetToCommitAsync(string userId, string programId, ResetToCommitRequest body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2810,14 +3473,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/reset-to-commit"
-                    urlBuilder_.Append("api/Git/reset-to-commit");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/reset-to-commit"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/reset-to-commit");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -2868,16 +3529,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CompareBranchesAsync(string userId, string sourceBranch, string targetBranch)
+        public virtual System.Threading.Tasks.Task CompareBranchesAsync(string userId, string programId, string sourceBranch, string targetBranch)
         {
-            return CompareBranchesAsync(userId, sourceBranch, targetBranch, System.Threading.CancellationToken.None);
+            return CompareBranchesAsync(userId, programId, sourceBranch, targetBranch, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CompareBranchesAsync(string userId, string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CompareBranchesAsync(string userId, string programId, string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2888,13 +3555,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/compare-branches"
-                    urlBuilder_.Append("api/Git/compare-branches");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/compare-branches"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/compare-branches");
                     urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
                     if (sourceBranch != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("sourceBranch")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(sourceBranch, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
@@ -2954,16 +3621,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string commitSha, string filePath)
+        public virtual System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string programId, string commitSha, string filePath)
         {
-            return GetFileAtCommitAsync(userId, commitSha, filePath, System.Threading.CancellationToken.None);
+            return GetFileAtCommitAsync(userId, programId, commitSha, filePath, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string commitSha, string filePath, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetFileAtCommitAsync(string userId, string programId, string commitSha, string filePath, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -2974,13 +3647,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/file-at-commit"
-                    urlBuilder_.Append("api/Git/file-at-commit");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/file-at-commit"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/file-at-commit");
                     urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
                     if (commitSha != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("commitSha")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(commitSha, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
@@ -3040,16 +3713,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ResetRepositoriesAsync()
+        public virtual System.Threading.Tasks.Task ResetRepositoriesAsync(string userId, string programId)
         {
-            return ResetRepositoriesAsync(System.Threading.CancellationToken.None);
+            return ResetRepositoriesAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ResetRepositoriesAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task ResetRepositoriesAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -3061,8 +3740,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Git/reset"
-                    urlBuilder_.Append("api/Git/reset");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Git/reset"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Git/reset");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3113,16 +3796,19 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string status)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Program>> GetAllProgramsAsync(string userId)
         {
-            return GetPullRequestsAsync(userId, status, System.Threading.CancellationToken.None);
+            return GetAllProgramsAsync(userId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string status, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Program>> GetAllProgramsAsync(string userId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -3134,13 +3820,445 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests"
-                    urlBuilder_.Append("api/pull-requests");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
+                    // Operation Path: "api/users/{userId}/programs"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Program>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
                     }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<Program> CreateProgramAsync(string userId, Program body)
+        {
+            return CreateProgramAsync(userId, body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<Program> CreateProgramAsync(string userId, Program body, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/users/{userId}/programs"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<Program>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<Program> GetProgramAsync(string userId, string programId)
+        {
+            return GetProgramAsync(userId, programId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<Program> GetProgramAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/users/{userId}/programs/{programId}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<Program>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<Program> UpdateProgramAsync(string userId, string programId, Program body)
+        {
+            return UpdateProgramAsync(userId, programId, body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<Program> UpdateProgramAsync(string userId, string programId, Program body, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("PUT");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/users/{userId}/programs/{programId}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<Program>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task DeleteProgramAsync(string userId, string programId)
+        {
+            return DeleteProgramAsync(userId, programId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task DeleteProgramAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/users/{userId}/programs/{programId}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string programId, string status)
+        {
+            return GetPullRequestsAsync(userId, programId, status, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PullRequest>> GetPullRequestsAsync(string userId, string programId, string status, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests");
+                    urlBuilder_.Append('?');
                     if (status != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("status")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(status, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
@@ -3201,16 +4319,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, CreatePullRequestRequest body)
+        public virtual System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, string programId, CreatePullRequestRequest body)
         {
-            return CreatePullRequestAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreatePullRequestAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, CreatePullRequestRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> CreatePullRequestAsync(string userId, string programId, CreatePullRequestRequest body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -3226,14 +4350,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests"
-                    urlBuilder_.Append("api/pull-requests");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3299,16 +4421,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, string programId, int number)
         {
-            return GetPullRequestAsync(userId, number, System.Threading.CancellationToken.None);
+            return GetPullRequestAsync(userId, programId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> GetPullRequestAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (number == null)
                 throw new System.ArgumentNullException("number");
 
@@ -3323,15 +4451,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests/{number}"
-                    urlBuilder_.Append("api/pull-requests/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests/{number}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(number, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3387,16 +4513,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, string programId, int number)
         {
-            return GetBranchComparisonAsync(userId, number, System.Threading.CancellationToken.None);
+            return GetBranchComparisonAsync(userId, programId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<BranchComparison> GetBranchComparisonAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (number == null)
                 throw new System.ArgumentNullException("number");
 
@@ -3411,16 +4543,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests/{number}/comparison"
-                    urlBuilder_.Append("api/pull-requests/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests/{number}/comparison"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(number, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/comparison");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3476,16 +4606,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string sourceBranch, string targetBranch)
+        public virtual System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string userId, string programId, string sourceBranch, string targetBranch)
         {
-            return GetPullRequestSuggestionAsync(sourceBranch, targetBranch, System.Threading.CancellationToken.None);
+            return GetPullRequestSuggestionAsync(userId, programId, sourceBranch, targetBranch, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequestSuggestion> GetPullRequestSuggestionAsync(string userId, string programId, string sourceBranch, string targetBranch, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -3497,8 +4633,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests/suggestion"
-                    urlBuilder_.Append("api/pull-requests/suggestion");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests/suggestion"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests/suggestion");
                     urlBuilder_.Append('?');
                     if (sourceBranch != null)
                     {
@@ -3564,16 +4704,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, string programId, int number)
         {
-            return MergePullRequestAsync(userId, number, System.Threading.CancellationToken.None);
+            return MergePullRequestAsync(userId, programId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> MergePullRequestAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (number == null)
                 throw new System.ArgumentNullException("number");
 
@@ -3589,16 +4735,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests/{number}/merge"
-                    urlBuilder_.Append("api/pull-requests/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests/{number}/merge"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(number, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/merge");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3654,16 +4798,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, string programId, int number)
         {
-            return GetMergeConflictsAsync(userId, number, System.Threading.CancellationToken.None);
+            return GetMergeConflictsAsync(userId, programId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<MergeConflictInfo> GetMergeConflictsAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (number == null)
                 throw new System.ArgumentNullException("number");
 
@@ -3678,16 +4828,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests/{number}/conflicts"
-                    urlBuilder_.Append("api/pull-requests/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests/{number}/conflicts"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(number, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/conflicts");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3743,16 +4891,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, int number, ResolveConflictsRequest body)
+        public virtual System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, string programId, int number, ResolveConflictsRequest body)
         {
-            return ResolveAndMergePullRequestAsync(userId, number, body, System.Threading.CancellationToken.None);
+            return ResolveAndMergePullRequestAsync(userId, programId, number, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, int number, ResolveConflictsRequest body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> ResolveAndMergePullRequestAsync(string userId, string programId, int number, ResolveConflictsRequest body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (number == null)
                 throw new System.ArgumentNullException("number");
 
@@ -3771,16 +4925,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests/{number}/resolve-conflicts"
-                    urlBuilder_.Append("api/pull-requests/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests/{number}/resolve-conflicts"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(number, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/resolve-conflicts");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -3836,16 +4988,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, int number)
+        public virtual System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, string programId, int number)
         {
-            return ClosePullRequestAsync(userId, number, System.Threading.CancellationToken.None);
+            return ClosePullRequestAsync(userId, programId, number, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, int number, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PullRequest> ClosePullRequestAsync(string userId, string programId, int number, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (number == null)
                 throw new System.ArgumentNullException("number");
 
@@ -3861,16 +5019,14 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/pull-requests/{number}/close"
-                    urlBuilder_.Append("api/pull-requests/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/pull-requests/{number}/close"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/pull-requests/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(number, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/close");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4110,16 +5266,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetWorkflowsAsync(string userId)
+        public virtual System.Threading.Tasks.Task GetWorkflowsAsync(string userId, string programId)
         {
-            return GetWorkflowsAsync(userId, System.Threading.CancellationToken.None);
+            return GetWorkflowsAsync(userId, programId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetWorkflowsAsync(string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetWorkflowsAsync(string userId, string programId, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -4130,14 +5292,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Workflows"
-                    urlBuilder_.Append("api/Workflows");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Workflows"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Workflows");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4188,16 +5348,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task CreateWorkflowAsync(string userId, Workflow body)
+        public virtual System.Threading.Tasks.Task CreateWorkflowAsync(string userId, string programId, Workflow body)
         {
-            return CreateWorkflowAsync(userId, body, System.Threading.CancellationToken.None);
+            return CreateWorkflowAsync(userId, programId, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task CreateWorkflowAsync(string userId, Workflow body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task CreateWorkflowAsync(string userId, string programId, Workflow body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -4212,14 +5378,12 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Workflows"
-                    urlBuilder_.Append("api/Workflows");
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Workflows"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Workflows");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4270,16 +5434,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task GetWorkflowAsync(string workflowKey, string userId)
+        public virtual System.Threading.Tasks.Task GetWorkflowAsync(string userId, string programId, string workflowKey)
         {
-            return GetWorkflowAsync(workflowKey, userId, System.Threading.CancellationToken.None);
+            return GetWorkflowAsync(userId, programId, workflowKey, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task GetWorkflowAsync(string workflowKey, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task GetWorkflowAsync(string userId, string programId, string workflowKey, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (workflowKey == null)
                 throw new System.ArgumentNullException("workflowKey");
 
@@ -4293,15 +5463,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Workflows/{workflowKey}"
-                    urlBuilder_.Append("api/Workflows/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Workflows/{workflowKey}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Workflows/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(workflowKey, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4352,16 +5520,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task UpdateWorkflowAsync(string workflowKey, string userId, Workflow body)
+        public virtual System.Threading.Tasks.Task UpdateWorkflowAsync(string userId, string programId, string workflowKey, Workflow body)
         {
-            return UpdateWorkflowAsync(workflowKey, userId, body, System.Threading.CancellationToken.None);
+            return UpdateWorkflowAsync(userId, programId, workflowKey, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task UpdateWorkflowAsync(string workflowKey, string userId, Workflow body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdateWorkflowAsync(string userId, string programId, string workflowKey, Workflow body, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (workflowKey == null)
                 throw new System.ArgumentNullException("workflowKey");
 
@@ -4379,15 +5553,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Workflows/{workflowKey}"
-                    urlBuilder_.Append("api/Workflows/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Workflows/{workflowKey}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Workflows/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(workflowKey, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4438,16 +5610,22 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task DeleteWorkflowAsync(string workflowKey, string userId)
+        public virtual System.Threading.Tasks.Task DeleteWorkflowAsync(string userId, string programId, string workflowKey)
         {
-            return DeleteWorkflowAsync(workflowKey, userId, System.Threading.CancellationToken.None);
+            return DeleteWorkflowAsync(userId, programId, workflowKey, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task DeleteWorkflowAsync(string workflowKey, string userId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeleteWorkflowAsync(string userId, string programId, string workflowKey, System.Threading.CancellationToken cancellationToken)
         {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (programId == null)
+                throw new System.ArgumentNullException("programId");
+
             if (workflowKey == null)
                 throw new System.ArgumentNullException("workflowKey");
 
@@ -4461,15 +5639,13 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/Workflows/{workflowKey}"
-                    urlBuilder_.Append("api/Workflows/");
+                    // Operation Path: "api/users/{userId}/programs/{programId}/Workflows/{workflowKey}"
+                    urlBuilder_.Append("api/users/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/programs/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(programId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/Workflows/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(workflowKey, System.Globalization.CultureInfo.InvariantCulture)));
-                    urlBuilder_.Append('?');
-                    if (userId != null)
-                    {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
-                    }
-                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4624,6 +5800,997 @@ namespace WorkflowConfig.E2E.Tests.Generated
 
             var result = System.Convert.ToString(value, cultureInfo);
             return result == null ? "" : result;
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Asset
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public System.Guid? Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("tags")]
+        public System.Collections.Generic.ICollection<string> Tags { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileName")]
+        public string FileName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileType")]
+        public string FileType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileSizeBytes")]
+        public long? FileSizeBytes { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileUploadedDate")]
+        public System.DateTimeOffset? FileUploadedDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
+        public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AssetChange
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetId")]
+        public System.Guid? AssetId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetName")]
+        public string AssetName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("changeType")]
+        public string ChangeType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceAsset")]
+        public Asset SourceAsset { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetAsset")]
+        public Asset TargetAsset { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileContentChanged")]
+        public bool FileContentChanged { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AssetConflict
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetId")]
+        public System.Guid AssetId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetName")]
+        public string AssetName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fieldConflicts")]
+        public System.Collections.Generic.ICollection<FieldConflict> FieldConflicts { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AssetFileContentConflict
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetId")]
+        public System.Guid AssetId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetName")]
+        public string AssetName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileName")]
+        public string FileName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileType")]
+        public string FileType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("conflictedContent")]
+        public string ConflictedContent { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("hasConflictMarkers")]
+        public bool HasConflictMarkers { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("resolution")]
+        public string Resolution { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AssetFileContentResolution
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetId")]
+        public System.Guid AssetId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("resolvedContent")]
+        public string ResolvedContent { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BranchComparison
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceBranch")]
+        public string SourceBranch { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetBranch")]
+        public string TargetBranch { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("commitsAhead")]
+        public int CommitsAhead { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("commitsBehind")]
+        public int CommitsBehind { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("changes")]
+        public System.Collections.Generic.ICollection<WorkflowChange> Changes { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetChanges")]
+        public System.Collections.Generic.ICollection<AssetChange> AssetChanges { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataStoreChanges")]
+        public System.Collections.Generic.ICollection<DataStoreChange> DataStoreChanges { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("commits")]
+        public System.Collections.Generic.ICollection<CommitInfo> Commits { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceCommitSha")]
+        public string SourceCommitSha { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetCommitSha")]
+        public string TargetCommitSha { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BranchRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("branchName")]
+        public string BranchName { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CommitInfo
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("sha")]
+        public string Sha { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("author")]
+        public string Author { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("date")]
+        public System.DateTimeOffset Date { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("changes")]
+        public System.Collections.Generic.ICollection<WorkflowChange> Changes { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetChanges")]
+        public System.Collections.Generic.ICollection<AssetChange> AssetChanges { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataStoreChanges")]
+        public System.Collections.Generic.ICollection<DataStoreChange> DataStoreChanges { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CommitRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("authorName")]
+        public string AuthorName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("authorEmail")]
+        public string AuthorEmail { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionInput
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("alias")]
+        public string Alias { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataType")]
+        public string DataType { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("script")]
+        public string Script { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("position")]
+        public int Position { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("inputs")]
+        public System.Collections.Generic.ICollection<CompletionInput> Inputs { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("items")]
+        public System.Collections.Generic.ICollection<CompletionSuggestion> Items { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionSuggestion
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("label")]
+        public string Label { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("kind")]
+        public string Kind { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("insertText")]
+        public string InsertText { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("detail")]
+        public string Detail { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("documentation")]
+        public string Documentation { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum ConflictObjectType
+    {
+
+        _0 = 0,
+
+        _1 = 1,
+
+        _2 = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ConflictResolution
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowKey")]
+        public string WorkflowKey { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("phaseName")]
+        public string PhaseName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskId")]
+        public string TaskId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fieldName")]
+        public string FieldName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("resolution")]
+        public string Resolution { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isDeletionConflict")]
+        public bool IsDeletionConflict { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("objectType")]
+        public ConflictObjectType ObjectType { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CreatePullRequestRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string Title { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceBranch")]
+        public string SourceBranch { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetBranch")]
+        public string TargetBranch { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DataGroup
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("tag")]
+        public string Tag { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("parentId")]
+        public string ParentId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("orderIndex")]
+        public int OrderIndex { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isRepeatable")]
+        public bool IsRepeatable { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowDesiredState")]
+        public bool AllowDesiredState { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowPopulationByApplication")]
+        public bool AllowPopulationByApplication { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowPopulationByImportCopy")]
+        public bool AllowPopulationByImportCopy { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowPopulationByObjectSync")]
+        public bool AllowPopulationByObjectSync { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("referenceObject")]
+        public string ReferenceObject { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataPoints")]
+        public System.Collections.Generic.ICollection<DataPoint> DataPoints { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("childGroups")]
+        public System.Collections.Generic.ICollection<DataGroup> ChildGroups { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
+        public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DataPoint
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("tag")]
+        public string Tag { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataType")]
+        public string DataType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("orderIndex")]
+        public int OrderIndex { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("configuration")]
+        public DataPointConfiguration Configuration { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("calculation")]
+        public DataPointCalculation Calculation { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
+        public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DataPointCalculation
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("inputs")]
+        public System.Collections.Generic.ICollection<ScriptInput> Inputs { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("script")]
+        public string Script { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DataPointConfiguration
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("mode")]
+        public string Mode { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("defaultValue")]
+        public string DefaultValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowMultiLine")]
+        public bool AllowMultiLine { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("minLength")]
+        public int? MinLength { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("maxLength")]
+        public int? MaxLength { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("minValue")]
+        public int? MinValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("maxValue")]
+        public int? MaxValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("decimalPlaces")]
+        public int? DecimalPlaces { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("format")]
+        public string Format { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowedValues")]
+        public System.Collections.Generic.ICollection<string> AllowedValues { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("additionalProperties")]
+        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DataStore
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("noOfTimesUsed")]
+        public int NoOfTimesUsed { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("aliases")]
+        public System.Collections.Generic.ICollection<string> Aliases { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataGroups")]
+        public System.Collections.Generic.ICollection<DataGroup> DataGroups { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
+        public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DataStoreChange
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataStoreId")]
+        public string DataStoreId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataStoreName")]
+        public string DataStoreName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("changeType")]
+        public string ChangeType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceDataStore")]
+        public DataStore SourceDataStore { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetDataStore")]
+        public DataStore TargetDataStore { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DeletionConflict
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("objectType")]
+        public ConflictObjectType ObjectType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowKey")]
+        public string WorkflowKey { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("phaseName")]
+        public string PhaseName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskId")]
+        public string TaskId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("objectIdentifier")]
+        public string ObjectIdentifier { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("objectDisplayName")]
+        public string ObjectDisplayName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("deletedInSource")]
+        public bool DeletedInSource { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("modifiedInSource")]
+        public bool ModifiedInSource { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("deletedInTarget")]
+        public bool DeletedInTarget { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("modifiedInTarget")]
+        public bool ModifiedInTarget { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("modifiedObjectJson")]
+        public string ModifiedObjectJson { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("resolution")]
+        public string Resolution { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class FieldConflict
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("fieldName")]
+        public string FieldName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("baseValue")]
+        public string BaseValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("currentValue")]
+        public string CurrentValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("incomingValue")]
+        public string IncomingValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("resolution")]
+        public string Resolution { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class FileContentUpdate
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("content")]
+        public string Content { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MergeConflictInfo
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowConflicts")]
+        public System.Collections.Generic.ICollection<WorkflowConflict> WorkflowConflicts { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("deletionConflicts")]
+        public System.Collections.Generic.ICollection<DeletionConflict> DeletionConflicts { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetConflicts")]
+        public System.Collections.Generic.ICollection<AssetConflict> AssetConflicts { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetFileContentConflicts")]
+        public System.Collections.Generic.ICollection<AssetFileContentConflict> AssetFileContentConflicts { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceBranch")]
+        public string SourceBranch { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetBranch")]
+        public string TargetBranch { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("totalConflicts")]
+        public int TotalConflicts { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Phase
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("phaseName")]
+        public string PhaseName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("phaseOrder")]
+        public int PhaseOrder { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("tasks")]
+        public System.Collections.Generic.ICollection<TaskItem> Tasks { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
+        public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PhaseConflict
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("phaseName")]
+        public string PhaseName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("phaseOrder")]
+        public int PhaseOrder { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fieldConflicts")]
+        public System.Collections.Generic.ICollection<FieldConflict> FieldConflicts { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskConflicts")]
+        public System.Collections.Generic.ICollection<TaskConflict> TaskConflicts { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ProblemDetails
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        public string Type { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string Title { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public int? Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("detail")]
+        public string Detail { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("instance")]
+        public string Instance { get; set; }
+
+        private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
+
+        [System.Text.Json.Serialization.JsonExtensionData]
+        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
+        {
+            get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
+            set { _additionalProperties = value; }
+        }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Program
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("createdDate")]
+        public System.DateTimeOffset CreatedDate { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PullRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("number")]
+        public int Number { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string Title { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceBranch")]
+        public string SourceBranch { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetBranch")]
+        public string TargetBranch { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("author")]
+        public string Author { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("createdDate")]
+        public System.DateTimeOffset CreatedDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("mergedDate")]
+        public System.DateTimeOffset? MergedDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceCommitSha")]
+        public string SourceCommitSha { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetCommitSha")]
+        public string TargetCommitSha { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PullRequestSuggestion
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string Title { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("commitCount")]
+        public int CommitCount { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ResetToCommitRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("commitSha")]
+        public string CommitSha { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ResolveConflictsRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("resolutions")]
+        public System.Collections.Generic.ICollection<ConflictResolution> Resolutions { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assetFileResolutions")]
+        public System.Collections.Generic.ICollection<AssetFileContentResolution> AssetFileResolutions { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptExecutionRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("script")]
+        public string Script { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("inputs")]
+        public System.Collections.Generic.ICollection<ScriptInputValue> Inputs { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptExecutionResult
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("success")]
+        public bool Success { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("result")]
+        public string Result { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("resultType")]
+        public string ResultType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public string Error { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptInput
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataPointId")]
+        public string DataPointId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataPointName")]
+        public string DataPointName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataType")]
+        public string DataType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("alias")]
+        public string Alias { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptInputValue
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("alias")]
+        public string Alias { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataType")]
+        public string DataType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("testValue")]
+        public string TestValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("testWithNull")]
+        public bool TestWithNull { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TaskConflict
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskId")]
+        public string TaskId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskName")]
+        public string TaskName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fieldConflicts")]
+        public System.Collections.Generic.ICollection<FieldConflict> FieldConflicts { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TaskItem
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskId")]
+        public string TaskId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskName")]
+        public string TaskName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("taskType")]
+        public string TaskType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("assignedRole")]
+        public string AssignedRole { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("estimatedDurationHours")]
+        public double EstimatedDurationHours { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dependencies")]
+        public System.Collections.Generic.ICollection<string> Dependencies { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isAutomated")]
+        public bool IsAutomated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
+        public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Workflow
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public System.Guid Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowName")]
+        public string WorkflowName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowKey")]
+        public string WorkflowKey { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("phases")]
+        public System.Collections.Generic.ICollection<Phase> Phases { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
+        public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WorkflowChange
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowKey")]
+        public string WorkflowKey { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowName")]
+        public string WorkflowName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("changeType")]
+        public string ChangeType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sourceWorkflow")]
+        public Workflow SourceWorkflow { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("targetWorkflow")]
+        public Workflow TargetWorkflow { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class WorkflowConflict
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowKey")]
+        public string WorkflowKey { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("workflowName")]
+        public string WorkflowName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fieldConflicts")]
+        public System.Collections.Generic.ICollection<FieldConflict> FieldConflicts { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("phaseConflicts")]
+        public System.Collections.Generic.ICollection<PhaseConflict> PhaseConflicts { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class FileParameter
+    {
+        public FileParameter(System.IO.Stream data)
+            : this (data, null, null)
+        {
+        }
+
+        public FileParameter(System.IO.Stream data, string fileName)
+            : this (data, fileName, null)
+        {
+        }
+
+        public FileParameter(System.IO.Stream data, string fileName, string contentType)
+        {
+            Data = data;
+            FileName = fileName;
+            ContentType = contentType;
+        }
+
+        public System.IO.Stream Data { get; private set; }
+
+        public string FileName { get; private set; }
+
+        public string ContentType { get; private set; }
+    }
+
+
+
+    [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ApiException : System.Exception
+    {
+        public int StatusCode { get; private set; }
+
+        public string Response { get; private set; }
+
+        public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
+
+        public ApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+            : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
+        {
+            StatusCode = statusCode;
+            Response = response;
+            Headers = headers;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("HTTP Response: \n\n{0}\n\n{1}", Response, base.ToString());
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ApiException<TResult> : ApiException
+    {
+        public TResult Result { get; private set; }
+
+        public ApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+            : base(message, statusCode, response, headers, innerException)
+        {
+            Result = result;
         }
     }
 
