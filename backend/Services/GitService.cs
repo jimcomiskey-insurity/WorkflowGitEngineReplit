@@ -1332,9 +1332,9 @@ public class GitService
         var dataStoresDir = Path.Combine(userRepoPath, DataStoresDirectory);
         Directory.CreateDirectory(dataStoresDir);
         
-        var dataStorePath = Path.Combine(dataStoresDir, $"{dataStore.Id}.json");
-        var json = JsonSerializer.Serialize(dataStore, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(dataStorePath, json);
+        // Use DataStoreService to handle calculation .cs files
+        var dataStoreService = new DataStoreService(userRepoPath);
+        dataStoreService.UpdateDataStore(dataStore.Id, dataStore);
     }
 
     private void DeleteDataStoreFile(string userRepoPath, string dataStoreId)
@@ -1343,6 +1343,13 @@ public class GitService
         if (File.Exists(dataStorePath))
         {
             File.Delete(dataStorePath);
+        }
+        
+        // Also delete calculation .cs files directory
+        var calculationsDir = Path.Combine(userRepoPath, DataStoresDirectory, dataStoreId, "calculations");
+        if (Directory.Exists(calculationsDir))
+        {
+            Directory.Delete(calculationsDir, true);
         }
     }
 
@@ -1399,20 +1406,16 @@ public class GitService
             return new List<DataStore>();
         }
 
+        // Use DataStoreService to load datastores (populates calculation scripts from .cs files)
+        var dataStoreService = new DataStoreService(userRepoPath);
         var dataStores = new List<DataStore>();
-        var dataStoresDir = Path.Combine(userRepoPath, DataStoresDirectory);
         
         foreach (var item in dataStoreList)
         {
-            var dataStorePath = Path.Combine(dataStoresDir, $"{item.Id}.json");
-            if (File.Exists(dataStorePath))
+            var dataStore = dataStoreService.GetDataStoreById(item.Id);
+            if (dataStore != null)
             {
-                var dataStoreJson = File.ReadAllText(dataStorePath);
-                var dataStore = JsonSerializer.Deserialize<DataStore>(dataStoreJson);
-                if (dataStore != null)
-                {
-                    dataStores.Add(dataStore);
-                }
+                dataStores.Add(dataStore);
             }
         }
         

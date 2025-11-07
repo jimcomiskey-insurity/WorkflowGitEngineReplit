@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using WorkflowConfig.Api.Models;
 
 namespace WorkflowConfig.Api.Services
@@ -54,7 +56,15 @@ namespace WorkflowConfig.Api.Services
             }
 
             var json = File.ReadAllText(dataStorePath);
-            return JsonSerializer.Deserialize<DataStore>(json);
+            var dataStore = JsonSerializer.Deserialize<DataStore>(json);
+            
+            if (dataStore != null)
+            {
+                // Load calculation scripts from .cs files
+                PopulateCalculationScripts(id, dataStore.DataGroups);
+            }
+            
+            return dataStore;
         }
 
         public DataStore CreateDataStore(DataStore dataStore)
@@ -64,6 +74,10 @@ namespace WorkflowConfig.Api.Services
                 dataStore.Id = Guid.NewGuid().ToString();
             }
 
+            // Save calculation .cs files
+            SaveCalculationScripts(dataStore.Id, dataStore.DataGroups);
+
+            // Keep scripts in JSON for readability
             var dataStorePath = Path.Combine(_dataStoresDirectory, $"{dataStore.Id}.json");
             var json = JsonSerializer.Serialize(dataStore, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(dataStorePath, json);
@@ -81,6 +95,13 @@ namespace WorkflowConfig.Api.Services
             }
 
             updatedDataStore.Id = id;
+            
+            // Save calculation .cs files
+            SaveCalculationScripts(id, updatedDataStore.DataGroups);
+            
+            // Keep scripts in JSON for readability - .cs files are source of truth for compilation
+            // but JSON retains scripts for human readers viewing the repo
+            
             var dataStorePath = Path.Combine(_dataStoresDirectory, $"{id}.json");
             var json = JsonSerializer.Serialize(updatedDataStore, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(dataStorePath, json);
@@ -204,6 +225,7 @@ namespace WorkflowConfig.Api.Services
             dataPoint.Tag = updatedDataPoint.Tag;
             dataPoint.DataType = updatedDataPoint.DataType;
             dataPoint.Configuration = updatedDataPoint.Configuration;
+            dataPoint.Calculation = updatedDataPoint.Calculation;
 
             UpdateDataStore(dataStoreId, dataStore);
             return true;
@@ -367,6 +389,224 @@ namespace WorkflowConfig.Api.Services
             }
 
             return false;
+        }
+
+        // Calculation .cs file management methods
+        
+        private string GetCalculationsDirectory(string dataStoreId)
+        {
+            var calculationsDir = Path.Combine(_dataStoresDirectory, dataStoreId, "calculations");
+            Directory.CreateDirectory(calculationsDir);
+            return calculationsDir;
+        }
+
+        private string GetCalculationFilePath(string dataStoreId, string dataPointId)
+        {
+            var calculationsDir = GetCalculationsDirectory(dataStoreId);
+            return Path.Combine(calculationsDir, $"{dataPointId}.cs");
+        }
+
+        private void PopulateCalculationScripts(string dataStoreId, List<DataGroup> dataGroups)
+        {
+            foreach (var group in dataGroups)
+            {
+                foreach (var dataPoint in group.DataPoints)
+                {
+                    if (dataPoint.Calculation != null)
+                    {
+                        var csFilePath = GetCalculationFilePath(dataStoreId, dataPoint.Id);
+                        if (File.Exists(csFilePath))
+                        {
+                            var csContent = File.ReadAllText(csFilePath);
+                            dataPoint.Calculation.Script = ExtractMethodBody(csContent);
+                        }
+                    }
+                }
+
+                // Recursively process child groups
+                if (group.ChildGroups.Count > 0)
+                {
+                    PopulateCalculationScripts(dataStoreId, group.ChildGroups);
+                }
+            }
+        }
+
+        private void SaveCalculationScripts(string dataStoreId, List<DataGroup> dataGroups)
+        {
+            foreach (var group in dataGroups)
+            {
+                foreach (var dataPoint in group.DataPoints)
+                {
+                    if (dataPoint.Calculation != null)
+                    {
+                        var csContent = GenerateCSharpFile(dataPoint);
+                        var csFilePath = GetCalculationFilePath(dataStoreId, dataPoint.Id);
+                        File.WriteAllText(csFilePath, csContent);
+                    }
+                }
+
+                // Recursively process child groups
+                if (group.ChildGroups.Count > 0)
+                {
+                    SaveCalculationScripts(dataStoreId, group.ChildGroups);
+                }
+            }
+        }
+
+        private DataStore ClearCalculationScripts(DataStore dataStore)
+        {
+            // Create a deep copy with scripts cleared
+            var json = JsonSerializer.Serialize(dataStore);
+            var copy = JsonSerializer.Deserialize<DataStore>(json);
+            
+            if (copy != null)
+            {
+                ClearScriptsFromGroups(copy.DataGroups);
+            }
+            
+            return copy ?? dataStore;
+        }
+
+        private void ClearScriptsFromGroups(List<DataGroup> dataGroups)
+        {
+            foreach (var group in dataGroups)
+            {
+                foreach (var dataPoint in group.DataPoints)
+                {
+                    if (dataPoint.Calculation != null)
+                    {
+                        // Keep inputs, clear script
+                        dataPoint.Calculation.Script = string.Empty;
+                    }
+                }
+
+                // Recursively process child groups
+                if (group.ChildGroups.Count > 0)
+                {
+                    ClearScriptsFromGroups(group.ChildGroups);
+                }
+            }
+        }
+
+        private string GenerateCSharpFile(DataPoint dataPoint)
+        {
+            var sb = new StringBuilder();
+            
+            // Add using statements
+            sb.AppendLine("using System;");
+            sb.AppendLine("using System.Collections.Generic;");
+            sb.AppendLine("using System.Linq;");
+            sb.AppendLine("using System.Text;");
+            sb.AppendLine("using System.Text.RegularExpressions;");
+            sb.AppendLine();
+            
+            // Add namespace and class
+            sb.AppendLine("namespace CalculatedFields");
+            sb.AppendLine("{");
+            sb.AppendLine("    public class Calculation");
+            sb.AppendLine("    {");
+            
+            // Generate method signature from JSON inputs
+            var returnType = GetCSharpReturnType(dataPoint.DataType);
+            var parameters = string.Join(", ", dataPoint.Calculation!.Inputs.Select(input =>
+            {
+                var paramType = GetCSharpParameterType(input.DataType);
+                return $"{paramType} {input.Alias}";
+            }));
+            
+            sb.AppendLine($"        public {returnType} Calculate({parameters})");
+            sb.AppendLine("        {");
+            
+            // Add the user's script (with proper indentation)
+            var scriptLines = dataPoint.Calculation.Script.Split('\n');
+            foreach (var line in scriptLines)
+            {
+                sb.AppendLine("        " + line);
+            }
+            
+            sb.AppendLine("        }");
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
+            
+            return sb.ToString();
+        }
+
+        private string ExtractMethodBody(string csContent)
+        {
+            // Extract everything between the method opening brace and closing brace
+            var pattern = @"public\s+\w+\s+Calculate\s*\([^)]*\)\s*\{(.+)\s*\}\s*\}\s*\}";
+            var match = Regex.Match(csContent, pattern, RegexOptions.Singleline);
+            
+            if (match.Success)
+            {
+                var body = match.Groups[1].Value;
+                
+                // Remove the extra indentation (8 spaces from the .cs file structure)
+                var lines = body.Split('\n');
+                var result = new List<string>();
+                
+                foreach (var line in lines)
+                {
+                    if (line.Length >= 8 && line.Substring(0, 8) == "        ")
+                    {
+                        result.Add(line.Substring(8));
+                    }
+                    else if (string.IsNullOrWhiteSpace(line))
+                    {
+                        result.Add(line.TrimStart());
+                    }
+                    else
+                    {
+                        result.Add(line);
+                    }
+                }
+                
+                return string.Join("\n", result).Trim();
+            }
+            
+            return string.Empty;
+        }
+
+        private string GetCSharpReturnType(string dataType)
+        {
+            return dataType switch
+            {
+                "String" => "string",
+                "Integer" => "int",
+                "Decimal" => "decimal",
+                "Money" => "decimal",
+                "Date" => "DateTime",
+                "Timestamp" => "DateTime",
+                "Year" => "int",
+                "YesNo" => "string",
+                "Email" => "string",
+                "Phone" => "string",
+                "Url" => "string",
+                "Zipcode" => "string",
+                "ListOfStrings" => "List<string>",
+                _ => "object"
+            };
+        }
+
+        private string GetCSharpParameterType(string dataType)
+        {
+            return dataType switch
+            {
+                "String" => "string",
+                "Integer" => "int?",
+                "Decimal" => "decimal?",
+                "Money" => "decimal?",
+                "Date" => "DateTime?",
+                "Timestamp" => "DateTime?",
+                "Year" => "int?",
+                "YesNo" => "string",
+                "Email" => "string",
+                "Phone" => "string",
+                "Url" => "string",
+                "Zipcode" => "string",
+                "ListOfStrings" => "List<string>",
+                _ => "object"
+            };
         }
     }
 }

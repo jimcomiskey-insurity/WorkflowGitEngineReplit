@@ -532,5 +532,70 @@ namespace WorkflowConfig.Api.Tests.Services
             result.Should().Contain(ds => ds.Name == "Store 1");
             result.Should().Contain(ds => ds.Name == "Store 2");
         }
+
+        [Fact]
+        public void CalculationWithZeroInputs_SavesAndLoadsCorrectly()
+        {
+            // Arrange
+            var dataStore = new DataStore
+            {
+                Name = "Test Store",
+                Description = "Test",
+                NoOfTimesUsed = 0,
+                DataGroups = new List<DataGroup>()
+            };
+            var created = _service.CreateDataStore(dataStore);
+
+            var dataGroup = new DataGroup
+            {
+                Name = "Constants",
+                Description = "Constant values",
+                DataPoints = new List<DataPoint>(),
+                ChildGroups = new List<DataGroup>()
+            };
+            var addedGroup = _service.AddDataGroup(created.Id, dataGroup);
+
+            var constantPoint = new DataPoint
+            {
+                Name = "Pi Constant",
+                Description = "Mathematical constant",
+                DataType = "Decimal",
+                Configuration = new DataPointConfiguration
+                {
+                    Mode = "Calculated",
+                    DecimalPlaces = 5
+                },
+                Calculation = new DataPointCalculation
+                {
+                    Inputs = new List<ScriptInput>(),
+                    Script = "return 3.14159m;"
+                }
+            };
+
+            // Act
+            var addedPoint = _service.AddDataPoint(created.Id, addedGroup!.Id, constantPoint);
+            
+            // Update to trigger .cs file generation
+            var updatedDataStore = _service.GetDataStoreById(created.Id);
+            _service.UpdateDataStore(created.Id, updatedDataStore!);
+            
+            // Retrieve to verify script is loaded from .cs file
+            var retrieved = _service.GetDataStoreById(created.Id);
+
+            // Assert
+            retrieved.Should().NotBeNull();
+            var retrievedPoint = retrieved!.DataGroups[0].DataPoints[0];
+            retrievedPoint.Calculation.Should().NotBeNull();
+            retrievedPoint.Calculation!.Inputs.Should().BeEmpty();
+            retrievedPoint.Calculation.Script.Should().Be("return 3.14159m;");
+
+            // Verify .cs file exists
+            var csFilePath = Path.Combine(_testPath, "datastores", created.Id, "calculations", addedPoint!.Id + ".cs");
+            File.Exists(csFilePath).Should().BeTrue();
+            
+            var csContent = File.ReadAllText(csFilePath);
+            csContent.Should().Contain("return 3.14159m;");
+            csContent.Should().Contain("public decimal Calculate()");
+        }
     }
 }

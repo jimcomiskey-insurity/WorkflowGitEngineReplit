@@ -1,4 +1,5 @@
 using LibGit2Sharp;
+using System.Text;
 using System.Text.Json;
 using WorkflowConfig.Api.Models;
 
@@ -278,6 +279,13 @@ public static class DataInitializer
         var dataStoreId = "ds-auto-insurance-001";
         var dataStore = CreateAutoInsuranceDataStore(dataStoreId);
 
+        // Save calculation .cs files
+        SaveCalculationScriptsForInit(dataStoreId, repoPath, dataStore.DataGroups);
+
+        // Don't clear scripts - keep them in JSON for repo readability
+        // The .cs files are the source of truth for compilation, but JSON retains scripts
+        // This matches the behavior when DataStoreService loads: it populates from .cs files
+
         // Write individual datastore file
         var dataStorePath = Path.Combine(dataStoresDir, $"{dataStoreId}.json");
         var dataStoreJson = JsonSerializer.Serialize(dataStore, new JsonSerializerOptions { WriteIndented = true });
@@ -298,7 +306,139 @@ public static class DataInitializer
         var listJson = JsonSerializer.Serialize(dataStoreList, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(dataStoreListPath, listJson);
 
-        Console.WriteLine($"Created sample auto insurance datastore with {dataStore.DataGroups.Count} top-level groups");
+        Console.WriteLine($"Created sample auto insurance datastore with {dataStore.DataGroups.Count} top-level groups and calculation .cs files");
+    }
+
+    private static void SaveCalculationScriptsForInit(string dataStoreId, string repoPath, List<DataGroup> dataGroups)
+    {
+        var dataStoresDir = Path.Combine(repoPath, "datastores");
+        var calculationsDir = Path.Combine(dataStoresDir, dataStoreId, "calculations");
+        Directory.CreateDirectory(calculationsDir);
+
+        foreach (var group in dataGroups)
+        {
+            foreach (var dataPoint in group.DataPoints)
+            {
+                if (dataPoint.Calculation != null)
+                {
+                    var csContent = GenerateCSharpFileForInit(dataPoint);
+                    var csFilePath = Path.Combine(calculationsDir, $"{dataPoint.Id}.cs");
+                    File.WriteAllText(csFilePath, csContent);
+                }
+            }
+
+            // Recursively process child groups
+            if (group.ChildGroups.Count > 0)
+            {
+                SaveCalculationScriptsForInit(dataStoreId, repoPath, group.ChildGroups);
+            }
+        }
+    }
+
+    private static void ClearCalculationScriptsForInit(List<DataGroup> dataGroups)
+    {
+        foreach (var group in dataGroups)
+        {
+            foreach (var dataPoint in group.DataPoints)
+            {
+                if (dataPoint.Calculation != null)
+                {
+                    // Keep inputs, clear script
+                    dataPoint.Calculation.Script = string.Empty;
+                }
+            }
+
+            // Recursively process child groups
+            if (group.ChildGroups.Count > 0)
+            {
+                ClearCalculationScriptsForInit(group.ChildGroups);
+            }
+        }
+    }
+
+    private static string GenerateCSharpFileForInit(DataPoint dataPoint)
+    {
+        var sb = new StringBuilder();
+        
+        // Add using statements
+        sb.AppendLine("using System;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine("using System.Linq;");
+        sb.AppendLine("using System.Text;");
+        sb.AppendLine("using System.Text.RegularExpressions;");
+        sb.AppendLine();
+        
+        // Add namespace and class
+        sb.AppendLine("namespace CalculatedFields");
+        sb.AppendLine("{");
+        sb.AppendLine("    public class Calculation");
+        sb.AppendLine("    {");
+        
+        // Generate method signature from JSON inputs
+        var returnType = GetCSharpReturnTypeForInit(dataPoint.DataType);
+        var parameters = string.Join(", ", dataPoint.Calculation!.Inputs.Select(input =>
+        {
+            var paramType = GetCSharpParameterTypeForInit(input.DataType);
+            return $"{paramType} {input.Alias}";
+        }));
+        
+        sb.AppendLine($"        public {returnType} Calculate({parameters})");
+        sb.AppendLine("        {");
+        
+        // Add the user's script (with proper indentation)
+        var scriptLines = dataPoint.Calculation.Script.Split('\n');
+        foreach (var line in scriptLines)
+        {
+            sb.AppendLine("        " + line);
+        }
+        
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        
+        return sb.ToString();
+    }
+
+    private static string GetCSharpReturnTypeForInit(string dataType)
+    {
+        return dataType switch
+        {
+            "String" => "string",
+            "Integer" => "int",
+            "Decimal" => "decimal",
+            "Money" => "decimal",
+            "Date" => "DateTime",
+            "Timestamp" => "DateTime",
+            "Year" => "int",
+            "YesNo" => "string",
+            "Email" => "string",
+            "Phone" => "string",
+            "Url" => "string",
+            "Zipcode" => "string",
+            "ListOfStrings" => "List<string>",
+            _ => "object"
+        };
+    }
+
+    private static string GetCSharpParameterTypeForInit(string dataType)
+    {
+        return dataType switch
+        {
+            "String" => "string",
+            "Integer" => "int?",
+            "Decimal" => "decimal?",
+            "Money" => "decimal?",
+            "Date" => "DateTime?",
+            "Timestamp" => "DateTime?",
+            "Year" => "int?",
+            "YesNo" => "string",
+            "Email" => "string",
+            "Phone" => "string",
+            "Url" => "string",
+            "Zipcode" => "string",
+            "ListOfStrings" => "List<string>",
+            _ => "object"
+        };
     }
 
     private static DataStore CreateAutoInsuranceDataStore(string id)
