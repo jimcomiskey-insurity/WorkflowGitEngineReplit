@@ -1035,20 +1035,24 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           `${this.getCSharpType(input.dataType)} ${input.alias}`
         ).join(', ');
         
-        // Wrap code with the same structure that backend uses for execution
-        // This ensures IntelliSense context matches runtime context exactly
-        return `using System;
+        const transformedCode = `using System;
 using System.Linq;
 
 public decimal Calculate(${parameters}) {
 ${code}
 }`;
+        
+        console.log('[IntelliSense] Code transformer called');
+        console.log('[IntelliSense] Parameters:', parameters);
+        console.log('[IntelliSense] Transformed code:', transformedCode);
+        
+        return transformedCode;
       };
       
       await intelliSenseService.initialize(monaco, model, codeTransformer, LINE_OFFSET);
-      console.log('IntelliSage initialized successfully');
+      console.log('[IntelliSense] Initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize IntelliSage:', error);
+      console.error('[IntelliSense] Failed to initialize:', error);
     }
   }
 
