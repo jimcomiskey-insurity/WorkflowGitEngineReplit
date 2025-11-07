@@ -963,7 +963,10 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
         const csharpType = this.getCSharpType(input.dataType);
         return `${csharpType} ${input.alias}`;
       }).join(', ');
-      const methodSignature = `public object Calculate(${params})\n{\n`;
+      
+      // Return type matches the data point's type (non-nullable)
+      const returnType = this.getCSharpReturnType(this.editingPoint.dataType);
+      const methodSignature = `public ${returnType} Calculate(${params})\n{\n`;
       const methodEnd = '\n}';
       
       // Full code with signature (for Monaco to understand parameters)
@@ -1243,7 +1246,10 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
       const csharpType = this.getCSharpType(input.dataType);
       return `${csharpType} ${input.alias}`;
     }).join(', ');
-    const methodSignature = `public object Calculate(${params})\n{\n`;
+    
+    // Return type matches the data point's type (non-nullable)
+    const returnType = this.getCSharpReturnType(this.editingPoint.dataType);
+    const methodSignature = `public ${returnType} Calculate(${params})\n{\n`;
     const methodEnd = '\n}';
 
     // Update editor with new signature
@@ -1267,7 +1273,28 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
       return `${csharpType} ${input.alias}`;
     }).join(', ');
 
-    return `public object Calculate(${params})`;
+    // Return type matches the data point's type (non-nullable)
+    const returnType = this.getCSharpReturnType(this.editingPoint.dataType);
+    return `public ${returnType} Calculate(${params})`;
+  }
+
+  getCSharpReturnType(dataType: string): string {
+    const typeMap: { [key: string]: string } = {
+      'String': 'string',
+      'Integer': 'int',
+      'Decimal': 'decimal',
+      'Money': 'decimal',
+      'Date': 'DateTime',
+      'Timestamp': 'DateTime',
+      'Year': 'int',
+      'YesNo': 'string',
+      'Email': 'string',
+      'Phone': 'string',
+      'Url': 'string',
+      'Zipcode': 'string',
+      'ListOfStrings': 'List<string>'
+    };
+    return typeMap[dataType] || 'object';
   }
 
   extractMethodBody(fullScript: string): string {
