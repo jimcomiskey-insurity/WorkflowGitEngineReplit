@@ -159,11 +159,33 @@ Calculate({parameters})
                 
                 var items = new List<CompletionSuggestion>();
                 
-                // Add standard completions (types, keywords, members, etc.)
+                // PRIORITIZE: Add parameters and local variables FIRST (they should appear at top of list)
+                var localSymbols = semanticModel.LookupSymbols(adjustedPosition);
+                var parameterNames = new HashSet<string>();
+                
+                foreach (var symbol in localSymbols)
+                {
+                    // Only add parameters and local variables
+                    if (symbol.Kind == SymbolKind.Parameter || symbol.Kind == SymbolKind.Local)
+                    {
+                        parameterNames.Add(symbol.Name);
+                        items.Add(new CompletionSuggestion
+                        {
+                            Label = symbol.Name,
+                            Kind = symbol.Kind == SymbolKind.Parameter ? "Parameter" : "Variable",
+                            InsertText = symbol.Name,
+                            Detail = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                            Documentation = null
+                        });
+                    }
+                }
+                
+                // Add standard completions (types, keywords, members, etc.) AFTER parameters
                 if (completions != null)
                 {
                     items.AddRange(completions.ItemsList
                         .Take(100)
+                        .Where(item => !parameterNames.Contains(item.DisplayText)) // Avoid duplicates
                         .Select(item => new CompletionSuggestion
                         {
                             Label = item.DisplayText,
@@ -172,27 +194,6 @@ Calculate({parameters})
                             Detail = item.InlineDescription,
                             Documentation = null
                         }));
-                }
-                
-                // Add parameters and local variables using semantic model
-                var localSymbols = semanticModel.LookupSymbols(adjustedPosition);
-                foreach (var symbol in localSymbols)
-                {
-                    // Only add parameters and local variables
-                    if (symbol.Kind == SymbolKind.Parameter || symbol.Kind == SymbolKind.Local)
-                    {
-                        if (!items.Any(i => i.Label == symbol.Name))
-                        {
-                            items.Add(new CompletionSuggestion
-                            {
-                                Label = symbol.Name,
-                                Kind = symbol.Kind == SymbolKind.Parameter ? "Parameter" : "Variable",
-                                InsertText = symbol.Name,
-                                Detail = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                                Documentation = null
-                            });
-                        }
-                    }
                 }
                 
                 return Ok(new CompletionResponse { Items = items });
