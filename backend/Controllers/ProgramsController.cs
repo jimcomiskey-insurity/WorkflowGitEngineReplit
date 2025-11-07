@@ -58,7 +58,7 @@ public class ProgramsController : ControllerBase
         try
         {
             var createdProgram = _programService.CreateProgram(program);
-            return CreatedAtAction(nameof(GetProgram), new { programId = createdProgram.Id }, createdProgram);
+            return CreatedAtAction(nameof(GetProgram), new { userId, programId = createdProgram.Id }, createdProgram);
         }
         catch (InvalidOperationException ex)
         {
