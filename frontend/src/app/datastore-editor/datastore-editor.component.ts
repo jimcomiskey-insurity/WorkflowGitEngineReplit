@@ -1018,6 +1018,43 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     console.log('[REGISTRATION] Registering C# completion provider');
     
     const disposable = monaco.languages.registerCompletionItemProvider('csharp', {
+      provideCompletionItems: (model: any, position: any) => {
+        console.log('[PROVIDER CALLED - MINIMAL TEST] Monaco called our provider!');
+        
+        // MINIMAL TEST: Return hardcoded suggestions immediately without any async calls
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn
+        };
+        
+        const suggestions = [
+          {
+            label: 'myvalue',
+            kind: monaco.languages.CompletionItemKind.Variable,
+            insertText: 'myvalue',
+            range: range
+          },
+          {
+            label: 'myvalue2',
+            kind: monaco.languages.CompletionItemKind.Variable,
+            insertText: 'myvalue2',
+            range: range
+          }
+        ];
+        
+        console.log('[MINIMAL TEST] Returning:', suggestions);
+        return { suggestions: suggestions };
+      }
+    });
+    
+    console.log('[REGISTRATION] OLD completion provider (async with backend) commented out for testing');
+    
+    // OLD ASYNC VERSION - TEMPORARILY DISABLED FOR TESTING
+    /*
+    const disposableOld = monaco.languages.registerCompletionItemProvider('csharp', {
       triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
       provideCompletionItems: async (model: any, position: any) => {
         console.log('[PROVIDER CALLED] Monaco is calling our completion provider!');
@@ -1115,6 +1152,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
         }
       }
     });
+    */
   }
 
   private getMonacoCompletionKind(kind: string): any {
