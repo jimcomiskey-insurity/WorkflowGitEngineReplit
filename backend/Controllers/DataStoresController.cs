@@ -10,19 +10,11 @@ namespace WorkflowConfig.Api.Controllers
     [Route("api/users/{userId}/programs/{programId}/[controller]")]
     public class DataStoresController : ControllerBase
     {
-        private readonly string _basePath;
         private readonly GitService _gitService;
 
         public DataStoresController(GitService gitService)
         {
-            _basePath = "/home/runner/workflow-data";
             _gitService = gitService;
-        }
-
-        private DataStoreService GetUserService(string userId)
-        {
-            var userRepoPath = System.IO.Path.Combine(_basePath, "user-repos", userId);
-            return new DataStoreService(userRepoPath);
         }
 
         [HttpGet]
@@ -37,8 +29,8 @@ namespace WorkflowConfig.Api.Controllers
         [OpenApiOperation("GetDataStoreById")]
         public ActionResult<DataStore> GetDataStoreById(string userId, string programId, string id)
         {
-            var service = GetUserService(userId);
-            var dataStore = service.GetDataStoreById(id);
+            var dataStores = _gitService.ReadDataStoresWithGitStatus(programId, userId);
+            var dataStore = dataStores.FirstOrDefault(ds => ds.Id == id);
             
             if (dataStore == null)
             {
