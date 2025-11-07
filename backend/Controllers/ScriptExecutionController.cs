@@ -34,7 +34,10 @@ namespace WorkflowConfig.Api.Controllers
 
                 var fullScript = $@"
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 {request.Script}
 
@@ -42,8 +45,16 @@ Calculate({parameters})
 ";
 
                 var scriptOptions = ScriptOptions.Default
-                    .WithReferences(typeof(object).Assembly, typeof(Enumerable).Assembly)
-                    .WithImports("System", "System.Linq");
+                    .WithReferences(
+                        typeof(object).Assembly, 
+                        typeof(Enumerable).Assembly,
+                        typeof(System.Text.RegularExpressions.Regex).Assembly)
+                    .WithImports(
+                        "System", 
+                        "System.Collections.Generic",
+                        "System.Linq", 
+                        "System.Text",
+                        "System.Text.RegularExpressions");
                 
                 var result = await CSharpScript.EvaluateAsync<object>(
                     fullScript,

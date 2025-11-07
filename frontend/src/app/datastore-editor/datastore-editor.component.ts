@@ -430,7 +430,21 @@ interface TreeNode {
                 </div>
 
                 <div class="script-section">
-                  <label>C# Script</label>
+                  <label>
+                    C# Script
+                    <span class="help-icon" title="Available namespaces:
+• System
+• System.Collections.Generic
+• System.Linq
+• System.Text
+• System.Text.RegularExpressions
+
+Common classes:
+• Math (for Abs, Round, Max, Min, etc.)
+• DateTime (for date operations)
+• String (for text manipulation)
+• Regex (for pattern matching)">ⓘ</span>
+                  </label>
                   <div #scriptEditorContainer class="script-editor-container"></div>
                 </div>
 

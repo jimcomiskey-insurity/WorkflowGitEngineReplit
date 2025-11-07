@@ -621,6 +621,27 @@
   font-weight: 500;
 }
 
+.help-icon {
+  display: inline-block;
+  margin-left: 0.5rem;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  background: #3a3a3a;
+  color: #4fc3f7;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.help-icon:hover {
+  background: #4a4a4a;
+  color: #81d4fa;
+}
+
 .method-signature {
   background: #1e1e1e;
   padding: 0.75rem;
