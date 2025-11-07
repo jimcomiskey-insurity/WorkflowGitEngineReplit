@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 import { tap, switchMap, map, startWith } from 'rxjs/operators';
 import { UserService } from './user.service';
 import { GitEventService } from './git-event.service';
+import { ProgramStateService } from './program-state.service';
 import { AssetService, Asset } from './asset.service';
 
 @Injectable({
@@ -18,21 +19,27 @@ export class AssetStateService {
   constructor(
     private assetService: AssetService,
     private userService: UserService,
-    private gitEventService: GitEventService
+    private gitEventService: GitEventService,
+    private programStateService: ProgramStateService
   ) {
     const userWithRefresh$ = combineLatest([
       this.userService.currentUser$,
+      this.programStateService.currentProgramId$,
       this.refreshTrigger$,
       this.gitEventService.events$.pipe(startWith(null))
     ]).pipe(
-      map(([user]) => user)
+      map(([user, programId]) => ({ user, programId }))
     );
 
     this.assets$ = userWithRefresh$.pipe(
       tap(() => console.log('[AssetStateService] Fetching assets')),
-      switchMap(() => 
-        this.assetService.getAssets()
-      ),
+      switchMap(({ user, programId }) => {
+        if (!programId) {
+          console.log('[AssetStateService] No active program, clearing assets');
+          return of({ assets: [] });
+        }
+        return this.assetService.getAssets();
+      }),
       map(response => response.assets),
       tap(assets => {
         console.log('[AssetStateService] Received assets:', assets.length, 'assets');

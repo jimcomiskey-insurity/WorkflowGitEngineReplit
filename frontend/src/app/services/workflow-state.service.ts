@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 import { tap, switchMap, map, startWith } from 'rxjs/operators';
 import { UserService } from './user.service';
 import { GitEventService } from './git-event.service';
+import { ProgramStateService } from './program-state.service';
 import { WorkflowService, Workflow } from './workflow.service';
 
 /**
@@ -31,19 +32,22 @@ export class WorkflowStateService {
   constructor(
     private workflowService: WorkflowService,
     private userService: UserService,
-    private gitEventService: GitEventService
+    private gitEventService: GitEventService,
+    private programStateService: ProgramStateService
   ) {
     // Create observable stream that automatically refreshes when:
     // - User changes
+    // - Program changes
     // - Manual refresh is triggered
     // - Git events occur (commit, push, pull, discard, branch switch, etc.)
     // Note: startWith(null) ensures combineLatest emits immediately on startup
     const userWithRefresh$ = combineLatest([
       this.userService.currentUser$,
+      this.programStateService.currentProgramId$,
       this.refreshTrigger$,
       this.gitEventService.events$.pipe(startWith(null))
     ]).pipe(
-      map(([user]) => user)
+      map(([user, programId]) => ({ user, programId }))
     );
 
     // Workflows stream
@@ -51,9 +55,13 @@ export class WorkflowStateService {
     // and prevent fresh fetches when refresh() is called
     this.workflows$ = userWithRefresh$.pipe(
       tap(() => console.log('[WorkflowStateService] Fetching workflows')),
-      switchMap(() => 
-        this.workflowService.getWorkflows()
-      ),
+      switchMap(({ user, programId }) => {
+        if (!programId) {
+          console.log('[WorkflowStateService] No active program, clearing workflows');
+          return of({ workflows: [] });
+        }
+        return this.workflowService.getWorkflows();
+      }),
       map(response => response.workflows),
       tap(workflows => {
         console.log('[WorkflowStateService] Received workflows:', workflows.length, 'workflows');

@@ -8,7 +8,7 @@ import { Program } from '../models/program.model';
 })
 export class ProgramStateService {
   private programService = inject(ProgramService);
-  private currentProgramIdSubject = new BehaviorSubject<string>('default');
+  private currentProgramIdSubject = new BehaviorSubject<string | null>(null);
   private programsSubject = new BehaviorSubject<Program[]>([]);
 
   currentProgramId$ = this.currentProgramIdSubject.asObservable();
@@ -16,13 +16,14 @@ export class ProgramStateService {
 
   constructor() {
     const savedProgramId = sessionStorage.getItem('currentProgramId');
-    if (savedProgramId) {
+    const inContext = sessionStorage.getItem('inProgramContext');
+    if (savedProgramId && inContext === 'true') {
       this.currentProgramIdSubject.next(savedProgramId);
     }
   }
 
   getCurrentProgramId(): string {
-    return this.currentProgramIdSubject.value;
+    return this.currentProgramIdSubject.value || 'default';
   }
 
   setCurrentProgramId(programId: string): void {
@@ -45,5 +46,28 @@ export class ProgramStateService {
 
   refreshPrograms(userId: string): void {
     this.loadPrograms(userId);
+  }
+
+  enterProgram(programId: string): void {
+    this.setCurrentProgramId(programId);
+    sessionStorage.setItem('inProgramContext', 'true');
+  }
+
+  exitProgram(): void {
+    sessionStorage.removeItem('inProgramContext');
+    sessionStorage.removeItem('currentProgramId');
+    this.currentProgramIdSubject.next(null);
+  }
+
+  isInProgramContext(): boolean {
+    return sessionStorage.getItem('inProgramContext') === 'true';
+  }
+
+  clearState(): void {
+    this.programsSubject.next([]);
+  }
+
+  async deleteProgram(programId: string, userId: string): Promise<void> {
+    return this.programService.deleteProgram(userId, programId).toPromise();
   }
 }

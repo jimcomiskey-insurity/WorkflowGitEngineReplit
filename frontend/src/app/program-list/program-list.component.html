@@ -1,0 +1,108 @@
+<div class="program-list-container">
+  <div class="program-list-header">
+    <h1>Insurance Programs</h1>
+    <p class="subtitle">Select a program to manage workflows, assets, and data</p>
+    <button class="btn-primary" (click)="openCreateDialog()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>New Program</span>
+    </button>
+  </div>
+
+  <div class="programs-grid" *ngIf="programs.length > 0">
+    <div *ngFor="let program of programs" class="program-card" (click)="openProgram(program)">
+      <div class="program-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+          <path d="M14 2v6h6"/>
+        </svg>
+      </div>
+      <div class="program-info">
+        <h3>{{ program.name }}</h3>
+        <p>{{ program.description || 'No description provided' }}</p>
+        <div class="program-meta">
+          <span class="program-id">{{ program.id }}</span>
+        </div>
+      </div>
+      <div class="program-actions">
+        <button class="btn-icon" (click)="openEditDialog(program, $event)" title="Edit program">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
+        <button class="btn-icon btn-danger" (click)="openDeleteDialog(program, $event)" title="Delete program">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="programs.length === 0">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+      <path d="M14 2v6h6"/>
+    </svg>
+    <h2>No Programs Yet</h2>
+    <p>Create your first insurance program to get started</p>
+    <button class="btn-primary" (click)="openCreateDialog()">Create Program</button>
+  </div>
+</div>
+
+<app-program-dialog
+  *ngIf="showCreateDialog"
+  mode="create"
+  (close)="closeCreateDialog()"
+  (programCreated)="handleProgramCreated($event)"
+></app-program-dialog>
+
+<app-program-dialog
+  *ngIf="showEditDialog && editingProgram"
+  mode="edit"
+  [program]="editingProgram"
+  (close)="closeEditDialog()"
+  (programUpdated)="handleProgramUpdated()"
+></app-program-dialog>
+
+<div class="dialog-overlay" *ngIf="showDeleteDialog" (click)="closeDeleteDialog()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h2>Delete Program?</h2>
+      <button class="btn-icon" (click)="closeDeleteDialog()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="dialog-content">
+      <div class="warning-box">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <div>
+          <p><strong>This action cannot be undone.</strong></p>
+          <p>Deleting "{{ deletingProgram?.name }}" will permanently remove:</p>
+          <ul>
+            <li>All workflows, phases, and tasks</li>
+            <li>All assets and uploaded files</li>
+            <li>All data stores and configurations</li>
+            <li>Complete Git history and branches</li>
+            <li>All user repositories for this program</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn-secondary" (click)="closeDeleteDialog()">Cancel</button>
+      <button class="btn-danger" (click)="handleDeleteConfirm()">Delete Program</button>
+    </div>
+  </div>
+</div>

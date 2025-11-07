@@ -74,14 +74,32 @@ Preferred communication style: Simple, everyday language.
 
 ### UI/UX Decisions
 
-The frontend features a modern dark theme with a redesigned layout, including a persistent top header, sidebar navigation, a card-grid for workflows, and dedicated views for Version Control and Pending Changes. The sidebar navigation is organized into two distinct sections: **Program Configuration** (Workflows, Assets, Data) and **Version Control** (History, Pending Changes, Pull Requests, Branch Comparison), clearly separating workflow design features from version control operations. Key elements include workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes. An "API Docs" link provides quick access to the backend's Swagger UI.
+The frontend features a modern dark theme with a **two-tier navigation architecture**:
+
+1. **Program List View (`/programs`)**: Home page displaying all insurance programs in a card grid. Users can create, edit, and delete programs. Each card shows program name, description, ID, and action buttons. This is the entry point where users select which program to work on.
+
+2. **Program Workspace (`/programs/:programId/*`)**: After selecting a program, users enter the program-specific workspace with:
+   - **Breadcrumb Navigation**: "Programs / {Program Name} / {Current View}" with "Back to Programs" button
+   - **Sidebar Navigation**: Organized into two sections:
+     - **Program Configuration**: Workflows, Assets, Data
+     - **Version Control**: History, Pending Changes, Pull Requests, Branch Comparison
+   - **Program Context Management**: All state services (Workflow, Asset, Git) automatically clear when exiting to program list and reload when entering a program
+
+The workspace features workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes. An "API Docs" link provides quick access to the backend's Swagger UI.
 
 ### Technical Implementations
 
 **Frontend**:
 - Built with Angular 20.3.6 (Standalone Components) using client-side routing.
-- **Multi-Program Architecture**: Program selector in header allows switching between insurance programs, with ProgramStateService managing current program context across all services.
+- **Two-Tier Navigation Architecture**: 
+  - **ProgramListComponent**: Home page (`/programs`) for program selection
+  - **ProgramShellComponent**: Wrapper for program workspace with sidebar and breadcrumb navigation
+  - **ProgramGuard**: Loads program context before rendering child routes
+  - **Route Pattern**: `/programs` for list, `/programs/:programId/(workflows|assets|data|history|...)` for program views
 - **Centralized State Management**: Reactive state management using RxJS BehaviorSubjects via dedicated state services for automatic refresh and UI synchronization.
+  - **Program Context Lifecycle**: ProgramStateService manages `currentProgramId$` (null when on program list, programId when in workspace)
+  - **Automatic State Clearing**: State services (Workflow, Git, Asset) listen to `currentProgramId$` and emit empty states when programId is null, preventing stale data
+  - **Session Persistence**: Program context preserved across page refreshes via sessionStorage with dual flags (`currentProgramId` + `inProgramContext`)
 - **Pending Changes Badge**: Displays total count of changed files, updating immediately after mutation operations.
 - **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting, vs-dark theme, and dynamic loading. Includes Monaco Diff Editor for comparisons, continuous auto-save, branch-aware editing, and visual Git conflict resolution with color-coded conflict blocks.
 - **C# IntelliSense**: Monaco editor C# completion powered by Roslyn, providing type/member/keyword suggestions, method parameters, and local variables.

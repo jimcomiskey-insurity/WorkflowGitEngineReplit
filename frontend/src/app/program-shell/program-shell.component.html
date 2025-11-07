@@ -1,0 +1,120 @@
+<div class="program-shell">
+  <header class="top-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-button" (click)="backToPrograms()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Programs</span>
+        </button>
+        <div class="breadcrumb" *ngIf="currentProgram">
+          <span class="breadcrumb-item">{{ currentProgram.name }}</span>
+        </div>
+        <app-git-toolbar></app-git-toolbar>
+      </div>
+      <div class="header-right">
+        <a [href]="swaggerUrl" target="_blank" class="swagger-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>API Docs</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="content-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+          <div>
+            <div class="logo-title">Workflow Designer</div>
+            <div class="logo-subtitle">{{ currentProgram?.name || 'Loading...' }}</div>
+          </div>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">Program Configuration</div>
+        <a routerLink="workflows" routerLinkActive="active" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+          <span>Workflows</span>
+        </a>
+        <a routerLink="assets" routerLinkActive="active" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+            <path d="M13 2v7h7"></path>
+            <path d="M8 11h8"></path>
+            <path d="M8 15h8"></path>
+          </svg>
+          <span>Assets</span>
+        </a>
+        <a routerLink="datastores" routerLinkActive="active" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span>Data</span>
+        </a>
+
+        <div class="nav-section" style="margin-top: 24px;">Version Control</div>
+        <a routerLink="version-control" routerLinkActive="active" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="18" r="3"></circle>
+            <circle cx="6" cy="6" r="3"></circle>
+            <circle cx="18" cy="6" r="3"></circle>
+            <path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"></path>
+            <path d="M12 12v3"></path>
+          </svg>
+          <span>History</span>
+        </a>
+        <a routerLink="pending-changes" routerLinkActive="active" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          <span>Pending Changes</span>
+          <span class="badge" *ngIf="pendingChangesCount > 0">{{ pendingChangesCount }}</span>
+        </a>
+        <a routerLink="pull-requests" routerLinkActive="active" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="18" r="3"></circle>
+            <circle cx="6" cy="6" r="3"></circle>
+            <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+            <line x1="6" y1="9" x2="6" y2="21"></line>
+          </svg>
+          <span>Pull Requests</span>
+        </a>
+        <a routerLink="branch-comparison" routerLinkActive="active" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 3h5v5"></path>
+            <path d="M8 3H3v5"></path>
+            <path d="M12 22v-7"></path>
+            <path d="M16 8l-4 4-4-4"></path>
+            <path d="M3 3l5 5"></path>
+            <path d="M16 3l5 5"></path>
+          </svg>
+          <span>Branch Comparison</span>
+        </a>
+      </nav>
+    </aside>
+    
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
