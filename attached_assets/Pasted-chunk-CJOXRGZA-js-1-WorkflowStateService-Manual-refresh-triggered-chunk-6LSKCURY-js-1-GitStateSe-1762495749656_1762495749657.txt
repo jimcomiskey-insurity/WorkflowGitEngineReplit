@@ -1,0 +1,49 @@
+chunk-CJOXRGZA.js:1 [WorkflowStateService] Manual refresh triggered
+chunk-6LSKCURY.js:1 [GitStateService] Initializing
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-3QXYWLKI.js:1 Monaco Editor already loaded, using existing instance
+chunk-CSYT2EAY.js:3 [REGISTRATION] Registering C# completion provider
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-CSYT2EAY.js:3 [PROVIDER CALLED] Monaco is calling our completion provider!
+chunk-CSYT2EAY.js:3 [PROVIDER CALLED] Position: d {lineNumber: 1, column: 2} Model language: csharp
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-CSYT2EAY.js:3 [Completion Provider] Backend response: {items: Array(102)}
+chunk-CSYT2EAY.js:3 [Completion Provider] Total items from backend: 102
+chunk-CSYT2EAY.js:3 [Completion Provider] Suggestions to Monaco: 102
+chunk-CSYT2EAY.js:3 [Completion Provider] First 10 suggestions: (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+chunk-CSYT2EAY.js:3 [Completion Provider] Parameter suggestions: (2) [{…}, {…}]
+chunk-CSYT2EAY.js:3 [PROVIDER CALLED] Monaco is calling our completion provider!
+chunk-CSYT2EAY.js:3 [PROVIDER CALLED] Position: d {lineNumber: 1, column: 3} Model language: csharp
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-CSYT2EAY.js:3 [Completion Provider] Backend response: {items: Array(102)}
+chunk-CSYT2EAY.js:3 [Completion Provider] Total items from backend: 102
+chunk-CSYT2EAY.js:3 [Completion Provider] Suggestions to Monaco: 102
+chunk-CSYT2EAY.js:3 [Completion Provider] First 10 suggestions: (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+chunk-CSYT2EAY.js:3 [Completion Provider] Parameter suggestions: (2) [{…}, {…}]
+chunk-CSYT2EAY.js:3 [PROVIDER CALLED] Monaco is calling our completion provider!
+chunk-CSYT2EAY.js:3 [PROVIDER CALLED] Position: d {lineNumber: 1, column: 4} Model language: csharp
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-CSYT2EAY.js:3 [Completion Provider] Backend response: {items: Array(102)}
+chunk-CSYT2EAY.js:3 [Completion Provider] Total items from backend: 102
+chunk-CSYT2EAY.js:3 [Completion Provider] Suggestions to Monaco: 102
+chunk-CSYT2EAY.js:3 [Completion Provider] First 10 suggestions: (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+chunk-CSYT2EAY.js:3 [Completion Provider] Parameter suggestions: (2) [{…}, {…}]

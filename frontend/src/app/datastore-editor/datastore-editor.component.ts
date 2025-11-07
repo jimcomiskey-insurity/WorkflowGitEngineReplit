@@ -1080,8 +1080,17 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             sortText: s.sortText,
             range: s.range
           })));
+          
+          console.log('[Completion Provider] Returning object to Monaco:', { 
+            suggestions: suggestions.length,
+            incomplete: false 
+          });
+          console.log('[Completion Provider] Sample suggestion object:', JSON.stringify(suggestions[0], null, 2));
 
-          return { suggestions };
+          return { 
+            suggestions: suggestions,
+            incomplete: false  // Tell Monaco this is the complete list
+          };
         }).catch(err => {
           console.error('[Completion Provider] Error:', err);
           return { suggestions: [] };
