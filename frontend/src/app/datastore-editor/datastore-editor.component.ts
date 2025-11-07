@@ -1012,9 +1012,14 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
   private registerCompletionProvider(): void {
     const monaco = (window as any).monaco;
     
-    monaco.languages.registerCompletionItemProvider('csharp', {
+    console.log('[REGISTRATION] Registering C# completion provider');
+    
+    const disposable = monaco.languages.registerCompletionItemProvider('csharp', {
       triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
       provideCompletionItems: (model: any, position: any) => {
+        console.log('[PROVIDER CALLED] Monaco is calling our completion provider!');
+        console.log('[PROVIDER CALLED] Position:', position, 'Model language:', model.getLanguageId());
+        
         const script = model.getValue();
         const offset = model.getOffsetAt(position);
         
