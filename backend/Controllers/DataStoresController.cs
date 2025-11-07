@@ -253,6 +253,7 @@ namespace WorkflowConfig.Api.Controllers
             existingPoint.DataType = dataPoint.DataType;
             existingPoint.OrderIndex = dataPoint.OrderIndex;
             existingPoint.Configuration = dataPoint.Configuration;
+            existingPoint.Calculation = dataPoint.Calculation;
 
             _gitService.WriteDataStores(userId, dataStores);
             return NoContent();
