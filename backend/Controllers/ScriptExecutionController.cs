@@ -92,14 +92,18 @@ Calculate({parameters})
                 scriptBuilder.AppendLine("using System.Text.RegularExpressions;");
                 scriptBuilder.AppendLine();
                 
-                // Add input variable declarations
-                foreach (var input in request.Inputs)
+                // Build method signature with parameters
+                scriptBuilder.Append("object Calculate(");
+                var parameters = request.Inputs.Select(input => 
                 {
                     var csharpType = GetCSharpType(input.DataType);
-                    scriptBuilder.AppendLine($"{csharpType} {input.Alias};");
-                }
+                    return $"{csharpType} {input.Alias}";
+                });
+                scriptBuilder.Append(string.Join(", ", parameters));
+                scriptBuilder.AppendLine(")");
+                scriptBuilder.AppendLine("{");
                 
-                scriptBuilder.AppendLine();
+                // Add user's script inside the method
                 scriptBuilder.Append(request.Script);
                 
                 var fullScript = scriptBuilder.ToString();

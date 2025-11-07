@@ -998,7 +998,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     const monaco = (window as any).monaco;
     
     monaco.languages.registerCompletionItemProvider('csharp', {
-      triggerCharacters: ['.', ' '],
+      triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
       provideCompletionItems: (model: any, position: any) => {
         const script = model.getValue();
         const offset = model.getOffsetAt(position);
