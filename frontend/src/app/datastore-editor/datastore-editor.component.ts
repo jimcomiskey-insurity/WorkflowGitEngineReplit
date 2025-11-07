@@ -1018,6 +1018,15 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
         const script = model.getValue();
         const offset = model.getOffsetAt(position);
         
+        // Get the word being typed and create range (REQUIRED by Monaco)
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn
+        };
+        
         const completionInputs = this.getScriptInputs().map(input => ({
           alias: input.alias,
           dataType: input.dataType
@@ -1031,13 +1040,21 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           console.log('[Completion Provider] Backend response:', response);
           console.log('[Completion Provider] Total items from backend:', response?.items?.length);
           
-          const suggestions = response?.items.map(item => ({
-            label: item.label,
-            kind: this.getMonacoCompletionKind(item.kind),
-            insertText: item.insertText,
-            detail: item.detail,
-            documentation: item.documentation
-          })) || [];
+          const suggestions = response?.items.map((item, index) => {
+            // Prioritize parameters and variables with sortText
+            const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
+            const sortText = isParameter ? `000${index}` : `999${index}`;
+            
+            return {
+              label: item.label,
+              kind: this.getMonacoCompletionKind(item.kind),
+              insertText: item.insertText,
+              detail: item.detail,
+              documentation: item.documentation,
+              sortText: sortText,  // Controls ordering (parameters at top)
+              range: range         // REQUIRED: tells Monaco what text to replace
+            };
+          }) || [];
 
           console.log('[Completion Provider] Suggestions to Monaco:', suggestions.length, suggestions.slice(0, 10));
           
