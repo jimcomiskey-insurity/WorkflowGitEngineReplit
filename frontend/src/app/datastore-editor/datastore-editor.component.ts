@@ -1061,11 +1061,21 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             };
           }) || [];
 
-          console.log('[Completion Provider] Suggestions to Monaco:', suggestions.length, suggestions.slice(0, 10));
+          console.log('[Completion Provider] Suggestions to Monaco:', suggestions.length);
+          console.log('[Completion Provider] First 10 suggestions:', suggestions.slice(0, 10).map(s => ({ 
+            label: s.label, 
+            kind: s.kind, 
+            sortText: s.sortText 
+          })));
           
           // Check if parameters are in the suggestions
           const paramSuggestions = suggestions.filter(s => s.label.includes('myvalue'));
-          console.log('[Completion Provider] Parameter suggestions:', paramSuggestions);
+          console.log('[Completion Provider] Parameter suggestions:', paramSuggestions.map(s => ({ 
+            label: s.label, 
+            kind: s.kind, 
+            sortText: s.sortText,
+            range: s.range
+          })));
 
           return { suggestions };
         }).catch(err => {
