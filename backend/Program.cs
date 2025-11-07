@@ -1,6 +1,7 @@
 using System.Text.Json;
 using WorkflowConfig.Api;
 using WorkflowConfig.Api.Services;
+using ProgramModel = WorkflowConfig.Api.Models.Program;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton<ProgramService>();
+builder.Services.AddSingleton<IProgramService, ProgramService>();
 builder.Services.AddSingleton<GitService>();
 builder.Services.AddSingleton<PullRequestService>();
 
@@ -37,7 +38,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-var programService = app.Services.GetRequiredService<ProgramService>();
+var programService = app.Services.GetRequiredService<IProgramService>();
 var gitService = app.Services.GetRequiredService<GitService>();
 
 var defaultProgramId = programService.GetDefaultProgramId();
@@ -45,7 +46,7 @@ var programs = programService.GetAllPrograms();
 
 if (!programs.Any())
 {
-    var defaultProgram = new WorkflowConfig.Api.Models.Program
+    var defaultProgram = new ProgramModel
     {
         Id = defaultProgramId,
         Name = "Auto Insurance",

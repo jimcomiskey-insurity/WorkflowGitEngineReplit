@@ -4,7 +4,7 @@ using WorkflowConfig.Api.Models;
 
 namespace WorkflowConfig.Api.Services;
 
-public class ProgramService
+public class ProgramService : IProgramService
 {
     private readonly string _programsBasePath;
     private readonly string _programListPath;
@@ -147,6 +147,21 @@ public class ProgramService
 
         _logger.LogInformation("Deleted program {ProgramId}: {ProgramName}", programId, program.Name);
         return true;
+    }
+
+    public void EnsureProgramRepositories(string programId)
+    {
+        InitializeProgramRepository(programId);
+    }
+
+    public string GetProgramCentralRepoPath(string programId)
+    {
+        return GetCentralRepoPath(programId);
+    }
+
+    public string GetProgramUserRepoPath(string programId, string userId)
+    {
+        return GetUserRepoPath(programId, userId);
     }
 
     private void SaveProgramList(List<Models.Program> programs)

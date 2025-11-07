@@ -22,8 +22,10 @@ public class GitServiceResetTests : IDisposable
     private readonly Mock<IConfiguration> _configMock;
     private readonly Mock<IWebHostEnvironment> _envMock;
     private readonly Mock<ILogger<GitService>> _loggerMock;
+    private readonly Mock<IProgramService> _programServiceMock;
     private readonly string _testBasePath;
     private readonly GitService _gitService;
+    private const string TestProgramId = "test-program";
 
     public GitServiceResetTests()
     {
@@ -40,10 +42,18 @@ public class GitServiceResetTests : IDisposable
         _configMock.Setup(c => c["GitSettings:PullRequestsPath"]).Returns(Path.Combine(_testBasePath, "pull-requests"));
         _envMock.Setup(e => e.ContentRootPath).Returns(_testBasePath);
         
-        _gitService = new GitService(_configMock.Object, _envMock.Object, _loggerMock.Object);
+        _programServiceMock = new Mock<IProgramService>();
+        
+        _programServiceMock.Setup(x => x.GetCentralRepoPath(It.IsAny<string>()))
+            .Returns((string programId) => Path.Combine(_testBasePath, "central-repo"));
+            
+        _programServiceMock.Setup(x => x.GetUserRepoPath(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string programId, string userId) => Path.Combine(_testBasePath, "user-repos", userId));
+        
+        _gitService = new GitService(_programServiceMock.Object, _configMock.Object, _envMock.Object, _loggerMock.Object);
         
         // Initialize the central repository
-        _gitService.InitializeCentralRepository();
+        _gitService.InitializeCentralRepository(TestProgramId);
         
         // Initialize with sample data
         InitializeSampleData();
@@ -118,10 +128,10 @@ public class GitServiceResetTests : IDisposable
         var userId = "testUser";
         
         // Create a feature branch, make a commit, and push it
-        _gitService.CreateBranch(userId, "feature/test-branch");
-        _gitService.SwitchBranch(userId, "feature/test-branch");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/test-branch");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/test-branch");
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow
         {
             WorkflowKey = "test-workflow",
@@ -129,12 +139,12 @@ public class GitServiceResetTests : IDisposable
             Description = "Test",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Add test workflow", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Add test workflow", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
 
         // Act
-        var lastPushedSha = _gitService.GetLastPushedCommitSha(userId);
+        var lastPushedSha = _gitService.GetLastPushedCommitSha(TestProgramId, userId);
 
         // Assert
         lastPushedSha.Should().NotBeNullOrEmpty("branch has been pushed to remote");
@@ -147,10 +157,10 @@ public class GitServiceResetTests : IDisposable
         var userId = "testUser";
         
         // Create a feature branch and make a local commit (don't push)
-        _gitService.CreateBranch(userId, "feature/local-only");
-        _gitService.SwitchBranch(userId, "feature/local-only");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/local-only");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/local-only");
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow
         {
             WorkflowKey = "local-workflow",
@@ -158,12 +168,12 @@ public class GitServiceResetTests : IDisposable
             Description = "Not pushed",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Local commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Local commit", "Test User", "test@example.com");
         // Intentionally NOT pushing
 
         // Act
-        var lastPushedSha = _gitService.GetLastPushedCommitSha(userId);
+        var lastPushedSha = _gitService.GetLastPushedCommitSha(TestProgramId, userId);
 
         // Assert
         lastPushedSha.Should().BeNull("branch has not been pushed to remote");
@@ -176,10 +186,10 @@ public class GitServiceResetTests : IDisposable
         var userId = "testUser";
         
         // Create and push initial commit
-        _gitService.CreateBranch(userId, "feature/reset-test");
-        _gitService.SwitchBranch(userId, "feature/reset-test");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/reset-test");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/reset-test");
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow
         {
             WorkflowKey = "workflow-1",
@@ -187,11 +197,11 @@ public class GitServiceResetTests : IDisposable
             Description = "First commit",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "First commit", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "First commit", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
         
-        var lastPushedSha = _gitService.GetLastPushedCommitSha(userId);
+        var lastPushedSha = _gitService.GetLastPushedCommitSha(TestProgramId, userId);
         
         // Make an additional local commit (not pushed)
         workflows.Workflows.Add(new Workflow
@@ -201,14 +211,14 @@ public class GitServiceResetTests : IDisposable
             Description = "Second commit (to be reset)",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Second commit (accidental)", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Second commit (accidental)", "Test User", "test@example.com");
 
         // Act - Reset to the last pushed commit
-        _gitService.ResetToCommit(userId, lastPushedSha!);
+        _gitService.ResetToCommit(TestProgramId, userId, lastPushedSha!);
 
         // Assert
-        var commits = _gitService.GetCommitHistory(userId, 10);
+        var commits = _gitService.GetCommitHistory(TestProgramId, userId, 10);
         commits.First().Message.Should().Contain("First commit", "reset removed the second commit");
         commits.Should().NotContain(c => c.Message.Contains("Second commit"), "the accidental commit should be removed");
     }
@@ -220,10 +230,10 @@ public class GitServiceResetTests : IDisposable
         var userId = "testUser";
         
         // Create and push two commits
-        _gitService.CreateBranch(userId, "feature/safety-test");
-        _gitService.SwitchBranch(userId, "feature/safety-test");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/safety-test");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/safety-test");
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow
         {
             WorkflowKey = "workflow-1",
@@ -231,11 +241,11 @@ public class GitServiceResetTests : IDisposable
             Description = "First",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "First commit", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "First commit", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
         
-        var firstCommitSha = _gitService.GetCommitHistory(userId, 1).First().Sha;
+        var firstCommitSha = _gitService.GetCommitHistory(TestProgramId, userId, 1).First().Sha;
         
         workflows.Workflows.Add(new Workflow
         {
@@ -244,12 +254,12 @@ public class GitServiceResetTests : IDisposable
             Description = "Second",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Second commit", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Second commit", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
 
         // Act & Assert - Try to reset to first commit (not the last pushed)
-        var action = () => _gitService.ResetToCommit(userId, firstCommitSha);
+        var action = () => _gitService.ResetToCommit(TestProgramId, userId, firstCommitSha);
         
         action.Should().Throw<InvalidOperationException>()
             .WithMessage("*only reset to the last pushed commit*");
@@ -262,10 +272,10 @@ public class GitServiceResetTests : IDisposable
         var userId = "testUser";
         
         // Create and push initial commit
-        _gitService.CreateBranch(userId, "feature/preserve-test");
-        _gitService.SwitchBranch(userId, "feature/preserve-test");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/preserve-test");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/preserve-test");
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow
         {
             WorkflowKey = "workflow-1",
@@ -273,11 +283,11 @@ public class GitServiceResetTests : IDisposable
             Description = "Pushed",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Pushed commit", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Pushed commit", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
         
-        var lastPushedSha = _gitService.GetLastPushedCommitSha(userId);
+        var lastPushedSha = _gitService.GetLastPushedCommitSha(TestProgramId, userId);
         
         // Make local commit with changes
         workflows.Workflows.Add(new Workflow
@@ -287,14 +297,14 @@ public class GitServiceResetTests : IDisposable
             Description = "Local commit",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Local commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Local commit", "Test User", "test@example.com");
 
         // Act - Reset should preserve the workflow-2 changes in working directory
-        _gitService.ResetToCommit(userId, lastPushedSha!);
+        _gitService.ResetToCommit(TestProgramId, userId, lastPushedSha!);
 
         // Assert - The reset should have removed the commit but kept the file changes
-        var status = _gitService.GetStatus(userId);
+        var status = _gitService.GetStatus(TestProgramId, userId);
         status.Modified.Should().Contain("workflow-list.json", "reset --mixed keeps working directory changes");
     }
 
@@ -306,7 +316,7 @@ public class GitServiceResetTests : IDisposable
         var invalidSha = "0000000000000000000000000000000000000000";
 
         // Act & Assert
-        var action = () => _gitService.ResetToCommit(userId, invalidSha);
+        var action = () => _gitService.ResetToCommit(TestProgramId, userId, invalidSha);
         
         action.Should().Throw<InvalidOperationException>()
             .WithMessage("*only reset to the last pushed commit*");
@@ -318,25 +328,25 @@ public class GitServiceResetTests : IDisposable
         // Arrange
         var userId = "testUser";
         
-        _gitService.CreateBranch(userId, "feature/multiple-pushes");
-        _gitService.SwitchBranch(userId, "feature/multiple-pushes");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/multiple-pushes");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/multiple-pushes");
         
         // First commit and push
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow { WorkflowKey = "wf-1", WorkflowName = "WF 1", Description = "1", Phases = new List<Phase>() });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Commit 1", "User", "user@test.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Commit 1", "User", "user@test.com");
+        _gitService.Push(TestProgramId, userId);
         
-        var firstPushedSha = _gitService.GetLastPushedCommitSha(userId);
+        var firstPushedSha = _gitService.GetLastPushedCommitSha(TestProgramId, userId);
         
         // Second commit and push
         workflows.Workflows.Add(new Workflow { WorkflowKey = "wf-2", WorkflowName = "WF 2", Description = "2", Phases = new List<Phase>() });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Commit 2", "User", "user@test.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Commit 2", "User", "user@test.com");
+        _gitService.Push(TestProgramId, userId);
         
-        var secondPushedSha = _gitService.GetLastPushedCommitSha(userId);
+        var secondPushedSha = _gitService.GetLastPushedCommitSha(TestProgramId, userId);
 
         // Act & Assert
         firstPushedSha.Should().NotBeNullOrEmpty();

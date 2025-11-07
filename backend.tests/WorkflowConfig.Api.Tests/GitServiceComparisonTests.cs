@@ -22,8 +22,10 @@ public class GitServiceComparisonTests : IDisposable
     private readonly Mock<IConfiguration> _configMock;
     private readonly Mock<IWebHostEnvironment> _envMock;
     private readonly Mock<ILogger<GitService>> _loggerMock;
+    private readonly Mock<IProgramService> _programServiceMock;
     private readonly string _testBasePath;
     private readonly GitService _gitService;
+    private const string TestProgramId = "test-program";
 
     public GitServiceComparisonTests()
     {
@@ -40,10 +42,18 @@ public class GitServiceComparisonTests : IDisposable
         _configMock.Setup(c => c["GitSettings:PullRequestsPath"]).Returns(Path.Combine(_testBasePath, "pull-requests"));
         _envMock.Setup(e => e.ContentRootPath).Returns(_testBasePath);
         
-        _gitService = new GitService(_configMock.Object, _envMock.Object, _loggerMock.Object);
+        _programServiceMock = new Mock<IProgramService>();
+        
+        _programServiceMock.Setup(x => x.GetCentralRepoPath(It.IsAny<string>()))
+            .Returns((string programId) => Path.Combine(_testBasePath, "central-repo"));
+            
+        _programServiceMock.Setup(x => x.GetUserRepoPath(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string programId, string userId) => Path.Combine(_testBasePath, "user-repos", userId));
+        
+        _gitService = new GitService(_programServiceMock.Object, _configMock.Object, _envMock.Object, _loggerMock.Object);
         
         // Initialize the central repository
-        _gitService.InitializeCentralRepository();
+        _gitService.InitializeCentralRepository(TestProgramId);
         
         // Initialize with sample data (create initial commit on master like production does)
         InitializeSampleData();
@@ -168,11 +178,11 @@ public class GitServiceComparisonTests : IDisposable
         };
 
         // Act: Create initial commit
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Read workflows with git status enrichment
-        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
 
         // Assert: All gitStatus fields should be null since nothing has changed
         var enrichedWorkflow = enrichedWorkflows.Workflows.Should().ContainSingle().Subject;
@@ -204,15 +214,15 @@ public class GitServiceComparisonTests : IDisposable
         };
 
         // Create initial commit
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Act: Modify the workflow
         workflow.WorkflowName = "Modified Name";
-        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
 
         // Read workflows with git status enrichment
-        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
 
         // Assert
         var enrichedWorkflow = enrichedWorkflows.Workflows.Should().ContainSingle().Subject;
@@ -246,8 +256,8 @@ public class GitServiceComparisonTests : IDisposable
         };
 
         // Create initial commit
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Act: Add a new phase
         workflow.Phases.Add(new Phase
@@ -256,10 +266,10 @@ public class GitServiceComparisonTests : IDisposable
             PhaseOrder = 2,
             Tasks = new List<TaskItem>()
         });
-        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
 
         // Read workflows with git status enrichment
-        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
 
         // Assert
         var enrichedWorkflow = enrichedWorkflows.Workflows.Should().ContainSingle().Subject;
@@ -313,15 +323,15 @@ public class GitServiceComparisonTests : IDisposable
         };
 
         // Create initial commit
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Act: Modify the task
         workflow.Phases[0].Tasks[0].TaskName = "Modified Task";
-        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
 
         // Read workflows with git status enrichment
-        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
 
         // Assert
         var enrichedWorkflow = enrichedWorkflows.Workflows.Should().ContainSingle().Subject;
@@ -353,8 +363,8 @@ public class GitServiceComparisonTests : IDisposable
         };
 
         // Create initial commit
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Act: Add a new workflow
         var workflow2 = new Workflow
@@ -385,10 +395,10 @@ public class GitServiceComparisonTests : IDisposable
             }
         };
         programWorkflows.Workflows.Add(workflow2);
-        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
 
         // Read workflows with git status enrichment
-        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
 
         // Assert
         enrichedWorkflows.Workflows.Should().HaveCount(2);
@@ -432,15 +442,15 @@ public class GitServiceComparisonTests : IDisposable
         };
 
         // Create initial commit with two workflows
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Act: Delete one workflow
         programWorkflows.Workflows.Remove(workflow2);
-        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
 
         // Read workflows with git status enrichment
-        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedWorkflows = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
 
         // Assert
         enrichedWorkflows.Workflows.Should().HaveCount(2, "deleted workflow should still appear in the list");
@@ -478,11 +488,11 @@ public class GitServiceComparisonTests : IDisposable
         };
 
         // Act 1: Create and commit the new workflow
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Add new workflow", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Add new workflow", "Test User", "test@example.com");
 
         // Read workflows - should have no pending changes
-        var enrichedAfterFirstCommit = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedAfterFirstCommit = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
         
         // Assert 1: After commit, gitStatus should be null
         var workflowAfterCommit = enrichedAfterFirstCommit.Workflows.Should().ContainSingle().Subject;
@@ -490,18 +500,18 @@ public class GitServiceComparisonTests : IDisposable
 
         // Act 2: Modify the workflow
         workflow.WorkflowName = "Modified Workflow";
-        _gitService.WriteWorkflows(userId, programWorkflows);
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
         
-        var enrichedAfterModification = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedAfterModification = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
         
         // Assert 2: After modification, should show as modified
         var workflowAfterModification = enrichedAfterModification.Workflows.Should().ContainSingle().Subject;
         workflowAfterModification.GitStatus.Should().Be("modified", "workflow was changed");
 
         // Act 3: Commit the changes
-        _gitService.CommitChanges(userId, "Update workflow name", "Test User", "test@example.com");
+        _gitService.CommitChanges(TestProgramId, userId, "Update workflow name", "Test User", "test@example.com");
 
-        var enrichedAfterSecondCommit = _gitService.ReadWorkflowsWithGitStatus(userId);
+        var enrichedAfterSecondCommit = _gitService.ReadWorkflowsWithGitStatus(TestProgramId, userId);
         
         // Assert 3: After second commit, gitStatus should be cleared again
         var workflowAfterSecondCommit = enrichedAfterSecondCommit.Workflows.Should().ContainSingle().Subject;
@@ -632,11 +642,11 @@ This ensures open PRs dynamically update as work continues:
         };
 
         // Create initial commit on master branch
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(userId));
+        var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(TestProgramId, userId));
         exception.Message.Should().Contain("Direct pushes to the 'master' branch are not allowed");
         exception.Message.Should().Contain("create a new branch");
     }
@@ -660,23 +670,23 @@ This ensures open PRs dynamically update as work continues:
         };
 
         // Create initial commit on master
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Create and switch to feature branch
-        _gitService.CreateBranch(userId, "feature-branch");
-        _gitService.SwitchBranch(userId, "feature-branch");
+        _gitService.CreateBranch(TestProgramId, userId, "feature-branch");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature-branch");
 
         // Make a change on the feature branch
         workflow.Description = "Updated description";
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Update description", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Update description", "Test User", "test@example.com");
 
         // Act - Push should succeed on feature branch
-        _gitService.Push(userId);
+        _gitService.Push(TestProgramId, userId);
 
         // Assert - If we get here without exception, the push succeeded
-        var status = _gitService.GetStatus(userId);
+        var status = _gitService.GetStatus(TestProgramId, userId);
         status.CommitsAhead.Should().Be(0, "commits should be pushed to remote");
     }
 
@@ -699,18 +709,18 @@ This ensures open PRs dynamically update as work continues:
         };
 
         // Create initial commit
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Rename master to main (simulate a main branch)
-        var userRepoPath = _gitService.GetUserRepoPath(userId);
+        var userRepoPath = _gitService.GetUserRepoPath(TestProgramId, userId);
         using (var repo = new LibGit2Sharp.Repository(userRepoPath))
         {
             repo.Branches.Rename("master", "main");
         }
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(userId));
+        var exception = Assert.Throws<InvalidOperationException>(() => _gitService.Push(TestProgramId, userId));
         exception.Message.Should().Contain("Direct pushes to the 'main' branch are not allowed");
     }
 
@@ -737,15 +747,15 @@ This ensures open PRs dynamically update as work continues:
         };
 
         // Create initial commit on master
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Create a new branch without pushing
-        _gitService.CreateBranch(userId, "feature-branch");
-        _gitService.SwitchBranch(userId, "feature-branch");
+        _gitService.CreateBranch(TestProgramId, userId, "feature-branch");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature-branch");
 
         // Act
-        var status = _gitService.GetStatus(userId);
+        var status = _gitService.GetStatus(TestProgramId, userId);
 
         // Assert
         status.HasRemoteTracking.Should().BeFalse("new branch has no remote tracking");
@@ -771,23 +781,23 @@ This ensures open PRs dynamically update as work continues:
         };
 
         // Create initial commit
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Create and switch to a feature branch
-        _gitService.CreateBranch(userId, "feature-branch");
-        _gitService.SwitchBranch(userId, "feature-branch");
+        _gitService.CreateBranch(TestProgramId, userId, "feature-branch");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature-branch");
 
         // Make a change and commit
         workflow.Description = "Updated";
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Update", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Update", "Test User", "test@example.com");
 
         // Push to establish tracking
-        _gitService.Push(userId);
+        _gitService.Push(TestProgramId, userId);
 
         // Act
-        var status = _gitService.GetStatus(userId);
+        var status = _gitService.GetStatus(TestProgramId, userId);
 
         // Assert
         status.HasRemoteTracking.Should().BeTrue("branch should have remote tracking after push");
@@ -813,23 +823,23 @@ This ensures open PRs dynamically update as work continues:
         };
 
         // Create initial commit on master
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Initial commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Initial commit", "Test User", "test@example.com");
 
         // Create and switch to new branch
-        _gitService.CreateBranch(userId, "feature-branch");
-        _gitService.SwitchBranch(userId, "feature-branch");
+        _gitService.CreateBranch(TestProgramId, userId, "feature-branch");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature-branch");
 
         // Make a change and commit
         workflow.Description = "Updated Description";
-        _gitService.WriteWorkflows(userId, programWorkflows);
-        _gitService.CommitChanges(userId, "Update description", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, programWorkflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Update description", "Test User", "test@example.com");
 
         // Push the branch
-        _gitService.Push(userId);
+        _gitService.Push(TestProgramId, userId);
 
         // Act
-        var status = _gitService.GetStatus(userId);
+        var status = _gitService.GetStatus(TestProgramId, userId);
 
         // Assert
         status.HasRemoteTracking.Should().BeTrue("branch should have remote tracking after push");
@@ -854,7 +864,7 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // User makes a workflow change on master (simulating the bug scenario)
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         var newWorkflow = new Workflow
         {
             WorkflowKey = "test-workflow",
@@ -864,11 +874,11 @@ This ensures open PRs dynamically update as work continues:
         };
         workflows.Workflows.Add(newWorkflow);
         
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Add workflow on master", "Test", "test@test.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Add workflow on master", "Test", "test@test.com");
 
         // Act - Get local master SHA
-        var localMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: false);
+        var localMasterSha = _gitService.GetBranchCommitSha(TestProgramId, userId, "master", preferRemote: false);
 
         // Assert - Should get the local master tip with our commit
         localMasterSha.Should().NotBeNullOrEmpty();
@@ -891,10 +901,10 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // Get the current remote master SHA (before local changes)
-        var originalRemoteMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
+        var originalRemoteMasterSha = _gitService.GetBranchCommitSha(TestProgramId, userId, "master", preferRemote: true);
 
         // User makes a local commit on master (not pushed) - simulating the bug scenario
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         var newWorkflow = new Workflow
         {
             WorkflowKey = "test-workflow",
@@ -903,12 +913,12 @@ This ensures open PRs dynamically update as work continues:
             Phases = new List<Phase>()
         };
         workflows.Workflows.Add(newWorkflow);
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Add workflow on local master", "Test", "test@test.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Add workflow on local master", "Test", "test@test.com");
 
         // Act - Get remote master SHA (should be unchanged) and local master SHA (should be ahead)
-        var remoteMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
-        var localMasterSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: false);
+        var remoteMasterSha = _gitService.GetBranchCommitSha(TestProgramId, userId, "master", preferRemote: true);
+        var localMasterSha = _gitService.GetBranchCommitSha(TestProgramId, userId, "master", preferRemote: false);
 
         // Assert
         remoteMasterSha.Should().Be(originalRemoteMasterSha); // Remote hasn't changed
@@ -934,7 +944,7 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // User makes a commit on master (simulating the user's exact scenario)
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         var newWorkflow = new Workflow
         {
             WorkflowKey = "test-workflow",
@@ -943,19 +953,19 @@ This ensures open PRs dynamically update as work continues:
             Phases = new List<Phase>()
         };
         workflows.Workflows.Add(newWorkflow);
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Add workflow on master", "Test", "test@test.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Add workflow on master", "Test", "test@test.com");
 
         // User then creates a new branch from local master (which has the unpushed commit)
-        _gitService.CreateBranch(userId, "feature-branch");
-        _gitService.SwitchBranch(userId, "feature-branch");
+        _gitService.CreateBranch(TestProgramId, userId, "feature-branch");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature-branch");
 
         // Act - Get commit SHAs as PR creation would now do with the fix
-        var sourceCommitSha = _gitService.GetBranchCommitSha(userId, "feature-branch", preferRemote: false);
-        var targetCommitSha = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
+        var sourceCommitSha = _gitService.GetBranchCommitSha(TestProgramId, userId, "feature-branch", preferRemote: false);
+        var targetCommitSha = _gitService.GetBranchCommitSha(TestProgramId, userId, "master", preferRemote: true);
 
         // Compare branches to see commits
-        var comparison = _gitService.CompareBranches(userId, "feature-branch", "master", sourceCommitSha, targetCommitSha);
+        var comparison = _gitService.CompareBranches(TestProgramId, userId, "feature-branch", "master", sourceCommitSha, targetCommitSha);
 
         // Assert
         comparison.CommitsAhead.Should().Be(1); // Should show 1 commit ahead of origin/master
@@ -978,8 +988,8 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // Act - Try getting remote master SHA with different naming conventions
-        var sha1 = _gitService.GetBranchCommitSha(userId, "master", preferRemote: true);
-        var sha2 = _gitService.GetBranchCommitSha(userId, "origin/master", preferRemote: true);
+        var sha1 = _gitService.GetBranchCommitSha(TestProgramId, userId, "master", preferRemote: true);
+        var sha2 = _gitService.GetBranchCommitSha(TestProgramId, userId, "origin/master", preferRemote: true);
         
         // Assert - Both should resolve to the same remote branch SHA
         sha1.Should().Be(sha2, "both 'master' and 'origin/master' should resolve to the same remote branch");
@@ -1006,8 +1016,8 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // Create a feature branch and add a new workflow (this will ensure user repo)
-        _gitService.CreateBranch(userId, "feature/new-workflow");
-        _gitService.SwitchBranch(userId, "feature/new-workflow");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/new-workflow");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/new-workflow");
         
         var newWorkflow = new Workflow
         {
@@ -1037,16 +1047,16 @@ This ensures open PRs dynamically update as work continues:
             }
         };
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(newWorkflow);
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Add feature workflow", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Add feature workflow", "Test User", "test@example.com");
         
         // Push to central repository
-        _gitService.Push(userId);
+        _gitService.Push(TestProgramId, userId);
 
         // Act: Compare branches in central repository
-        var comparison = _gitService.CompareBranchesInCentral("feature/new-workflow", "master");
+        var comparison = _gitService.CompareBranchesInCentral(TestProgramId, "feature/new-workflow", "master");
 
         // Assert
         comparison.Should().NotBeNull();
@@ -1077,22 +1087,22 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // Get the existing workflow from master and modify it (this will ensure user repo)
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         var existingWorkflow = workflows.Workflows.First();
         var originalName = existingWorkflow.WorkflowName;
         
         // Create feature branch and modify workflow
-        _gitService.CreateBranch(userId, "feature/modify-workflow");
-        _gitService.SwitchBranch(userId, "feature/modify-workflow");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/modify-workflow");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/modify-workflow");
         
         existingWorkflow.WorkflowName = "Modified Workflow Name";
         existingWorkflow.Description = "Modified Description";
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Modify workflow", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Modify workflow", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
 
         // Act: Compare in central repository
-        var comparison = _gitService.CompareBranchesInCentral("feature/modify-workflow", "master");
+        var comparison = _gitService.CompareBranchesInCentral(TestProgramId, "feature/modify-workflow", "master");
 
         // Assert
         comparison.CommitsAhead.Should().Be(1);
@@ -1113,10 +1123,10 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // Create feature branch (this will ensure user repo)
-        _gitService.CreateBranch(userId, "feature/multiple-commits");
-        _gitService.SwitchBranch(userId, "feature/multiple-commits");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/multiple-commits");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/multiple-commits");
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         
         // Make first commit
         var workflow1 = new Workflow
@@ -1127,8 +1137,8 @@ This ensures open PRs dynamically update as work continues:
             Phases = new List<Phase>()
         };
         workflows.Workflows.Add(workflow1);
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "First commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "First commit", "Test User", "test@example.com");
         
         // Make second commit
         var workflow2 = new Workflow
@@ -1139,14 +1149,14 @@ This ensures open PRs dynamically update as work continues:
             Phases = new List<Phase>()
         };
         workflows.Workflows.Add(workflow2);
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Second commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Second commit", "Test User", "test@example.com");
         
         // Push to central
-        _gitService.Push(userId);
+        _gitService.Push(TestProgramId, userId);
 
         // Act
-        var comparison = _gitService.CompareBranchesInCentral("feature/multiple-commits", "master");
+        var comparison = _gitService.CompareBranchesInCentral(TestProgramId, "feature/multiple-commits", "master");
 
         // Assert
         comparison.CommitsAhead.Should().Be(2, "feature branch has 2 commits ahead");
@@ -1175,10 +1185,10 @@ This ensures open PRs dynamically update as work continues:
         var userId = "testUser";
         
         // Create and push feature branch (this will ensure user repo)
-        _gitService.CreateBranch(userId, "feature/central-test");
-        _gitService.SwitchBranch(userId, "feature/central-test");
+        _gitService.CreateBranch(TestProgramId, userId, "feature/central-test");
+        _gitService.SwitchBranch(TestProgramId, userId, "feature/central-test");
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow
         {
             WorkflowKey = "central-workflow",
@@ -1186,13 +1196,13 @@ This ensures open PRs dynamically update as work continues:
             Description = "Test",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Add workflow", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Add workflow", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
         
         // Switch back to master and make LOCAL unpushed commits
-        _gitService.SwitchBranch(userId, "master");
-        workflows = _gitService.ReadWorkflows(userId);
+        _gitService.SwitchBranch(TestProgramId, userId, "master");
+        workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Add(new Workflow
         {
             WorkflowKey = "local-only-workflow",
@@ -1200,13 +1210,13 @@ This ensures open PRs dynamically update as work continues:
             Description = "This is only in user's local master, not pushed",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Local unpushed commit", "Test User", "test@example.com");
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Local unpushed commit", "Test User", "test@example.com");
         // Intentionally NOT pushing to central
 
         // Act: Compare in central repository
         // This should NOT see the unpushed local commit
-        var comparison = _gitService.CompareBranchesInCentral("feature/central-test", "master");
+        var comparison = _gitService.CompareBranchesInCentral(TestProgramId, "feature/central-test", "master");
 
         // Assert: Comparison should use central repo state, ignoring local unpushed commits
         comparison.CommitsAhead.Should().Be(1, "only the pushed commit should count");
@@ -1229,10 +1239,10 @@ This ensures open PRs dynamically update as work continues:
         var user2 = "user2";
         
         // User1 creates feature branch from master
-        _gitService.CreateBranch(user1, "feature/diverge-test");
-        _gitService.SwitchBranch(user1, "feature/diverge-test");
+        _gitService.CreateBranch(TestProgramId, user1, "feature/diverge-test");
+        _gitService.SwitchBranch(TestProgramId, user1, "feature/diverge-test");
         
-        var workflows1 = _gitService.ReadWorkflows(user1);
+        var workflows1 = _gitService.ReadWorkflows(TestProgramId, user1);
         workflows1.Workflows.Add(new Workflow
         {
             WorkflowKey = "feature-wf",
@@ -1240,15 +1250,15 @@ This ensures open PRs dynamically update as work continues:
             Description = "Feature work",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(user1, workflows1);
-        _gitService.CommitChanges(user1, "Feature commit", "User1", "user1@example.com");
-        _gitService.Push(user1);
+        _gitService.WriteWorkflows(TestProgramId, user1, workflows1);
+        _gitService.CommitChanges(TestProgramId, user1, "Feature commit", "User1", "user1@example.com");
+        _gitService.Push(TestProgramId, user1);
         
         // User2 creates a different feature branch from master (parallel work)
-        _gitService.CreateBranch(user2, "feature/parallel-work");
-        _gitService.SwitchBranch(user2, "feature/parallel-work");
+        _gitService.CreateBranch(TestProgramId, user2, "feature/parallel-work");
+        _gitService.SwitchBranch(TestProgramId, user2, "feature/parallel-work");
         
-        var workflows2 = _gitService.ReadWorkflows(user2);
+        var workflows2 = _gitService.ReadWorkflows(TestProgramId, user2);
         workflows2.Workflows.Add(new Workflow
         {
             WorkflowKey = "parallel-wf",
@@ -1256,12 +1266,12 @@ This ensures open PRs dynamically update as work continues:
             Description = "Parallel work",
             Phases = new List<Phase>()
         });
-        _gitService.WriteWorkflows(user2, workflows2);
-        _gitService.CommitChanges(user2, "Parallel commit", "User2", "user2@example.com");
-        _gitService.Push(user2);
+        _gitService.WriteWorkflows(TestProgramId, user2, workflows2);
+        _gitService.CommitChanges(TestProgramId, user2, "Parallel commit", "User2", "user2@example.com");
+        _gitService.Push(TestProgramId, user2);
 
         // Act: Compare the two feature branches
-        var comparison = _gitService.CompareBranchesInCentral("feature/diverge-test", "feature/parallel-work");
+        var comparison = _gitService.CompareBranchesInCentral(TestProgramId, "feature/diverge-test", "feature/parallel-work");
 
         // Assert
         comparison.CommitsAhead.Should().Be(1, "diverge-test has 1 commit not in parallel-work");

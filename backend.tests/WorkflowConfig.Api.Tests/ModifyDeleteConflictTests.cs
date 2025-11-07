@@ -23,8 +23,10 @@ public class ModifyDeleteConflictTests : IDisposable
     private readonly Mock<IConfiguration> _configMock;
     private readonly Mock<IWebHostEnvironment> _envMock;
     private readonly Mock<ILogger<GitService>> _loggerMock;
+    private readonly Mock<IProgramService> _programServiceMock;
     private readonly string _testBasePath;
     private readonly GitService _gitService;
+    private const string TestProgramId = "test-program";
 
     public ModifyDeleteConflictTests()
     {
@@ -40,8 +42,16 @@ public class ModifyDeleteConflictTests : IDisposable
         _configMock.Setup(c => c["GitSettings:PullRequestsPath"]).Returns(Path.Combine(_testBasePath, "pull-requests"));
         _envMock.Setup(e => e.ContentRootPath).Returns(_testBasePath);
         
-        _gitService = new GitService(_configMock.Object, _envMock.Object, _loggerMock.Object);
-        _gitService.InitializeCentralRepository();
+        _programServiceMock = new Mock<IProgramService>();
+        
+        _programServiceMock.Setup(x => x.GetCentralRepoPath(It.IsAny<string>()))
+            .Returns((string programId) => Path.Combine(_testBasePath, "central-repo"));
+            
+        _programServiceMock.Setup(x => x.GetUserRepoPath(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string programId, string userId) => Path.Combine(_testBasePath, "user-repos", userId));
+        
+        _gitService = new GitService(_programServiceMock.Object, _configMock.Object, _envMock.Object, _loggerMock.Object);
+        _gitService.InitializeCentralRepository(TestProgramId);
         InitializeSampleData();
     }
     
@@ -146,10 +156,10 @@ public class ModifyDeleteConflictTests : IDisposable
         };
         
         // Act
-        _gitService.ResolveAndMerge(userId, modifyBranch, deleteBranch, resolutions);
+        _gitService.ResolveAndMerge(TestProgramId, userId, modifyBranch, deleteBranch, resolutions);
         
         // Assert
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Should().HaveCount(1);
         workflows.Workflows.First().WorkflowKey.Should().Be("WF-001");
         workflows.Workflows.First().WorkflowName.Should().Be("Modified Workflow Name");
@@ -177,10 +187,10 @@ public class ModifyDeleteConflictTests : IDisposable
         };
         
         // Act
-        _gitService.ResolveAndMerge(userId, modifyBranch, deleteBranch, resolutions);
+        _gitService.ResolveAndMerge(TestProgramId, userId, modifyBranch, deleteBranch, resolutions);
         
         // Assert
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Should().BeEmpty();
     }
 
@@ -207,10 +217,10 @@ public class ModifyDeleteConflictTests : IDisposable
         };
         
         // Act
-        _gitService.ResolveAndMerge(userId, modifyBranch, deleteBranch, resolutions);
+        _gitService.ResolveAndMerge(TestProgramId, userId, modifyBranch, deleteBranch, resolutions);
         
         // Assert
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.Should().HaveCount(1);
         workflows.Workflows.First().Phases.First().PhaseName.Should().Be("Modified Phase Name");
     }
@@ -238,10 +248,10 @@ public class ModifyDeleteConflictTests : IDisposable
         };
         
         // Act
-        _gitService.ResolveAndMerge(userId, modifyBranch, deleteBranch, resolutions);
+        _gitService.ResolveAndMerge(TestProgramId, userId, modifyBranch, deleteBranch, resolutions);
         
         // Assert
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.Should().BeEmpty();
     }
 
@@ -269,10 +279,10 @@ public class ModifyDeleteConflictTests : IDisposable
         };
         
         // Act
-        _gitService.ResolveAndMerge(userId, modifyBranch, deleteBranch, resolutions);
+        _gitService.ResolveAndMerge(TestProgramId, userId, modifyBranch, deleteBranch, resolutions);
         
         // Assert
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.First().Tasks.Should().HaveCount(1);
         workflows.Workflows.First().Phases.First().Tasks.First().TaskName.Should().Be("Modified Task Name");
     }
@@ -301,10 +311,10 @@ public class ModifyDeleteConflictTests : IDisposable
         };
         
         // Act
-        _gitService.ResolveAndMerge(userId, modifyBranch, deleteBranch, resolutions);
+        _gitService.ResolveAndMerge(TestProgramId, userId, modifyBranch, deleteBranch, resolutions);
         
         // Assert
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.First().Tasks.Should().BeEmpty();
     }
 
@@ -331,12 +341,12 @@ public class ModifyDeleteConflictTests : IDisposable
         };
         
         // Act - should not throw EmptyCommitException
-        Action act = () => _gitService.ResolveAndMerge(userId, modifyBranch, deleteBranch, resolutions);
+        Action act = () => _gitService.ResolveAndMerge(TestProgramId, userId, modifyBranch, deleteBranch, resolutions);
         
         // Assert
         act.Should().NotThrow();
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.Should().HaveCount(1);
     }
 
@@ -344,72 +354,72 @@ public class ModifyDeleteConflictTests : IDisposable
     private void CreateWorkflowModifyDeleteScenario(string userId, string modifyBranch, string deleteBranch)
     {
         // Create modify branch - change workflow name
-        _gitService.CreateBranch(userId, modifyBranch);
-        _gitService.SwitchBranch(userId, modifyBranch);
+        _gitService.CreateBranch(TestProgramId, userId, modifyBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, modifyBranch);
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().WorkflowName = "Modified Workflow Name";
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Modified workflow name", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Modified workflow name", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
         
         // Create delete branch - delete the workflow
-        _gitService.SwitchBranch(userId, "master");
-        _gitService.CreateBranch(userId, deleteBranch);
-        _gitService.SwitchBranch(userId, deleteBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, "master");
+        _gitService.CreateBranch(TestProgramId, userId, deleteBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, deleteBranch);
         
-        workflows = _gitService.ReadWorkflows(userId);
+        workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.RemoveAll(w => w.WorkflowKey == "WF-001");
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Deleted workflow", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Deleted workflow", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
     }
 
     private void CreatePhaseModifyDeleteScenario(string userId, string modifyBranch, string deleteBranch)
     {
         // Create modify branch - change phase name
-        _gitService.CreateBranch(userId, modifyBranch);
-        _gitService.SwitchBranch(userId, modifyBranch);
+        _gitService.CreateBranch(TestProgramId, userId, modifyBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, modifyBranch);
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.First().PhaseName = "Modified Phase Name";
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Modified phase name", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Modified phase name", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
         
         // Create delete branch - delete the phase
-        _gitService.SwitchBranch(userId, "master");
-        _gitService.CreateBranch(userId, deleteBranch);
-        _gitService.SwitchBranch(userId, deleteBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, "master");
+        _gitService.CreateBranch(TestProgramId, userId, deleteBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, deleteBranch);
         
-        workflows = _gitService.ReadWorkflows(userId);
+        workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.Clear();
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Deleted phase", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Deleted phase", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
     }
 
     private void CreateTaskModifyDeleteScenario(string userId, string modifyBranch, string deleteBranch)
     {
         // Create modify branch - change task name
-        _gitService.CreateBranch(userId, modifyBranch);
-        _gitService.SwitchBranch(userId, modifyBranch);
+        _gitService.CreateBranch(TestProgramId, userId, modifyBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, modifyBranch);
         
-        var workflows = _gitService.ReadWorkflows(userId);
+        var workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.First().Tasks.First().TaskName = "Modified Task Name";
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Modified task name", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Modified task name", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
         
         // Create delete branch - delete the task
-        _gitService.SwitchBranch(userId, "master");
-        _gitService.CreateBranch(userId, deleteBranch);
-        _gitService.SwitchBranch(userId, deleteBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, "master");
+        _gitService.CreateBranch(TestProgramId, userId, deleteBranch);
+        _gitService.SwitchBranch(TestProgramId, userId, deleteBranch);
         
-        workflows = _gitService.ReadWorkflows(userId);
+        workflows = _gitService.ReadWorkflows(TestProgramId, userId);
         workflows.Workflows.First().Phases.First().Tasks.Clear();
-        _gitService.WriteWorkflows(userId, workflows);
-        _gitService.CommitChanges(userId, "Deleted task", "Test User", "test@example.com");
-        _gitService.Push(userId);
+        _gitService.WriteWorkflows(TestProgramId, userId, workflows);
+        _gitService.CommitChanges(TestProgramId, userId, "Deleted task", "Test User", "test@example.com");
+        _gitService.Push(TestProgramId, userId);
     }
 }

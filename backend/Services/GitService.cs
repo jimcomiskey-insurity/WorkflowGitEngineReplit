@@ -6,7 +6,7 @@ namespace WorkflowConfig.Api.Services;
 
 public class GitService
 {
-    private readonly ProgramService _programService;
+    private readonly IProgramService _programService;
     private readonly string _pullRequestsPath;
     private readonly ILogger<GitService> _logger;
     private const string WorkflowFileName = "workflows.json"; // Legacy format
@@ -18,7 +18,7 @@ public class GitService
     private const string DataStoreListFileName = "datastore-list.json";
     private const string DataStoresDirectory = "datastores";
 
-    public GitService(ProgramService programService, IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
+    public GitService(IProgramService programService, IConfiguration configuration, IWebHostEnvironment environment, ILogger<GitService> logger)
     {
         _programService = programService;
         _logger = logger;
