@@ -977,7 +977,22 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           scrollBeyondLastLine: false,
           fontSize: 13,
           lineNumbers: 'on',
-          automaticLayout: true
+          automaticLayout: true,
+          // Enable IntelliSense suggestions
+          suggestOnTriggerCharacters: true,
+          quickSuggestions: {
+            other: true,
+            comments: false,
+            strings: false
+          },
+          wordBasedSuggestions: 'off',
+          acceptSuggestionOnEnter: 'on',
+          tabCompletion: 'on',
+          suggest: {
+            showKeywords: true,
+            showSnippets: true,
+            showWords: false
+          }
         }
       );
 
