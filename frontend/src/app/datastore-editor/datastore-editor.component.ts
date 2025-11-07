@@ -431,9 +431,6 @@ interface TreeNode {
 
                 <div class="script-section">
                   <label>C# Script</label>
-                  <div class="method-signature" *ngIf="getScriptInputs().length > 0">
-                    {{ getMethodSignature() }}
-                  </div>
                   <div #scriptEditorContainer class="script-editor-container"></div>
                 </div>
 
@@ -1265,15 +1262,12 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
 
   getMethodSignature(): string {
     const inputs = this.getScriptInputs();
-    if (inputs.length === 0) return 'int Calculate() {';
-
     const params = inputs.map(input => {
-      const type = this.getCSharpType(input.dataType);
-      const nullableSuffix = type !== 'string' && type !== 'List<string>' ? '?' : '';
-      return `${type}${nullableSuffix} ${input.alias}`;
+      const csharpType = this.getCSharpType(input.dataType);
+      return `${csharpType} ${input.alias}`;
     }).join(', ');
 
-    return `int Calculate(${params}) {`;
+    return `public object Calculate(${params})`;
   }
 
   extractMethodBody(fullScript: string): string {
@@ -1300,7 +1294,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
 
   wrapMethodBody(body: string): string {
     const signature = this.getMethodSignature();
-    return `${signature}\n${body}\n}`;
+    return `${signature}\n{\n${body}\n}`;
   }
 
   testScript(): void {
