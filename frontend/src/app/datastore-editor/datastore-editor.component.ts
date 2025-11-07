@@ -1209,6 +1209,7 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     if (this.editingPoint.calculation) {
       this.editingPoint.calculation.inputs.splice(index, 1);
       this.savePoint();
+      this.refreshMonacoSignature();
     }
   }
 
@@ -1227,6 +1228,31 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
 
     this.editingPoint.calculation.inputs.push(input);
     this.savePoint();
+    this.refreshMonacoSignature();
+  }
+
+  private refreshMonacoSignature(): void {
+    if (!this.scriptEditor) return;
+
+    // Get current body (excluding signature and closing brace)
+    const fullText = this.scriptEditor.getValue();
+    const lines = fullText.split('\n');
+    const bodyLines = lines.slice(2, -1);
+    const scriptBody = bodyLines.join('\n');
+
+    // Build new signature with updated inputs
+    const inputs = this.getScriptInputs();
+    const params = inputs.map(input => {
+      const csharpType = this.getCSharpType(input.dataType);
+      return `${csharpType} ${input.alias}`;
+    }).join(', ');
+    const methodSignature = `public object Calculate(${params})\n{\n`;
+    const methodEnd = '\n}';
+
+    // Update editor with new signature
+    const fullCode = methodSignature + scriptBody + methodEnd;
+    this.scriptEditor.setValue(fullCode);
+    this.updateReadOnlyRanges();
   }
 
   isInputAlreadyAdded(dataPointId: string): boolean {
