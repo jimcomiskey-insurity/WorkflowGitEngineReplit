@@ -1018,6 +1018,8 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
     monaco.languages.registerCompletionItemProvider('csharp', {
       triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
       provideCompletionItems: (model: any, position: any) => {
+        console.log('[COMPLETION] Provider called at position:', position);
+        
         const script = model.getValue();
         const offset = model.getOffsetAt(position);
         
@@ -1033,6 +1035,9 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           alias: input.alias,
           dataType: input.dataType
         }));
+        
+        console.log('[COMPLETION] Inputs:', completionInputs);
+        console.log('[COMPLETION] Calling backend...');
 
         // Return the observable converted to a promise (Monaco handles promises natively)
         return this.scriptExecutionService.getCompletions(this.currentUser, {
@@ -1040,6 +1045,13 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           position: offset,
           inputs: completionInputs
         }).toPromise().then(response => {
+          console.log('[COMPLETION] Backend returned:', response);
+          console.log('[COMPLETION] Items count:', response?.items?.length);
+          
+          if (response?.items?.length > 0) {
+            console.log('[COMPLETION] First 3 items:', response.items.slice(0, 3));
+          }
+          
           const suggestions = response?.items.map((item, index) => {
             const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
             const sortText = isParameter ? `000${String(index).padStart(4, '0')}` : `999${String(index).padStart(4, '0')}`;
@@ -1056,9 +1068,14 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             };
           }) || [];
 
+          console.log('[COMPLETION] Returning', suggestions.length, 'suggestions to Monaco');
+          if (suggestions.length > 0) {
+            console.log('[COMPLETION] First 3 suggestions:', suggestions.slice(0, 3).map(s => ({ label: s.label, kind: s.kind, sortText: s.sortText })));
+          }
+          
           return { suggestions: suggestions };
         }).catch(err => {
-          console.error('[Completion Provider] Error fetching suggestions:', err);
+          console.error('[COMPLETION] Error fetching suggestions:', err);
           return { suggestions: [] };
         });
       }
