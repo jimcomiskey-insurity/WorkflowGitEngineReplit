@@ -1015,55 +1015,12 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
   private registerCompletionProvider(): void {
     const monaco = (window as any).monaco;
     
-    console.log('[REGISTRATION] Registering C# completion provider');
-    
-    const disposable = monaco.languages.registerCompletionItemProvider('csharp', {
-      provideCompletionItems: (model: any, position: any) => {
-        console.log('[PROVIDER CALLED - MINIMAL TEST] Monaco called our provider!');
-        
-        // MINIMAL TEST: Return hardcoded suggestions immediately without any async calls
-        const word = model.getWordUntilPosition(position);
-        const range = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn
-        };
-        
-        const suggestions = [
-          {
-            label: 'myvalue',
-            kind: monaco.languages.CompletionItemKind.Variable,
-            insertText: 'myvalue',
-            range: range
-          },
-          {
-            label: 'myvalue2',
-            kind: monaco.languages.CompletionItemKind.Variable,
-            insertText: 'myvalue2',
-            range: range
-          }
-        ];
-        
-        console.log('[MINIMAL TEST] Returning:', suggestions);
-        return { suggestions: suggestions };
-      }
-    });
-    
-    console.log('[REGISTRATION] OLD completion provider (async with backend) commented out for testing');
-    
-    // OLD ASYNC VERSION - TEMPORARILY DISABLED FOR TESTING
-    /*
-    const disposableOld = monaco.languages.registerCompletionItemProvider('csharp', {
+    monaco.languages.registerCompletionItemProvider('csharp', {
       triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
-      provideCompletionItems: async (model: any, position: any) => {
-        console.log('[PROVIDER CALLED] Monaco is calling our completion provider!');
-        console.log('[PROVIDER CALLED] Position:', position, 'Model language:', model.getLanguageId());
-        
+      provideCompletionItems: (model: any, position: any) => {
         const script = model.getValue();
         const offset = model.getOffsetAt(position);
         
-        // Get the word being typed and create range (REQUIRED by Monaco)
         const word = model.getWordUntilPosition(position);
         const range = {
           startLineNumber: position.lineNumber,
@@ -1077,31 +1034,13 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
           dataType: input.dataType
         }));
 
-        // TEST: Add a simple hardcoded suggestion to verify Monaco displays SOMETHING
-        const testSuggestion = {
-          label: 'TEST_SUGGESTION',
-          kind: monaco.languages.CompletionItemKind.Text,
-          insertText: 'TEST_SUGGESTION',
-          detail: 'This is a test',
-          documentation: 'Test documentation',
-          sortText: '0000',
-          filterText: 'TEST_SUGGESTION',
-          range: range
-        };
-        
-        console.log('[TEST] Adding hardcoded test suggestion:', testSuggestion);
-        
-        try {
-          const response = await this.scriptExecutionService.getCompletions(this.currentUser, {
-            script,
-            position: offset,
-            inputs: completionInputs
-          }).toPromise();
-          console.log('[Completion Provider] Backend response:', response);
-          console.log('[Completion Provider] Total items from backend:', response?.items?.length);
-          
+        // Return the observable converted to a promise (Monaco handles promises natively)
+        return this.scriptExecutionService.getCompletions(this.currentUser, {
+          script,
+          position: offset,
+          inputs: completionInputs
+        }).toPromise().then(response => {
           const suggestions = response?.items.map((item, index) => {
-            // Prioritize parameters and variables with sortText
             const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
             const sortText = isParameter ? `000${String(index).padStart(4, '0')}` : `999${String(index).padStart(4, '0')}`;
             
@@ -1111,48 +1050,19 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
               insertText: item.insertText,
               detail: item.detail,
               documentation: item.documentation,
-              sortText: sortText,  // Controls ordering (parameters at top)
-              filterText: item.label,  // What Monaco matches against when filtering
-              range: range         // REQUIRED: tells Monaco what text to replace
+              sortText: sortText,
+              filterText: item.label,
+              range: range
             };
           }) || [];
-          
-          // Prepend test suggestion at the very top
-          suggestions.unshift(testSuggestion);
 
-          console.log('[Completion Provider] Suggestions to Monaco:', suggestions.length);
-          console.log('[Completion Provider] First 10 suggestions:', suggestions.slice(0, 10).map(s => ({ 
-            label: s.label, 
-            kind: s.kind, 
-            sortText: s.sortText 
-          })));
-          
-          // Check if parameters are in the suggestions
-          const paramSuggestions = suggestions.filter(s => s.label.includes('myvalue'));
-          console.log('[Completion Provider] Parameter suggestions:', paramSuggestions.map(s => ({ 
-            label: s.label, 
-            kind: s.kind, 
-            sortText: s.sortText,
-            range: s.range
-          })));
-          
-          console.log('[Completion Provider] Returning object to Monaco:', { 
-            suggestions: suggestions.length,
-            incomplete: false 
-          });
-          console.log('[Completion Provider] Sample suggestion object:', JSON.stringify(suggestions[0], null, 2));
-
-          return { 
-            suggestions: suggestions,
-            incomplete: false  // Tell Monaco this is the complete list
-          };
-        } catch (err) {
-          console.error('[Completion Provider] Error:', err);
+          return { suggestions: suggestions };
+        }).catch(err => {
+          console.error('[Completion Provider] Error fetching suggestions:', err);
           return { suggestions: [] };
-        }
+        });
       }
     });
-    */
   }
 
   private getMonacoCompletionKind(kind: string): any {
