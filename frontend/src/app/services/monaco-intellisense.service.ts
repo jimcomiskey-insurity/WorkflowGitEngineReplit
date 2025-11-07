@@ -114,7 +114,7 @@ export class MonacoIntelliSenseService {
     });
 
     monaco.languages.registerCompletionItemProvider('csharp', {
-      triggerCharacters: ['.'],
+      triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '['],
       resolveCompletionItem: (_model: any, _position: any, item: any) => {
         return this.debouncedResolveCompletionItem(item);
       },
