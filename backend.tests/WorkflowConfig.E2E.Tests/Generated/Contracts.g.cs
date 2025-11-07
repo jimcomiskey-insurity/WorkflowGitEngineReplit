@@ -432,6 +432,24 @@ namespace WorkflowConfig.E2E.Tests.Generated.Contracts
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<ScriptExecutionResult> ExecuteScriptAsync(string userId, ScriptExecutionRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CompletionResponse> GetCompletionsAsync(string userId, CompletionRequest body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task GetWorkflowsAsync(string userId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -676,6 +694,63 @@ namespace WorkflowConfig.E2E.Tests.Generated.Contracts
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionInput
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("alias")]
+        public string Alias { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataType")]
+        public string DataType { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("script")]
+        public string Script { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("position")]
+        public int Position { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("inputs")]
+        public System.Collections.Generic.ICollection<CompletionInput> Inputs { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("items")]
+        public System.Collections.Generic.ICollection<CompletionSuggestion> Items { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CompletionSuggestion
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("label")]
+        public string Label { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("kind")]
+        public string Kind { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("insertText")]
+        public string InsertText { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("detail")]
+        public string Detail { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("documentation")]
+        public string Documentation { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum ConflictObjectType
     {
 
@@ -754,6 +829,24 @@ namespace WorkflowConfig.E2E.Tests.Generated.Contracts
         [System.Text.Json.Serialization.JsonPropertyName("orderIndex")]
         public int OrderIndex { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("isRepeatable")]
+        public bool IsRepeatable { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowDesiredState")]
+        public bool AllowDesiredState { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowPopulationByApplication")]
+        public bool AllowPopulationByApplication { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowPopulationByImportCopy")]
+        public bool AllowPopulationByImportCopy { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("allowPopulationByObjectSync")]
+        public bool AllowPopulationByObjectSync { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("referenceObject")]
+        public string ReferenceObject { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("dataPoints")]
         public System.Collections.Generic.ICollection<DataPoint> DataPoints { get; set; }
 
@@ -790,8 +883,23 @@ namespace WorkflowConfig.E2E.Tests.Generated.Contracts
         [System.Text.Json.Serialization.JsonPropertyName("configuration")]
         public DataPointConfiguration Configuration { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("calculation")]
+        public DataPointCalculation Calculation { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("gitStatus")]
         public string GitStatus { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DataPointCalculation
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("inputs")]
+        public System.Collections.Generic.ICollection<ScriptInput> Inputs { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("script")]
+        public string Script { get; set; }
 
     }
 
@@ -1119,6 +1227,72 @@ namespace WorkflowConfig.E2E.Tests.Generated.Contracts
 
         [System.Text.Json.Serialization.JsonPropertyName("assetFileResolutions")]
         public System.Collections.Generic.ICollection<AssetFileContentResolution> AssetFileResolutions { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptExecutionRequest
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("script")]
+        public string Script { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("inputs")]
+        public System.Collections.Generic.ICollection<ScriptInputValue> Inputs { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptExecutionResult
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("success")]
+        public bool Success { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("result")]
+        public string Result { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("resultType")]
+        public string ResultType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public string Error { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptInput
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataPointId")]
+        public string DataPointId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataPointName")]
+        public string DataPointName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataType")]
+        public string DataType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("alias")]
+        public string Alias { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ScriptInputValue
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("alias")]
+        public string Alias { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dataType")]
+        public string DataType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("testValue")]
+        public string TestValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("testWithNull")]
+        public bool TestWithNull { get; set; }
 
     }
 
