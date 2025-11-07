@@ -9,10 +9,10 @@ namespace WorkflowConfig.Api.Controllers;
 [Route("api/users/{userId}/programs")]
 public class ProgramsController : ControllerBase
 {
-    private readonly ProgramService _programService;
+    private readonly IProgramService _programService;
     private readonly ILogger<ProgramsController> _logger;
 
-    public ProgramsController(ProgramService programService, ILogger<ProgramsController> logger)
+    public ProgramsController(IProgramService programService, ILogger<ProgramsController> logger)
     {
         _programService = programService;
         _logger = logger;
