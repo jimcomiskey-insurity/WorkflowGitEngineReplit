@@ -22,7 +22,7 @@ namespace WorkflowConfig.Api.Controllers
         [OpenApiOperation("Execute Script")]
         [ProducesResponseType(typeof(ScriptExecutionResult), 200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> ExecuteScript(string userId, [FromBody] ScriptExecutionRequest request)
+        public async Task<IActionResult> ExecuteScript([FromRoute] string userId, [FromBody] ScriptExecutionRequest request)
         {
             try
             {
@@ -89,7 +89,7 @@ Calculate({parameters})
         [HttpPost("completions")]
         [OpenApiOperation("Get Code Completions")]
         [ProducesResponseType(typeof(CompletionResponse), 200)]
-        public async Task<IActionResult> GetCompletions(string userId, [FromBody] CompletionRequest request)
+        public async Task<IActionResult> GetCompletions([FromRoute] string userId, [FromBody] CompletionRequest request)
         {
             try
             {

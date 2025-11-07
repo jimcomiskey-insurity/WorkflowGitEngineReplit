@@ -18,7 +18,7 @@ public class WorkflowsController : ControllerBase
 
     [HttpGet]
     [OpenApiOperation("Get All Workflows")]
-    public IActionResult GetWorkflows(string userId, string programId)
+    public IActionResult GetWorkflows([FromRoute] string userId, [FromRoute] string programId)
     {
         var workflows = _gitService.ReadWorkflowsWithGitStatus(programId, userId);
         return Ok(workflows);
@@ -26,7 +26,7 @@ public class WorkflowsController : ControllerBase
 
     [HttpGet("{workflowKey}")]
     [OpenApiOperation("Get Workflow By Key")]
-    public IActionResult GetWorkflow(string userId, string programId, string workflowKey)
+    public IActionResult GetWorkflow([FromRoute] string userId, [FromRoute] string programId, string workflowKey)
     {
         var workflows = _gitService.ReadWorkflowsWithGitStatus(programId, userId);
         var workflow = workflows.Workflows.FirstOrDefault(w => w.WorkflowKey == workflowKey);
@@ -41,7 +41,7 @@ public class WorkflowsController : ControllerBase
 
     [HttpPost]
     [OpenApiOperation("Create Workflow")]
-    public IActionResult CreateWorkflow(string userId, string programId, [FromBody] Workflow workflow)
+    public IActionResult CreateWorkflow([FromRoute] string userId, [FromRoute] string programId, [FromBody] Workflow workflow)
     {
         var workflows = _gitService.ReadWorkflows(programId, userId);
         
@@ -58,7 +58,7 @@ public class WorkflowsController : ControllerBase
 
     [HttpPut("{workflowKey}")]
     [OpenApiOperation("Update Workflow")]
-    public IActionResult UpdateWorkflow(string userId, string programId, string workflowKey, [FromBody] Workflow workflow)
+    public IActionResult UpdateWorkflow([FromRoute] string userId, [FromRoute] string programId, string workflowKey, [FromBody] Workflow workflow)
     {
         var workflows = _gitService.ReadWorkflows(programId, userId);
         var index = workflows.Workflows.FindIndex(w => w.WorkflowKey == workflowKey);
@@ -81,7 +81,7 @@ public class WorkflowsController : ControllerBase
 
     [HttpDelete("{workflowKey}")]
     [OpenApiOperation("Delete Workflow")]
-    public IActionResult DeleteWorkflow(string userId, string programId, string workflowKey)
+    public IActionResult DeleteWorkflow([FromRoute] string userId, [FromRoute] string programId, string workflowKey)
     {
         var workflows = _gitService.ReadWorkflows(programId, userId);
         var workflow = workflows.Workflows.FirstOrDefault(w => w.WorkflowKey == workflowKey);

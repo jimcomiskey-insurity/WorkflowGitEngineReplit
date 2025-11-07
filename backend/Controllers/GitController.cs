@@ -19,7 +19,7 @@ public class GitController : ControllerBase
 
     [HttpGet("status")]
     [OpenApiOperation("Get Git Status")]
-    public IActionResult GetStatus(string userId, string programId)
+    public IActionResult GetStatus([FromRoute] string userId, [FromRoute] string programId)
     {
         var status = _gitService.GetStatus(programId, userId);
         return Ok(status);
@@ -27,7 +27,7 @@ public class GitController : ControllerBase
 
     [HttpPost("commit")]
     [OpenApiOperation("Commit Changes")]
-    public IActionResult Commit(string userId, string programId, [FromBody] CommitRequest request)
+    public IActionResult Commit([FromRoute] string userId, [FromRoute] string programId, [FromBody] CommitRequest request)
     {
         _gitService.CommitChanges(programId, userId, request.Message, request.AuthorName, request.AuthorEmail);
         return Ok(new { message = "Changes committed successfully" });
@@ -35,7 +35,7 @@ public class GitController : ControllerBase
 
     [HttpPost("discard")]
     [OpenApiOperation("Discard Changes")]
-    public IActionResult Discard(string userId, string programId)
+    public IActionResult Discard([FromRoute] string userId, [FromRoute] string programId)
     {
         _gitService.DiscardChanges(programId, userId);
         return Ok(new { message = "Changes discarded successfully" });
@@ -43,7 +43,7 @@ public class GitController : ControllerBase
 
     [HttpPost("pull")]
     [OpenApiOperation("Pull From Remote")]
-    public IActionResult Pull(string userId, string programId)
+    public IActionResult Pull([FromRoute] string userId, [FromRoute] string programId)
     {
         try
         {
@@ -58,7 +58,7 @@ public class GitController : ControllerBase
 
     [HttpPost("push")]
     [OpenApiOperation("Push To Remote")]
-    public IActionResult Push(string userId, string programId)
+    public IActionResult Push([FromRoute] string userId, [FromRoute] string programId)
     {
         try
         {
@@ -73,7 +73,7 @@ public class GitController : ControllerBase
 
     [HttpGet("branches")]
     [OpenApiOperation("Get Branches")]
-    public IActionResult GetBranches(string userId, string programId)
+    public IActionResult GetBranches([FromRoute] string userId, [FromRoute] string programId)
     {
         var branches = _gitService.GetBranches(programId, userId);
         return Ok(branches);
@@ -81,7 +81,7 @@ public class GitController : ControllerBase
 
     [HttpPost("branches")]
     [OpenApiOperation("Create Branch")]
-    public IActionResult CreateBranch(string userId, string programId, [FromBody] BranchRequest request)
+    public IActionResult CreateBranch([FromRoute] string userId, [FromRoute] string programId, [FromBody] BranchRequest request)
     {
         _gitService.CreateBranch(programId, userId, request.BranchName);
         return Ok(new { message = $"Branch '{request.BranchName}' created successfully" });
@@ -89,7 +89,7 @@ public class GitController : ControllerBase
 
     [HttpPost("branches/switch")]
     [OpenApiOperation("Switch Branch")]
-    public IActionResult SwitchBranch(string userId, string programId, [FromBody] BranchRequest request)
+    public IActionResult SwitchBranch([FromRoute] string userId, [FromRoute] string programId, [FromBody] BranchRequest request)
     {
         _gitService.SwitchBranch(programId, userId, request.BranchName);
         return Ok(new { message = $"Switched to branch '{request.BranchName}'" });
@@ -97,7 +97,7 @@ public class GitController : ControllerBase
 
     [HttpGet("commits")]
     [OpenApiOperation("Get Commit History")]
-    public IActionResult GetCommits(string userId, string programId, [FromQuery] int count = 20)
+    public IActionResult GetCommits([FromRoute] string userId, [FromRoute] string programId, [FromQuery] int count = 20)
     {
         var commits = _gitService.GetCommitHistory(programId, userId, count);
         return Ok(commits);
@@ -105,7 +105,7 @@ public class GitController : ControllerBase
 
     [HttpGet("last-pushed-commit")]
     [OpenApiOperation("Get Last Pushed Commit")]
-    public IActionResult GetLastPushedCommit(string userId, string programId)
+    public IActionResult GetLastPushedCommit([FromRoute] string userId, [FromRoute] string programId)
     {
         try
         {
@@ -124,7 +124,7 @@ public class GitController : ControllerBase
 
     [HttpPost("reset-to-commit")]
     [OpenApiOperation("Reset To Commit")]
-    public IActionResult ResetToCommit(string userId, string programId, [FromBody] ResetToCommitRequest request)
+    public IActionResult ResetToCommit([FromRoute] string userId, [FromRoute] string programId, [FromBody] ResetToCommitRequest request)
     {
         try
         {
@@ -181,7 +181,7 @@ public class GitController : ControllerBase
 
     [HttpPost("reset")]
     [OpenApiOperation("Reset Repository")]
-    public IActionResult ResetRepositories(string userId, string programId)
+    public IActionResult ResetRepositories([FromRoute] string userId, [FromRoute] string programId)
     {
         try
         {

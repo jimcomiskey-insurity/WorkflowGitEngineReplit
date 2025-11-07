@@ -18,7 +18,7 @@ public class AssetsController : ControllerBase
 
     [HttpGet]
     [OpenApiOperation("Get All Assets")]
-    public IActionResult GetAssets(string userId, string programId)
+    public IActionResult GetAssets([FromRoute] string userId, [FromRoute] string programId)
     {
         var assets = _gitService.ReadAssetsWithGitStatus(programId, userId);
         return Ok(assets);
@@ -26,7 +26,7 @@ public class AssetsController : ControllerBase
 
     [HttpGet("{id}")]
     [OpenApiOperation("Get Asset By Id")]
-    public IActionResult GetAsset(string userId, string programId, Guid id)
+    public IActionResult GetAsset([FromRoute] string userId, [FromRoute] string programId, Guid id)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
@@ -41,7 +41,7 @@ public class AssetsController : ControllerBase
 
     [HttpPost]
     [OpenApiOperation("Create Asset")]
-    public IActionResult CreateAsset(string userId, string programId, [FromBody] Asset asset)
+    public IActionResult CreateAsset([FromRoute] string userId, [FromRoute] string programId, [FromBody] Asset asset)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         
@@ -58,7 +58,7 @@ public class AssetsController : ControllerBase
 
     [HttpPut("{id}")]
     [OpenApiOperation("Update Asset")]
-    public IActionResult UpdateAsset(string userId, string programId, Guid id, [FromBody] Asset asset)
+    public IActionResult UpdateAsset([FromRoute] string userId, [FromRoute] string programId, Guid id, [FromBody] Asset asset)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var index = assets.Assets.FindIndex(a => a.Id == id);
@@ -77,7 +77,7 @@ public class AssetsController : ControllerBase
 
     [HttpDelete("{id}")]
     [OpenApiOperation("Delete Asset")]
-    public IActionResult DeleteAsset(string userId, string programId, Guid id)
+    public IActionResult DeleteAsset([FromRoute] string userId, [FromRoute] string programId, Guid id)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
@@ -100,7 +100,7 @@ public class AssetsController : ControllerBase
 
     [HttpPost("{id}/file")]
     [OpenApiOperation("Upload Asset File")]
-    public async Task<IActionResult> UploadFile(string userId, string programId, Guid id, IFormFile? file = null)
+    public async Task<IActionResult> UploadFile([FromRoute] string userId, [FromRoute] string programId, Guid id, IFormFile? file = null)
     {
         if (file == null || file.Length == 0)
         {
@@ -137,7 +137,7 @@ public class AssetsController : ControllerBase
 
     [HttpGet("{id}/file")]
     [OpenApiOperation("Get Asset File Info")]
-    public IActionResult DownloadFile(string userId, string programId, Guid id)
+    public IActionResult DownloadFile([FromRoute] string userId, [FromRoute] string programId, Guid id)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
@@ -160,7 +160,7 @@ public class AssetsController : ControllerBase
 
     [HttpGet("{id}/file/content")]
     [OpenApiOperation("Get Asset File Content")]
-    public IActionResult GetFileContent(string userId, string programId, Guid id)
+    public IActionResult GetFileContent([FromRoute] string userId, [FromRoute] string programId, Guid id)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
@@ -183,7 +183,7 @@ public class AssetsController : ControllerBase
 
     [HttpGet("{id}/file/content/committed")]
     [OpenApiOperation("Get Asset File Content At Commit")]
-    public IActionResult GetCommittedFileContent(string userId, string programId, Guid id)
+    public IActionResult GetCommittedFileContent([FromRoute] string userId, [FromRoute] string programId, Guid id)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
@@ -206,7 +206,7 @@ public class AssetsController : ControllerBase
 
     [HttpPut("{id}/file/content")]
     [OpenApiOperation("Update Asset File Content")]
-    public IActionResult UpdateFileContent(string userId, string programId, Guid id, [FromBody] FileContentUpdate update)
+    public IActionResult UpdateFileContent([FromRoute] string userId, [FromRoute] string programId, Guid id, [FromBody] FileContentUpdate update)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);
@@ -231,7 +231,7 @@ public class AssetsController : ControllerBase
 
     [HttpDelete("{id}/file")]
     [OpenApiOperation("Delete Asset File")]
-    public IActionResult DeleteFile(string userId, string programId, Guid id)
+    public IActionResult DeleteFile([FromRoute] string userId, [FromRoute] string programId, Guid id)
     {
         var assets = _gitService.ReadAssets(programId, userId);
         var asset = assets.Assets.FirstOrDefault(a => a.Id == id);

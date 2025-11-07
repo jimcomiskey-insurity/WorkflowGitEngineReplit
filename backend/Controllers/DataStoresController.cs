@@ -19,7 +19,7 @@ namespace WorkflowConfig.Api.Controllers
 
         [HttpGet]
         [OpenApiOperation("GetAllDataStores")]
-        public ActionResult<List<DataStore>> GetAllDataStores(string userId, string programId)
+        public ActionResult<List<DataStore>> GetAllDataStores([FromRoute] string userId, [FromRoute] string programId)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(programId, userId);
             return Ok(dataStores);
@@ -27,7 +27,7 @@ namespace WorkflowConfig.Api.Controllers
 
         [HttpGet("{id}")]
         [OpenApiOperation("GetDataStoreById")]
-        public ActionResult<DataStore> GetDataStoreById(string userId, string programId, string id)
+        public ActionResult<DataStore> GetDataStoreById([FromRoute] string userId, [FromRoute] string programId, string id)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(programId, userId);
             var dataStore = dataStores.FirstOrDefault(ds => ds.Id == id);
@@ -44,7 +44,7 @@ namespace WorkflowConfig.Api.Controllers
         [OpenApiOperation("CreateDataStore")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(DataStore))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<DataStore> CreateDataStore(string userId, string programId, [FromBody] DataStore dataStore)
+        public ActionResult<DataStore> CreateDataStore([FromRoute] string userId, [FromRoute] string programId, [FromBody] DataStore dataStore)
         {
             if (string.IsNullOrEmpty(dataStore.Id))
             {
@@ -64,7 +64,7 @@ namespace WorkflowConfig.Api.Controllers
 
         [HttpPut("{id}")]
         [OpenApiOperation("UpdateDataStore")]
-        public ActionResult<DataStore> UpdateDataStore(string userId, string programId, string id, [FromBody] DataStore dataStore)
+        public ActionResult<DataStore> UpdateDataStore([FromRoute] string userId, [FromRoute] string programId, string id, [FromBody] DataStore dataStore)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(programId, userId);
             var existingIndex = dataStores.FindIndex(ds => ds.Id == id);
@@ -87,7 +87,7 @@ namespace WorkflowConfig.Api.Controllers
 
         [HttpDelete("{id}")]
         [OpenApiOperation("DeleteDataStore")]
-        public ActionResult DeleteDataStore(string userId, string programId, string id)
+        public ActionResult DeleteDataStore(string userId, [FromRoute] string programId, string id)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(programId, userId);
             var existingDataStore = dataStores.FirstOrDefault(ds => ds.Id == id);
@@ -270,7 +270,7 @@ namespace WorkflowConfig.Api.Controllers
 
         [HttpDelete("{dataStoreId}/datagroups/{dataGroupId}")]
         [OpenApiOperation("DeleteDataGroup")]
-        public ActionResult DeleteDataGroup(string userId, string programId, string dataStoreId, string dataGroupId)
+        public ActionResult DeleteDataGroup(string userId, [FromRoute] string programId, string dataStoreId, string dataGroupId)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(programId, userId);
             var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
@@ -309,7 +309,7 @@ namespace WorkflowConfig.Api.Controllers
 
         [HttpDelete("{dataStoreId}/datapoints/{dataPointId}")]
         [OpenApiOperation("DeleteDataPoint")]
-        public ActionResult DeleteDataPoint(string userId, string programId, string dataStoreId, string dataPointId)
+        public ActionResult DeleteDataPoint(string userId, [FromRoute] string programId, string dataStoreId, string dataPointId)
         {
             var dataStores = _gitService.ReadDataStoresWithGitStatus(programId, userId);
             var dataStore = dataStores.FirstOrDefault(ds => ds.Id == dataStoreId);
