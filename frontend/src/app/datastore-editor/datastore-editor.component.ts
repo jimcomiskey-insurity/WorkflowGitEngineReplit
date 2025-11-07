@@ -1018,21 +1018,16 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
         const script = model.getValue();
         const offset = model.getOffsetAt(position);
         
-        console.log('[Completion Provider] Triggered at offset:', offset, 'in script:', script.substring(Math.max(0, offset - 20), Math.min(script.length, offset + 20)));
-        
         const completionInputs = this.getScriptInputs().map(input => ({
           alias: input.alias,
           dataType: input.dataType
         }));
-
-        console.log('[Completion Provider] Requesting with inputs:', completionInputs);
 
         return this.scriptExecutionService.getCompletions(this.currentUser, {
           script,
           position: offset,
           inputs: completionInputs
         }).toPromise().then(response => {
-          console.log('[Completion Provider] Received response:', response);
           const suggestions = response?.items.map(item => ({
             label: item.label,
             kind: this.getMonacoCompletionKind(item.kind),
@@ -1041,7 +1036,6 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             documentation: item.documentation
           })) || [];
 
-          console.log('[Completion Provider] Returning suggestions:', suggestions.length);
           return { suggestions };
         }).catch(err => {
           console.error('[Completion Provider] Error:', err);

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack application for managing insurance workflow configurations with integrated Git version control. It enables users to create, edit, and manage insurance workflows (e.g., New Business, Renewals) that comprise multi-phase task structures with dependencies, role assignments, and automation flags. The system tracks changes, commits modifications, and synchronizes with a central Git repository, providing a robust solution for workflow configuration management.
+This full-stack application manages insurance workflow configurations with integrated Git version control. It allows users to create, edit, and manage multi-phase insurance workflows with tasks, dependencies, role assignments, and automation flags. The system tracks changes, commits modifications, and synchronizes with a central Git repository, providing a robust solution for workflow configuration management. It aims to streamline the process of defining and evolving insurance product workflows, enhancing efficiency and reducing errors in a highly regulated environment.
 
 ## User Preferences
 
@@ -38,34 +38,6 @@ Preferred communication style: Simple, everyday language.
 - This ensures we maintain code quality and catch regressions early
 - Failing tests indicate broken functionality that must be addressed
 
-### E2E Testing with NSwag API Client Generation
-
-**Automated API client code generation:**
-- NSwag.MSBuild automatically generates strongly-typed C# API clients from the backend's OpenAPI spec
-- Configuration file: `backend.tests/WorkflowConfig.E2E.Tests/nswag.json`
-- Auto-regeneration on every build keeps clients in sync with backend API
-- Generated files:
-  - `Generated/ApiClients.g.cs` - Strongly-typed API client methods
-  - `Generated/Contracts.g.cs` - Request/response model classes and IApiClient interface
-- Benefits: Compile-time safety, IntelliSense support, eliminates route guessing
-- Usage: E2E tests use `IApiClient` interface with injected HttpClient for API calls
-
-**NSwag method name improvements (Nov 2025):**
-- Backend configured to generate operation IDs from controller action method names (Program.cs)
-- NSwag set to SingleClientFromOperationId mode for clean, descriptive method names
-- Examples: `CreateDataStoreAsync`, `GetAllDataStoresAsync`, `CreatePullRequestAsync`, `GetBranchComparisonAsync`
-- Previous generic names (DataStoresPOSTAsync, PullRequestsAllAsync) replaced with intention-revealing names
-- All E2E test step definitions updated to use new strongly-typed method names
-
-**NSwag HTTP status code handling (Nov 2025):**
-- NSwag configured with `successStatusCodeRange: "200-299"` to properly handle all 2xx success codes
-- Backend controllers properly annotated with `[ProducesResponseType]` attributes for 201 Created responses
-- Generated clients now treat 201 Created as success instead of throwing exceptions
-- Removed all ugly try-catch workarounds from test code - clean API calls throughout
-
-**Known limitations:**
-- Backend returns lowercase ChangeType values (e.g., "added") - tests updated to match this convention
-
 ### Frontend Testing Requirements
 
 **Mandatory for all frontend code changes:**
@@ -98,63 +70,46 @@ Preferred communication style: Simple, everyday language.
 - Use `fixture.detectChanges()` to trigger change detection in tests
 - Mock route parameters and navigation for router-dependent components
 
-**HTTP Testing Setup (Modern Angular 18+):**
-```typescript
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-
-TestBed.configureTestingModule({
-  providers: [
-    provideHttpClient(),
-    provideHttpClientTesting(),
-    YourService
-  ]
-});
-```
-
 ## System Architecture
 
 ### UI/UX Decisions
 
-The frontend features a modern dark theme with a redesigned layout, including a persistent top header, sidebar navigation, a card-grid for workflows, and dedicated views for Version Control and Pending Changes. Key elements include workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes. The header includes an "API Docs" link that provides quick access to the backend's Swagger UI documentation in a new tab.
+The frontend features a modern dark theme with a redesigned layout, including a persistent top header, sidebar navigation, a card-grid for workflows, and dedicated views for Version Control and Pending Changes. Key elements include workflow cards, a collapsible commit history, branch management dropdowns, and visual indicators for synchronization status and pending changes. An "API Docs" link provides quick access to the backend's Swagger UI.
 
 ### Technical Implementations
 
 **Frontend**:
-- Built with Angular 20.3.6 (Standalone Components) using client-side routing and lazy-loaded components.
-- **Centralized State Management**: Implements reactive state management using RxJS BehaviorSubjects via dedicated state services (`GitStateService`, `WorkflowStateService`, `AssetStateService`, `DataStoreStateService`) for automatic refresh and UI synchronization.
-- **Pending Changes Badge**: Navigation badge displays total count of changed files (added + modified + removed + untracked) by subscribing to `GitStateService.gitStatus$`. All mutation operations (workflows, assets, datastores) trigger `gitStateService.refresh()` to ensure immediate badge updates.
-- **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting and vs-dark theme, loaded dynamically via `MonacoService` singleton to prevent duplicate initialization across components. Includes Monaco Diff Editor for comparisons, continuous auto-save with retry logic, and branch-aware editing.
-- **Monaco Conflict Resolution**: Visual Git conflict editor with syntax highlighting, color-coded conflict blocks (red for current, blue for incoming). Provides "Accept All Current" and "Accept All Incoming" header buttons for quick resolution, plus manual editing capability. Supports multiple simultaneous conflict editors with proper resource cleanup.
+- Built with Angular 20.3.6 (Standalone Components) using client-side routing.
+- **Centralized State Management**: Reactive state management using RxJS BehaviorSubjects via dedicated state services for automatic refresh and UI synchronization.
+- **Pending Changes Badge**: Displays total count of changed files, updating immediately after mutation operations.
+- **Monaco Editor Integration**: Rich text editor for XML, JSON, XSLT, and TXT files with syntax highlighting, vs-dark theme, and dynamic loading. Includes Monaco Diff Editor for comparisons, continuous auto-save, branch-aware editing, and visual Git conflict resolution with color-coded conflict blocks.
+- **C# IntelliSense**: Monaco editor C# completion powered by Roslyn, providing type/member/keyword suggestions, method parameters, and local variables.
 
 **Backend**:
-- Developed using ASP.NET Core 8.0 Web API, providing RESTful endpoints.
-- **Split-File Persistence**: Workflows and assets are persisted using split-file structures for granular Git tracking (`workflow-list.json` + `workflows/{workflowId}.json`; `asset-list.json` + `assets/{assetId}.json` + `asset-files/{assetId}/{filename}`). Includes backward compatibility and automatic migration.
-- **Asset File Storage**: Uploaded files stored in deterministic per-asset directories (`asset-files/{assetId}/`).
+- Developed using ASP.NET Core 8.0 Web API.
+- **Split-File Persistence**: Workflows, assets, and data stores use split-file structures for granular Git tracking and easier conflict resolution.
+- **Asset File Storage**: Uploaded files stored in deterministic, per-asset directories.
 - Integrates LibGit2Sharp for all Git operations.
 - Supports multi-user access through isolated, user-specific Git repositories.
 - Employs RxJS `switchMap` and `merge` for data refreshing and multi-user data isolation.
-- Includes Git status enrichment to identify changes at workflow, phase, task, and asset levels, including asset metadata and file content.
-- **PR Comparison Fix**: Pull requests compare against remote branches (`origin/master`) for accurate commit counts.
-- **Task Reordering Detection**: Git status enrichment properly detects task reordering within phases.
-- **Commit SHA Tracking**: BranchComparison model includes `SourceCommitSha` and `TargetCommitSha` for precise commit comparisons.
-- **Asset Diff Viewer Enhancements**: Handles renamed, added, and deleted assets in the diff viewer by resolving appropriate filenames per commit.
+- Includes Git status enrichment to identify changes at workflow, phase, task, and asset levels, detecting task reordering and tracking commit SHAs.
+- **NSwag API Client Generation**: Automated generation of strongly-typed C# API clients from the backend's OpenAPI spec, configured for clean method names and proper 2xx status code handling.
 
 ### Feature Specifications
 
--   **Workflow Management**: CRUD operations for workflows, including nested phases and tasks with dependencies, role assignments, duration estimates, and automation flags.
--   **Asset Management**: CRUD operations for assets with metadata and file upload capabilities. Supports rich text editing with Monaco Editor for various file types, continuous auto-save, and branch-aware content reloading.
--   **Data Store Management**: CRUD operations for data stores with hierarchical structure (DataStore > DataGroup > DataPoint). Supports 13 data point types (String, Integer, Decimal, Date, Email, Phone, URL, Money, Zipcode, Timestamp, Year, Yes-No, List of Strings). Features include a tree-based editor with expand/collapse navigation, context menus for adding nested groups and points, type selector modal, and detail forms with configuration options (Basic/List/Advanced modes, validation rules, default values). **Data Group Enhancement (Nov 2025)**: Added support for repeatable data groups with desired state controls and population method configuration (Application, Import/Copy, Object Sync), including conditional Reference Object field that appears when Object Sync is enabled.
--   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are collaborative, stored in a shared global JSON file, and track commit SHAs. Asset file diffs are displayed using Monaco Diff Editor.
--   **Git Version Control**: Tracks changes, commits, and synchronizes with a central repository. Displays Git status, commit history, branch management (create, switch, push), and counts of commits ahead/behind. Includes visual change indicators, a Pending Changes View, master branch protection, and a commit reset feature.
--   **Conflict Resolution**: Monaco-based visual conflict resolution for asset file merge conflicts. Detects Git conflict markers, provides syntax highlighting with color-coded blocks, and offers one-click resolution via inline action buttons. Supports multiple simultaneous conflict editors.
--   **Repository Reset**: A testing utility to reset the entire system to its initial state.
--   **User Management**: Global user selector with session-based persistence, isolated Git repository clones per user, and real-time data refresh.
+-   **Workflow Management**: CRUD operations for workflows, including nested phases and tasks with dependencies, role assignments, and automation flags.
+-   **Asset Management**: CRUD operations for assets with metadata and file upload capabilities, supporting rich text editing with Monaco Editor.
+-   **Data Store Management**: CRUD operations for data stores with hierarchical structure (DataStore > DataGroup > DataPoint), supporting 13 data point types. Features include a tree-based editor, context menus, and configuration options, with support for repeatable data groups and population methods.
+-   **Pull Requests**: Full PR workflow including creation, viewing, filtering, branch comparison, merging, and closing. PRs are collaborative, stored globally, and track commit SHAs.
+-   **Git Version Control**: Tracks changes, commits, and synchronizes with a central repository. Displays Git status, commit history, branch management, and counts of commits ahead/behind. Includes visual change indicators, a Pending Changes View, master branch protection, and a commit reset feature.
+-   **Conflict Resolution**: Monaco-based visual conflict resolution for asset file merge conflicts, with syntax highlighting, color-coded blocks, and one-click resolution.
+-   **Repository Reset**: Utility to reset the system to its initial state.
+-   **User Management**: Global user selector with session-based persistence and isolated Git repository clones per user.
 
 ### System Design Choices
 
--   **Split-File Persistence**: Workflows, assets, and data stores use split-file structures for improved Git granularity, clearer history, easier conflict resolution, and explicit deletions. Data stores follow the pattern: `datastore-list.json` + `datastores/{datastoreId}.json`. Includes migration from legacy formats.
--   **Persistent Storage**: All runtime data is stored in `/home/runner/workflow-data/` for persistence across restarts and separation of application code from data.
+-   **Split-File Persistence**: Workflows, assets, and data stores use split-file structures for improved Git granularity, clearer history, easier conflict resolution, and explicit deletions.
+-   **Persistent Storage**: All runtime data is stored in `/home/runner/workflow-data/` for persistence across restarts.
 -   **Multi-user Support**: Each user operates within an isolated Git repository cloned from a central one.
 -   **API Integration**: Frontend communicates with the backend via Workflow Service, Asset Service, DataStore Service, and Git Service APIs.
 

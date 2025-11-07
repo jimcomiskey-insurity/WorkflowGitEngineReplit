@@ -80,7 +80,6 @@ Calculate({parameters})
         [ProducesResponseType(typeof(CompletionResponse), 200)]
         public async Task<IActionResult> GetCompletions(string userId, [FromBody] CompletionRequest request)
         {
-            Console.WriteLine($"[Completions] Requested at position {request.Position}, script length: {request.Script?.Length ?? 0}, inputs: {request.Inputs?.Count ?? 0}");
             try
             {
                 var scriptBuilder = new StringBuilder();
@@ -93,8 +92,12 @@ Calculate({parameters})
                 scriptBuilder.AppendLine("using System.Text.RegularExpressions;");
                 scriptBuilder.AppendLine();
                 
+                // Wrap in class for proper C# context
+                scriptBuilder.AppendLine("public class Script");
+                scriptBuilder.AppendLine("{");
+                
                 // Build method signature with parameters
-                scriptBuilder.Append("object Calculate(");
+                scriptBuilder.Append("    public object Calculate(");
                 var parameters = request.Inputs.Select(input => 
                 {
                     var csharpType = GetCSharpType(input.DataType);
@@ -102,13 +105,20 @@ Calculate({parameters})
                 });
                 scriptBuilder.Append(string.Join(", ", parameters));
                 scriptBuilder.AppendLine(")");
-                scriptBuilder.AppendLine("{");
+                scriptBuilder.AppendLine("    {");
                 
-                // Add user's script inside the method
-                scriptBuilder.Append(request.Script);
+                // Calculate prefix length before adding user's script
+                var prefixLength = scriptBuilder.Length;
+                
+                // Add user's script inside the method (WITHOUT indentation to avoid offset issues)
+                scriptBuilder.AppendLine(request.Script);
+                
+                // Close the method and class
+                scriptBuilder.AppendLine("    }");
+                scriptBuilder.AppendLine("}");
                 
                 var fullScript = scriptBuilder.ToString();
-                var adjustedPosition = request.Position + (fullScript.Length - request.Script.Length);
+                var adjustedPosition = prefixLength + request.Position;
                 
                 var workspace = new AdhocWorkspace(MefHostServices.Create(MefHostServices.DefaultAssemblies));
                 var projectInfo = ProjectInfo.Create(
@@ -130,7 +140,14 @@ Calculate({parameters})
                 );
                 
                 var project = workspace.AddProject(projectInfo);
-                var document = project.AddDocument("Script.csx", SourceText.From(fullScript));
+                var document = project.AddDocument("Script.cs", SourceText.From(fullScript));
+                
+                // Force Roslyn to compile and analyze the document
+                var semanticModel = await document.GetSemanticModelAsync();
+                if (semanticModel == null)
+                {
+                    return Ok(new CompletionResponse());
+                }
                 
                 var completionService = CompletionService.GetService(document);
                 if (completionService == null)
@@ -140,22 +157,43 @@ Calculate({parameters})
                 
                 var completions = await completionService.GetCompletionsAsync(document, adjustedPosition);
                 
-                if (completions == null)
+                var items = new List<CompletionSuggestion>();
+                
+                // Add standard completions (types, keywords, members, etc.)
+                if (completions != null)
                 {
-                    return Ok(new CompletionResponse());
+                    items.AddRange(completions.ItemsList
+                        .Take(100)
+                        .Select(item => new CompletionSuggestion
+                        {
+                            Label = item.DisplayText,
+                            Kind = GetCompletionKind(item.Tags),
+                            InsertText = item.DisplayText,
+                            Detail = item.InlineDescription,
+                            Documentation = null
+                        }));
                 }
                 
-                var items = completions.ItemsList
-                    .Take(100)
-                    .Select(item => new CompletionSuggestion
+                // Add parameters and local variables using semantic model
+                var localSymbols = semanticModel.LookupSymbols(adjustedPosition);
+                foreach (var symbol in localSymbols)
+                {
+                    // Only add parameters and local variables
+                    if (symbol.Kind == SymbolKind.Parameter || symbol.Kind == SymbolKind.Local)
                     {
-                        Label = item.DisplayText,
-                        Kind = GetCompletionKind(item.Tags),
-                        InsertText = item.DisplayText,
-                        Detail = item.InlineDescription,
-                        Documentation = null
-                    })
-                    .ToList();
+                        if (!items.Any(i => i.Label == symbol.Name))
+                        {
+                            items.Add(new CompletionSuggestion
+                            {
+                                Label = symbol.Name,
+                                Kind = symbol.Kind == SymbolKind.Parameter ? "Parameter" : "Variable",
+                                InsertText = symbol.Name,
+                                Detail = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                                Documentation = null
+                            });
+                        }
+                    }
+                }
                 
                 return Ok(new CompletionResponse { Items = items });
             }
