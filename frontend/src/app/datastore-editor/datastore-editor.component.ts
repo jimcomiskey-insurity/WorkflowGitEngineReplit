@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataStoresService } from '../services/datastores.service';
 import { DataStoreStateService, DataStore, DataGroup, DataPoint, ScriptInput } from '../services/datastore-state.service';
 import { MonacoService } from '../services/monaco.service';
+import { MonacoIntelliSenseService } from '../services/monaco-intellisense.service';
 import { ScriptExecutionService, ScriptInputValue } from '../services/script-execution.service';
 
 interface TreeNode {
@@ -1007,94 +1008,21 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
         }
       });
 
-      // Register completion provider for C# IntelliSense
-      this.registerCompletionProvider();
+      // Initialize IntelliSage for C# IntelliSense
+      this.initializeIntelliSense();
     });
   }
 
-  private registerCompletionProvider(): void {
+  private async initializeIntelliSense(): Promise<void> {
     const monaco = (window as any).monaco;
-    const self = this;  // Preserve context for use in provider
+    const model = this.scriptEditor.getModel();
     
-    monaco.languages.registerCompletionItemProvider('csharp', {
-      triggerCharacters: ['.', ' ', '(', ',', '<', '"', '\'', '/', '\\', '+', '-', '*', '='],
-      provideCompletionItems: (model: any, position: any) => {
-        console.log('[COMPLETION] Provider called!');
-        
-        const word = model.getWordUntilPosition(position);
-        const range = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn
-        };
-        
-        const completionInputs = self.getScriptInputs().map(input => ({
-          alias: input.alias,
-          dataType: input.dataType
-        }));
-        
-        console.log('[COMPLETION] Inputs:', completionInputs);
-
-        // Return a NEW promise (not toPromise()) to ensure proper handling
-        return new Promise((resolve) => {
-          const script = model.getValue();
-          const offset = model.getOffsetAt(position);
-          
-          self.scriptExecutionService.getCompletions(self.currentUser, {
-            script,
-            position: offset,
-            inputs: completionInputs
-          }).subscribe({
-            next: (response) => {
-              console.log('[COMPLETION] Backend returned', response?.items?.length, 'items');
-              
-              if (response?.items?.length > 0) {
-                console.log('[COMPLETION] First 3:', response.items.slice(0, 3).map(i => i.label));
-              }
-              
-              const suggestions = response?.items.map((item, index) => {
-                const isParameter = item.kind === 'Parameter' || item.kind === 'Variable';
-                const sortText = isParameter ? `000${String(index).padStart(4, '0')}` : `999${String(index).padStart(4, '0')}`;
-                
-                return {
-                  label: item.label,
-                  kind: self.getMonacoCompletionKind(item.kind),
-                  insertText: item.insertText,
-                  detail: item.detail,
-                  documentation: item.documentation,
-                  sortText: sortText,
-                  filterText: item.label,
-                  range: range
-                };
-              }) || [];
-
-              console.log('[COMPLETION] Resolving with', suggestions.length, 'suggestions');
-              resolve({ suggestions: suggestions });
-            },
-            error: (err) => {
-              console.error('[COMPLETION] Error:', err);
-              resolve({ suggestions: [] });
-            }
-          });
-        });
-      }
-    });
-  }
-
-  private getMonacoCompletionKind(kind: string): any {
-    const monaco = (window as any).monaco;
-    const CompletionItemKind = monaco.languages.CompletionItemKind;
-    
-    switch (kind) {
-      case 'Method': return CompletionItemKind.Method;
-      case 'Property': return CompletionItemKind.Property;
-      case 'Field': return CompletionItemKind.Field;
-      case 'Class': return CompletionItemKind.Class;
-      case 'Module': return CompletionItemKind.Module;
-      case 'Keyword': return CompletionItemKind.Keyword;
-      case 'Variable': return CompletionItemKind.Variable;
-      default: return CompletionItemKind.Text;
+    try {
+      const intelliSenseService = new MonacoIntelliSenseService();
+      await intelliSenseService.initialize(monaco, model);
+      console.log('IntelliSage initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize IntelliSage:', error);
     }
   }
 

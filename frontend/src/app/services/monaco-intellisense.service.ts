@@ -143,7 +143,7 @@ export class MonacoIntelliSenseService {
   }
 
   async provideCompletionItems(model: any, position: any, context: any) {
-    const request = this._createRequest(position);
+    const request: any = this._createRequest(position);
     request.CompletionTrigger = context.triggerKind + 1;
     request.TriggerCharacter = context.triggerCharacter;
 
@@ -312,7 +312,10 @@ export class MonacoIntelliSenseService {
     };
 
     const mapTextEdit = (edit: any) => {
-      return new this.monaco.TextEdit(mapRange(edit), edit.NewText);
+      return {
+        range: mapRange(edit),
+        text: edit.NewText
+      };
     };
 
     const additionalTextEdits = omnisharpCompletion.additionalTextEdits?.map(
