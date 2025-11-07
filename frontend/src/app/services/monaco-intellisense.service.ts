@@ -155,14 +155,28 @@ export class MonacoIntelliSenseService {
     try {
       const code = model.getValue();
       const transformedCode = this.codeTransformer ? this.codeTransformer(code) : code;
+      
+      console.log('[IntelliSense] Requesting completions at position:', position);
+      console.log('[IntelliSense] Trigger character:', context.triggerCharacter);
+      
       const response = await this.intellisage(
         'GetCompletionAsync',
         transformedCode,
         request
       );
+      
+      console.log('[IntelliSense] Completion response:', response);
+      
       if (!response) {
+        console.log('[IntelliSense] No response from IntelliSage');
         return { suggestions: [] };
       }
+      
+      if (!response.items || response.items.length === 0) {
+        console.log('[IntelliSense] No completion items returned');
+        return { suggestions: [] };
+      }
+      
       const mappedItems = response.items.map((item: any) =>
         this._convertToVscodeCompletionItem(item)
       );
@@ -175,9 +189,10 @@ export class MonacoIntelliSenseService {
 
       this.lastCompletions = lastCompletions;
 
+      console.log('[IntelliSense] Returning', mappedItems.length, 'completion items');
       return { suggestions: mappedItems };
     } catch (error) {
-      console.warn('IntelliSense error:', error);
+      console.error('[IntelliSense] Completion error:', error);
       return { suggestions: [] };
     }
   }
