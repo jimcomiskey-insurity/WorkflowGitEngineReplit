@@ -986,13 +986,13 @@ export class DataStoreEditorComponent implements OnInit, OnDestroy, AfterViewIni
             comments: false,
             strings: false
           },
-          wordBasedSuggestions: 'off',
+          wordBasedSuggestions: 'allDocuments',
           acceptSuggestionOnEnter: 'on',
           tabCompletion: 'on',
           suggest: {
             showKeywords: true,
             showSnippets: true,
-            showWords: false,
+            showWords: true,
             filterGraceful: true,  // Enable fuzzy matching (match anywhere in word, not just prefix)
             snippetsPreventQuickSuggestions: false,
             localityBonus: true    // Boost suggestions that are contextually relevant

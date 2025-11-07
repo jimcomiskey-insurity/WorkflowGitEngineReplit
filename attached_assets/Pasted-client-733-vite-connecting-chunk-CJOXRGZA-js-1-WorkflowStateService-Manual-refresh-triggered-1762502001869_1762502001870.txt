@@ -1,0 +1,334 @@
+client:733 [vite] connecting...
+chunk-CJOXRGZA.js:1 [WorkflowStateService] Manual refresh triggered
+chunk-6LSKCURY.js:1 [GitStateService] Initializing
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+client:827 [vite] connected.
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-3QXYWLKI.js:1 Monaco Editor already loaded, using existing instance
+chunk-MAT5UXWD.js:8 [IntelliSense] Initialized successfully
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+
+}
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+m
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 2}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: undefined
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+myv
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 4}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: undefined
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+myv
+}
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+myva
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 5}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: undefined
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+myvalue
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 6}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: undefined
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+myvalue.
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 9}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: .
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(16)}
+chunk-MAT5UXWD.js:1 [IntelliSense] Returning 16 completion items
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+myvalue.
+}
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+retu
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 2}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: undefined
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+return
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 6}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: undefined
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+polyfills.js:1  Canceled: Canceled
+    at h (suggest.ts:318:30)
+e.onUnhandledError @ polyfills.js:1
+z @ polyfills.js:1
+e.microtaskDrainDone @ polyfills.js:1
+$ @ polyfills.js:1
+Promise.then
+H @ polyfills.js:1
+z @ polyfills.js:1
+I @ polyfills.js:2
+reject @ polyfills.js:2
+h @ suggest.ts:318
+await in h
+trigger @ suggestModel.ts:494
+(anonymous) @ suggestModel.ts:432
+(anonymous) @ async.ts:443
+P.<computed> @ polyfills.js:1
+invokeTask @ polyfills.js:1
+onInvokeTask @ chunk-URX7TH45.js:4
+invokeTask @ polyfills.js:1
+runTask @ polyfills.js:1
+invokeTask @ polyfills.js:1
+E.useG.invoke @ polyfills.js:1
+T._.args.<computed> @ polyfills.js:1
+setTimeout
+T @ polyfills.js:1
+scheduleTask @ polyfills.js:1
+onScheduleTask @ polyfills.js:1
+scheduleTask @ polyfills.js:1
+scheduleTask @ polyfills.js:1
+scheduleMacroTask @ polyfills.js:1
+xe @ polyfills.js:1
+(anonymous) @ polyfills.js:1
+e.<computed> @ polyfills.js:1
+cancelAndSet @ async.ts:441
+_doTriggerQuickSuggest @ suggestModel.ts:394
+_onCursorChange @ suggestModel.ts:361
+(anonymous) @ suggestModel.ts:194
+_deliver @ event.ts:1225
+_deliverQueue @ event.ts:1236
+fire @ event.ts:1260
+(anonymous) @ codeEditorWidget.ts:1648
+_deliver @ event.ts:1225
+fire @ event.ts:1256
+_emitOutgoingEvents @ viewModelEventDispatcher.ts:64
+endEmitViewEvents @ viewModelEventDispatcher.ts:109
+(anonymous) @ viewModelImpl.ts:1111
+batchChanges @ codeEditorWidget.ts:1572
+_withViewEventsCollector @ viewModelImpl.ts:1106
+_executeCursorEdit @ viewModelImpl.ts:1044
+type @ viewModelImpl.ts:1056
+_type @ codeEditorWidget.ts:1109
+trigger @ codeEditorWidget.ts:1039
+runCommand @ coreCommands.ts:2144
+handler @ editorExtensions.ts:154
+_.handler @ commands.ts:94
+invokeFunction @ instantiationService.ts:109
+executeCommand @ standaloneServices.ts:292
+type @ codeEditorWidget.ts:1735
+type @ viewController.ts:72
+(anonymous) @ textAreaHandler.ts:350
+_deliver @ event.ts:1225
+fire @ event.ts:1256
+(anonymous) @ textAreaInput.ts:393
+_deliver @ event.ts:1225
+_deliverQueue @ event.ts:1236
+fire @ event.ts:1260
+_ @ event.ts:35
+invokeTask @ polyfills.js:1
+onInvokeTask @ chunk-URX7TH45.js:4
+invokeTask @ polyfills.js:1
+runTask @ polyfills.js:1
+invokeTask @ polyfills.js:1
+L @ polyfills.js:1
+H @ polyfills.js:1
+z @ polyfills.js:1
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+return 
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 8}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character:  
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+return myvalue
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 12}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: undefined
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(0)}
+chunk-MAT5UXWD.js:1 [IntelliSense] No completion items returned
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Fetching Git status for user: userA
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-6LSKCURY.js:1 [GitStateService] Received Git status, isDirty: true
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+return myvalue.
+}
+chunk-MAT5UXWD.js:1 [IntelliSense] Requesting completions at position: d {lineNumber: 1, column: 16}
+chunk-MAT5UXWD.js:1 [IntelliSense] Trigger character: .
+chunk-MAT5UXWD.js:1 [IntelliSense] Completion response: {isIncomplete: false, items: Array(14)}
+chunk-MAT5UXWD.js:1 [IntelliSense] Returning 14 completion items
+chunk-MAT5UXWD.js:8 [IntelliSense] Code transformer called
+chunk-MAT5UXWD.js:8 [IntelliSense] Parameters: int myvalue, int myvalue2
+chunk-MAT5UXWD.js:8 [IntelliSense] Transformed code: using System;
+using System.Linq;
+
+public decimal Calculate(int myvalue, int myvalue2) {
+return myvalue.
+}
